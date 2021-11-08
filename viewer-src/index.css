@@ -1,0 +1,375 @@
+:root {
+    --mainColor: rgb(186, 203, 205);
+    --minorColor: LightGray;
+    --contraColor: #1344a0;
+    --mainBG: White;
+    --minorBG: WhiteSmoke;
+    --shadowBG: #ddddff;
+
+    /* status colors */
+    --changeStat: orange;
+    --errorStat: red;
+    --successStat: #55A62A;
+
+    /* text */
+    --mainTxtColor: #202020;
+    --mainTxtSize: 19px;
+    --mainTxtFont: Georgia1, Georgia, serif;
+    --minorTxtSize: 16px;
+
+}
+
+@media (prefers-color-scheme: dark){
+    body{background-color: #121616;color: #E8E9EB;}
+    .mainColors{background-color: #121616; color: #E8E9EB;}
+    input,select{background-color: #121616;box-shadow: 0 1px 4px #838383;}
+    input[type=button],input[type=submit]{color: #E8E9EB;}
+    input[type=text], input[type=password]{border-bottom: 1px solid #838383; color: #E8E9EB;}
+    /* text color */
+    p,span,input,select,div {color: #E8E9EB;}
+    h1, h2, h3, h4{color: #576CA8}
+    a{color: #576CA8}
+
+    /* elements */
+    #navScreen{
+        color: #b4b4b4;
+        box-shadow: 0 0 1px #284b4d ;
+        background-color: #121616;
+    }
+    #navPage{
+        color: #b4b4b4;
+        box-shadow: 0 0 1px #284b4d;
+        background-color: #121616;
+    }
+
+    .searchBox{
+        box-shadow: 0 0 2px #d9d9d9;
+        background-color: #202727;
+    }
+
+    /* zettel */
+    .selMarked{box-shadow: 0px 0px 18px #ddddff}
+
+    /* opera */
+    .searchAllHits{background-color: #3a4646;}
+    .searchHit{background-color: dimgray}
+
+    .editButton{color: #838383}
+    .editButton:hover{color: #E8E9EB}
+}
+@media (prefers-color-scheme: light){
+    body{background-color: white;color: #353535;}
+    .mainColors{background-color: white;color: #353535;}
+    input, select{background-color: white; box-shadow: 0 1px 4px #d9d9d9;}
+    input[type=text], input[type=password]{border-bottom: 1px solid #d9d9d9; color: #284b63;}
+    input[type=button],input[type=submit]{color: #284b63;}
+    /* text color */
+    p,span,input,select,div {color: #353535;}
+    h1, h2, h3, h4{color: #284b63}
+    a{color: #284b63}
+
+    /* elements */
+    #navScreen{
+        color: #5e5e5e;
+        box-shadow: 0 0 1px #3c6e71 ;
+        background-color: white;
+    }
+    #navPage{
+        color: var(--mainColor);
+        box-shadow: 0 0 1px #3c6e71;
+        background-color: white;
+    }
+
+    .searchBox{
+        box-shadow: 0 0 2px #d9d9d9;
+        background-color: rgb(253, 253, 253);
+    }
+    /* zettel */
+    .selMarked{box-shadow: 0px 0px 18px #a3a3b5}
+    
+    /* opera */
+    .searchAllHits{background-color: skyblue;}
+    .searchHit{background-color: darkcyan}
+
+    .editButton{color: #efefef}
+    .editButton:hover{color: #353535}
+    
+}
+
+.minorTxt{font-size: var(--minorTxtSize);}
+p,span,input,select,div {
+    font-size: 19px;
+    font-family: Georgia1, Georgia, serif;
+}
+aut{font-variant:small-caps}
+
+/* links */
+a {text-decoration: none;}
+a:hover {cursor: pointer;}
+
+input{
+    border: none;
+    outline: none;
+    transition: box-shadow 0.2s;
+}
+
+input[type=text], input[type=password]{
+    padding: 4px 8px;
+}
+input[type=button],input[type=submit]{
+    border-radius: 7px;
+    padding: 5px 15px;
+    border-radius: 0;
+}
+select{
+    border-radius: 0;
+    appearance: none;
+    border: none;
+    padding: 5px 10px;
+}
+
+.cat{
+    position: absolute;
+    top: 4%;
+    left: 4%;
+    opacity: 0%;
+    animation-name: cat;
+    animation-duration:100s;
+}
+@keyframes cat {
+    0% {opacity: 0%;}
+    90% {opacity: 0%;}
+    93% {left: 4%; top: 4%; opacity: 100%; transform: rotate(0turn);}
+    96% {left: 50%; transform: rotate(1turn);}
+    99% {left: 96%; top: 96%; opacity: 100%; transform: rotate(2turn);}
+    100% {left: 96%; top: 96%; opacity: 0%; transform: rotate(2turn);}
+}
+
+/* general */
+/*
+.footerTop{
+    display: flex;
+    justify-content: space-evenly;
+    box-shadow: 0 0 4px #dddddd;
+    background-color: rgb(253, 253, 253);
+    /*border-bottom: 1px solid gray;*//*
+}
+.footerTop>*{
+    margin: 8px 6px;
+}*/
+
+
+
+/* ELEMENTS */
+.noneLst{
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+#navScreen{
+    display: inline-block;
+    margin-right: 15px;
+    border-radius: 7px;
+    padding: 5.5px 12px 4.5px 12px;
+}
+
+#navPage{
+    display: inline-block;
+    border-radius: 7px;
+    width: max-content;
+    padding: 5px 10px;
+    -webkit-user-select:none;
+    -webkit-touch-callout:none;
+    -moz-user-select:none;
+    -ms-user-select:none;
+    user-select:none;
+}
+#navPage>*{
+    cursor:pointer;
+}
+#navSelect{
+    padding: 0 10px 0 10px;
+    border-left: 1px solid rgb(186, 203, 205);
+    border-right: 1px solid rgb(186, 203, 205);
+    margin: 0 10px 0 10px;
+    cursor: initial;
+}
+
+
+.searchBox{
+    margin: 0 -20px 0 -20px;
+    padding: 12px 24px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+/* ****************   ZETTEL   **************** */
+.searchFields>select{box-shadow: none;}
+#navBox{
+    position: sticky;
+    top: 15px;
+    float: right;
+    z-index: 1000000;
+}
+
+.zettel_box {
+    display: grid;
+    justify-content: space-around;
+    width: 100%;
+}
+
+.zettel {
+    padding: 0;
+    margin: 0;
+    position: relative;
+    background: none;
+    transition: box-shadow 0.5s ease-out;
+    border-radius: 7px;
+}
+.zettel_img{width: 100%}
+div.zettel > img{border-radius: 7px}
+.zettel_menu{
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    font-size: 18px;
+    padding: 15px 12px;
+    text-align: center;
+    background: rgba(300,300,300,0.5);
+    border-radius: 0 0 7px 7px;
+}
+.zettel_msg{
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    padding: 10px 10px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: normal;
+}
+
+.no_use {background-color: var(--mainBG)}
+img.no_use {filter: grayscale(100%)}
+
+/* digital zettel */
+.digitalZettel{
+    display: grid;
+    grid-template-columns: 25% auto 25%;
+    grid-template-rows: 50px 30px auto;
+    grid-gap: 10px;
+    padding: 20px 30px;
+    background: linear-gradient(12deg, #d9c8b3,#ffeeca,#f7ecd8, #ffeeca,#f7ecd8);
+    filter: grayscale(0%);
+    background-size: contain;
+    border-radius: 7px;
+    min-height: 200px;
+}
+.digitalZettel > div{
+    -webkit-user-select:auto;
+    -webkit-touch-callout:auto;
+    -moz-user-select:auto;
+    -ms-user-select:auto;
+    user-select:auto;
+}
+.digitalZettelLemma{
+    grid-area: 1/1/1/2;
+}
+.digitalZettelDate{
+    grid-area: 1/3/1/4;
+    text-align: right;
+}
+.digitalZettelWork{
+    grid-area: 2/2/2/3;
+    text-align: center;
+}
+.digitalZettelText{
+    grid-area: 3/1/3/4;
+    padding: 0 20px;
+    text-align: justify;
+}
+
+
+/* ****************   OPERA   **************** */
+div.SearchBar{
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 7px 20px;
+    box-shadow: 0 0 1px gray;
+}
+div.operaBox{
+    display: flex;
+    overflow: auto;
+    flex: none;
+    width: 100%;
+    height: 100%;
+    flex-flow: column nowrap;
+    scroll-snap-type: y proximity;
+}
+
+div.operaBox > table{
+    font-size: 13pt;
+    margin: 15px 0;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+div.operaBox > table > tbody > tr > td{
+    padding: 5px 10px;
+    vertical-align: top;
+    text-align: left;
+}
+.c1{
+    width: 11%;
+}
+.c2{
+    border-left: 1px solid;
+    width: 11%;
+}
+.c3{
+    border-left: 1px solid;
+    width: 26%;
+}
+.c4{
+    border-left: 1px solid;
+    width: 26%;
+    font-style: italic;
+}
+.c5{
+    border-left: double;
+    width: 26%;
+    font-size: 80%;
+}
+
+.c1_min{
+    width: 15%;
+}
+.c2_min{
+    border-left: 1px solid;
+    width: 55%;
+}
+.c5_min{
+    border-left: double;
+    width: 30%;
+    font-size: 80%;
+}
+
+
+/* ARGOS */
+.leftArrow, .rightArrow{
+    position: fixed;
+    top: 43%;
+    height: 40px;
+    width: 40px;
+    border: solid rgba(130, 150, 150, 0.3);
+    transform: rotate(-135deg);
+    transition: border-color 0.5s;
+}
+.leftArrow{border-width: 10px 10px 0 0; left: 20px;}
+.rightArrow{border-width: 0 0 10px 10px; right: 20px;}
+.leftArrow:hover, .rightArrow:hover{
+    border-color: rgba(130, 150, 150, 0.8);
+}
