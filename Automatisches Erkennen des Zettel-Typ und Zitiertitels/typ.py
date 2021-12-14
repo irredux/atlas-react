@@ -10,7 +10,7 @@ from sklearn.metrics import r2_score, accuracy_score
 
 from arachne import Arachne
 
-db = Arachne("alexander.haeberlin@mlw.badw.de", "mitfex-3wibSu-patxam", "https://dienste.badw.de:9999", ["zettel"], False)
+db = Arachne("email", "password", "https://dienste.badw.de:9999", ["zettel"], False)
 print("database loaded.")
 
 zettelLst = db.zettel.search({"ocr_text": ">"}, ["id", "type", "ocr_text", "ac_web"])
