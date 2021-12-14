@@ -13,7 +13,7 @@ from arachne import Arachne
 #cfg = ConfigParser()
 #cfg.read("config/localhost.ini")
 #db = Arachne(cfg['database'])
-db = Arachne("alexander.haeberlin@mlw.badw.de", "mitfex-3wibSu-patxam", "https://dienste.badw.de:9999", ["zettel", "work"], False)
+db = Arachne("email", "password", "https://dienste.badw.de:9999", ["zettel", "work"], False)
 print("database loaded.")
 
 zettelLst = db.zettel.search({"ocr_text": ">"}, ["id", "type", "ocr_text", "ac_web"])
