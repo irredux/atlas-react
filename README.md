@@ -2,7 +2,7 @@
 
 Quelldateien für die verschiedenen React-Projekte von dMLW (Datebank-Oberfläche, ScanViewer, Lemmastrecken-Editor).
 
-Die Dateien befindet sich jeweils im /src/-Ordner des Node-React-Projektes (vor dem build). Im dMLW-Projekt befindet sich die compilierten Dateien im Ordner [/static/react/](https://gitlab.lrz.de/haeberlin/dmlw/-/tree/master/static/react).
+Die Dateien befindet sich jeweils im /src/-Ordner des Node-React-Projektes (vor dem build). Im dMLW-Projekt befindet sich die compilierten Dateien im Ordner [/static/](https://gitlab.lrz.de/haeberlin/dmlw/-/tree/master/static).
 
 Die Dateien für den Lemmastrecken-Editor folgen im Frühjahr 2022.
 
