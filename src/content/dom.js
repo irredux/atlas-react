@@ -183,7 +183,7 @@ function ZettelCard(props){
         box =
         <div className="zettel" id={zettel.id} style={style}>
             <img alt="" style={{objectFit: "fill", borderRadius: "7px"}} className={classList} src={"https://dienste.badw.de:9996"+zettel.img_path+".jpg"}></img>
-            {props.showDate?
+            {props.sh   ?
             <div className="zettel_menu">
                 <span style={{float: "left", overflow: "hidden", maxHeight: "50px", maxWidth: "250px"}} dangerouslySetInnerHTML={parseHTML(zettel.lemma_display)}></span>
                 <span style={{float: "right"}} dangerouslySetInnerHTML={parseHTML(zettel.zettel_sigel)}></span>
@@ -216,9 +216,188 @@ function BatchInputType(props){
             return <div style={{color: "red"}}>Unbekannter Stapel-Typ!</div>         
     }
 }
+function ZettelAddLemmaContent(props){
+    const [newLemma, setNewLemma]=useState(props.newLemma);
+    const [newLemmaDisplay, setNewLemmaDisplay]=useState(props.newLemmaDisplay);
+    const [homonym, setHomonym]=useState(0);
+    const [farbe, setFarbe]=useState("gelb");
+    const [reference, setReference]=useState("");
+    const [referenceId, setReferenceId]=useState(null);
+    const [normgraphie, setNormgraphie]=useState(0);
+    const [domNormgraphie,setDomNormgraphie]=useState(0);
+    const [verworfen, setVerworfen]=useState(0);
+    const [unsicher, setUnsicher]=useState(0);
+    const [comment, setComment]=useState("");
+    const [errorLemma, setErrorLemma]=useState(false);
+    const [errorLemmaDisplay, setErrorLemmaDisplay]=useState(false);
+    const referenceColors = ["blau", "türkis", "lila"];
+    useEffect(()=>{
+        props.setLemmaObject({
+            lemma: newLemma,
+            lemma_simple: newLemmaDisplay,
+            nr: homonym>0?homonym:null,
+            farbe: farbe,
+            reference_id: referenceColors.includes(farbe)?referenceId:null,
+            normgraphie: normgraphie,
+            dom_normgraphie: domNormgraphie,
+            verworfen: verworfen,
+            unsicher: unsicher,
+            comment: comment!=""?comment:null
+        });
+        if(newLemma===""){setErrorLemma(true)}
+        else{setErrorLemma(false)}
 
+        if(newLemmaDisplay===""){setErrorLemmaDisplay(true)}
+        else{setErrorLemmaDisplay(false)}
+
+        if((newLemma==="" || newLemma.indexOf(" ")>-1)||newLemmaDisplay===""){props.setNewLemmaOK(false)}
+        else{props.setNewLemmaOK(true)}
+    },[newLemma,newLemmaDisplay,homonym,farbe,reference,normgraphie,domNormgraphie,verworfen,unsicher,comment]);
+    return <>
+        <Row className="mb-2">
+            <Col>Wort:</Col>
+            <Col><input type="text" className={errorLemma?"invalidInput":null} value={newLemma} onChange={event=>{setNewLemma(event.target.value)}} /></Col>
+        </Row>
+        <Row className="mb-2">
+            <Col>Wort: <small>(ohne Sonderzeichen)</small></Col>
+            <Col><input type="text" className={errorLemmaDisplay?"invalidInput":null} value={newLemmaDisplay} onChange={event=>{setNewLemmaDisplay(event.target.value)}} /></Col>
+        </Row>
+        <Row>
+            <Col>Farbe:</Col>
+            <Col><SelectMenu options={[["gelb", "gelb"], ["grün", "grün"],
+            ["rot", "rot"], ["blau", "blau"], ["lila", "lila"], ["türkis", "türkis"]]} onChange={event=>{setFarbe(event.target.value)}} /></Col>
+        </Row>
+        {referenceColors.includes(farbe)?<Row className="mt-2">
+            <Col>Referenz:</Col>
+            <Col><AutoComplete onChange={(value, id)=>{setReference(value);setReferenceId(id)}} tbl="lemma" col="ac_w" /></Col>
+        </Row>:null}
+        <Row className="mt-4 mb-2">
+            <Col>Zahlzeichen:</Col>
+            <Col><SelectMenu options={[[0, ""], [1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6]]} onChange={event=>{setHomonym(event.target.value)}} /></Col>
+        </Row>
+        <Row className="mb-2">
+            <Col>Normgraphie:</Col>
+            <Col><SelectMenu options={[[0, "Nein"], [1, "Ja"]]} onChange={event=>{setNormgraphie(event.target.value)}} /></Col>
+        </Row>
+        <Row className="mb-2">
+            <Col>DOM-Normgraphie:</Col>
+            <Col><SelectMenu options={[[0, "Nein"], [1, "Ja"]]} onChange={event=>{setDomNormgraphie(event.target.value)}} /></Col>
+        </Row>
+        <Row className="mb-2">
+            <Col>verworfen:</Col>
+            <Col><SelectMenu options={[[0, "Nein"], [1, "Ja"]]} onChange={event=>{setVerworfen(event.target.value)}} /></Col>
+        </Row>
+        <Row className="mb-2">
+            <Col>unsicher:</Col>
+            <Col><SelectMenu options={[[0, "Nein"], [1, "Ja"]]} onChange={event=>{setUnsicher(event.target.value)}} /></Col>
+        </Row>
+        <Row className="mb-4">
+            <Col>Kommentar:</Col>
+            <Col><textarea onChange={event=>{setComment(event.target.value)}} style={{resize: "false", width: "97%"}} value={comment}></textarea></Col>
+        </Row>
+    </>;
+}
+function ZettelSingleContent(props){
+    const [type, setType]=useState(props.item.type);
+    const [lemmaAc, setLemmaAc]=useState(props.item.lemma_ac);
+    const [lemmaId, setLemmaId]=useState(props.item.lemma_id);
+    const [work, setWork]=useState(props.item.ac_web);
+    const [workId, setWorkId]=useState(props.item.work_id);
+    const [dateType, setDateType]=useState(props.item.date_type);
+    const [dateDisplay, setDateDisplay]=useState(props.item.date_display);
+    const [dateOwn, setDateOwn]=useState(props.item.date_own);
+    const [dateOwnDisplay, setDateOwnDisplay]=useState(props.item.date_own_display);
+    const [dateOwnError, setDateOwnError]=useState(false);
+    const [dateOwnDisplayError, setDateOwnDisplayError]=useState(false);
+    const [txt, setTxt]=useState(props.item.txt);
+    useEffect(()=>{
+        setType(props.item.type);
+        setLemmaAc(props.item.lemma_ac);
+        setLemmaId(props.item.lemma_id);
+        setWork(props.item.ac_web);
+        setWorkId(props.item.work_id);
+        setDateType(props.item.date_type);
+        setDateDisplay(props.item.date_display);
+        setDateOwn(props.item.date_own);
+        setDateOwnDisplay(props.item.date_own_display);
+        setTxt(props.item.txt);
+    },[props.item.id]);
+    useEffect(()=>{
+        if(!isNaN(dateOwn)&&dateOwn!==" "&&dateOwn!==""&&dateOwn!==null){setDateOwnError(false)}
+        else{setDateOwnError(true)}
+    },[dateOwn]);
+    useEffect(()=>{
+        if(dateOwnDisplay!==" "&&dateOwnDisplay!==""&&dateOwnDisplay!==null){setDateOwnDisplayError(false)}
+        else{setDateOwnDisplayError(true)}
+    },[dateOwnDisplay]);
+    useEffect(()=>{
+        props.setZettelObject({
+            id: props.item.id,
+            type: type,
+            lemma_id: lemmaId>0?lemmaId:null,
+            work_id: workId>0?workId:null,
+            date_type: dateType,
+            date_own: dateType===9?dateOwn:null,
+            date_own_display: dateType===9?dateOwnDisplay:null,
+            txt: txt,
+        });
+        if(!(dateOwnDisplay===null||dateOwnDisplay==="")&&(dateOwn===null||dateOwn==="")){
+            props.setZettelObjectErr({status: 2, msg: "Sie dürfen kein Anzeigedatum speichern, ohne ein Sortierdatum anzugeben!"});
+        } else if(workId>0&&dateType===9&&((dateOwn!=""&&dateOwn!=null&&!Number.isInteger(dateOwn))||((dateOwn===""||dateOwn===null)))){
+            props.setZettelObjectErr({status: 1, msg: "Achtung: Dieser Zettel benötigt eine Datierung! Soll er trotzdem ohne Datierung gespeichert werden?"});
+        } else if (dateType===9&&!(dateOwn===null||dateOwn==="")&&(dateOwnDisplay===null||dateOwnDisplay==="")){
+            props.setZettelObjectErr({status: 2, msg: "Setzen Sie ein Anzeigedatum für den Zettel!"});
+        }else{props.setZettelObjectErr(null)}
+    },[txt,type,lemmaId,workId,dateType,dateOwn,dateOwnDisplay]);
+    useEffect(()=>{props.setLemma(lemmaAc)},[lemmaAc]);
+    return <>
+        <Row className="mb-2">
+            <Col xs={4}>Zetteltyp:</Col>
+            <Col><SelectMenu style={{width: "100%"}} value={type?type:0} options={[[0, "..."],[1, "verzettelt"],[2,"Exzerpt"],[3,"Index"],[4,"Literatur"], [6, "Index (unkl. Werk)"], [7, "Notiz"]]} onChange={event=>{setType(parseInt(event.target.value))}} classList="zettel_type" /></Col>
+        </Row>
+        <Row className="mb-2">
+            <Col xs={4}>Wort:</Col>
+            <Col><AutoComplete style={{width: "100%"}} onChange={(value, id)=>{setLemmaAc(value); setLemmaId(id)}} value={lemmaAc?lemmaAc:""} tbl="lemma" searchCol="lemma" returnCol="lemma_ac" /></Col>
+        </Row>
+        {type!==4&&type<6&&<Row className="mb-2">
+            <Col xs={4}>Werk:</Col>
+            <Col><AutoComplete style={{width: "100%"}}  value={work?work:""} tbl="work" searchCol="ac_web" returnCol="ac_web" onChange={async (value, id)=>{
+                setWork(value);setWorkId(id);
+                if(id>0){
+                    const newDateType = await arachne.work.get({id: id}, {select: ["date_display", "date_type"]});
+                    if(newDateType.length>0){setDateType(newDateType[0].date_type);setDateDisplay(newDateType[0].date_display)}
+                }
+            }} /></Col>
+        </Row>}
+        {type!==4&&type<6&&workId>0?<Row className="mb-2">
+            <Col xs={4}>Datierung:</Col>
+            <Col><span style={{width: "100%"}} dangerouslySetInnerHTML={parseHTML(dateDisplay)}></span></Col>
+        </Row>:null}
+        {dateType===9?<>
+            <Row className="mt-4 mb-2">
+                <Col><span className="minorTxt"><b>Achtung:</b> Dieser Zettel benötigt eine <a href="https://gitlab.lrz.de/haeberlin/dmlw/-/wikis/09-HiwiHow:-Zettel-verknüpfen#anzeigedatumsortierdatum" target="_blank" rel="noreferrer">eigene Datierung</a>.</span></Col>
+            </Row>
+            <Row className="mb-2">
+                <Col xs={4}>Sortierdatum:</Col>
+                <Col><input className={dateOwn?"invalidInput":null} style={{width:"100%"}} type="text" value={dateOwn?dateOwn:""} onChange={e=>{
+                    setDateOwn(e.target.value===""?null:e.target.value);
+                }} /></Col>
+            </Row>
+            <Row className="mb-4">
+                <Col xs={4}>Anzeigedatum:</Col>
+                <Col><input className={dateOwnDisplayError?"invalidInput":null} style={{width:"100%"}} type="text" value={dateOwnDisplay?dateOwnDisplay:""} onChange={e=>{
+                    setDateOwnDisplay(e.target.value);
+                }} /></Col>
+            </Row>
+        </>:null}
+        {props.item.img_path===null&&<Row className="mb-2">
+            <Col xs={4}>Text:</Col>
+            <Col><textarea style={{width: "100%"}} value={txt} onChange={e=>{setTxt(e.target.value)}}></textarea></Col>
+        </Row>}
+    </>;
+}
 export {
     arachneTbls,
     LemmaRow, LemmaHeader, lemmaSearchItems, LemmaAsideContent,
-    zettelSearchItems, ZettelCard, zettelBatchOptions, BatchInputType
+    zettelSearchItems, ZettelCard, zettelBatchOptions, BatchInputType, ZettelAddLemmaContent, ZettelSingleContent
 }

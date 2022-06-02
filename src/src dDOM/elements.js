@@ -511,4 +511,4 @@ function parseHTMLPreview(i){
         return i.replace(/&lt;/g, "<").replace(/&gt;/g, ">");
     }
 }
-export { Navigator, parseHTML, parseHTMLPreview, SearchBox, Status, SelectMenu, Selector, AutoComplete };
+export { Navigator, parseHTML, parseHTMLPreview, SearchBox, Status, SelectMenu, Selector, AutoComplete, CommentBox };

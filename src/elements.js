@@ -1,4 +1,3 @@
-// Version 3.1 - 04.03.2022
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { faBan, faPlusCircle, faMinusCircle, faCheckCircle, faCloudMoon, faTimesCircle, faSyncAlt, faCat, faDog, faRecycle, faTrashAlt, faEllipsisV, faSearch, faCheck, faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
@@ -7,11 +6,50 @@ import DOMPurify from "dompurify";
 
 import { arachne } from "./arachne.js";
 
+function CommentBox(props){
+    const [commentLst, setCommentLst]=useState([]);
+    const [newComment, setNewComment]=useState("");
+    useEffect(()=>{if(arachne.access("comment")&&props.id>0){loadComments()}},[props.id]);
+    const loadComments=async()=>{
+        let searchObject = {};
+        searchObject[`${props.tbl}_id`] = props.id;
+        setCommentLst(await arachne.comment.get(searchObject));
+    };
+    return <>
+        {commentLst.map(comment=><div key={comment.id} style={{marginBottom: "10px"}}>
+            <span className="minorTxt"><b>{comment.user}</b> am {comment.c_date?comment.c_date.substring(0, 10):null}:</span>
+            <br />
+            {comment.comment}{arachne.me.id===comment.user_id||arachne.access("comment_moderator")?<i className="minorTxt" style={{cursor: "pointer"}} onClick={async ()=>{
+            if(window.confirm("Soll der Kommentar wirklich gelöscht werden? Dieser Schritt kann nicht rückgängig gemacht werden.")){
+                await arachne.comment.delete(comment.id);
+                this.loadComments();
+            }
+            }}> (löschen)</i>:null}
+        </div>)}
+        <div style={{textAlign: "right"}}>
+            <textarea placeholder="neuer Kommentar" style={{width: "100%", height: "100px"}} onChange={e=>{setNewComment(e.target.value)}} value={newComment}></textarea>
+            <StatusButton className="mt-2" value="Kommentar erstellen" onClick={async ()=>{
+                if(newComment!=""){
+                    let newCommentObject = {
+                        user_id: arachne.me.id,
+                        comment: newComment
+                    };
+                    newCommentObject[`${props.tbl}_id`] = props.id;
+                    await arachne.comment.save(newCommentObject);
+                    setNewComment("");
+                    loadComments();
+                    return {status: true};
+                }else{
+                    return {status: false, error: "Geben Sie einen Kommentar-Text ein."};
+                }
+            }} />
+        </div>
+    </>;
+}
 function ask(question){
     const event = new CustomEvent('msg', {detail: {q: question}});
     document.body.dispatchEvent(event);
 }
-
 function Message(props){
     const [inputTxt, setInputTxt] = useState(props.input)
     const [selectValue, setSelectValue] = useState(props.dropDown&&props.dropDown.length>0?props.dropDown[0][0]:null);
@@ -810,4 +848,4 @@ function useShortcuts(callback, debug=false){
     }, [handleKeyUp]);
 }
 
-export { Navigator, parseHTML, parseHTMLPreview, SearchBox, SearchInput, Status, SelectMenu, Selector, ToolKit, AutoComplete, Aside, SearchHint, StatusButton, sleep, sqlDate, Message, useIntersectionObserver, useShortcuts };
+export { CommentBox, Navigator, parseHTML, parseHTMLPreview, SearchBox, SearchInput, Status, SelectMenu, Selector, ToolKit, AutoComplete, Aside, SearchHint, StatusButton, sleep, sqlDate, Message, useIntersectionObserver, useShortcuts };

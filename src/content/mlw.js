@@ -166,8 +166,8 @@ function ZettelCard(props){
         box =
         <div className="zettel" id={zettel.id} style={style}>
             <img alt="" style={{objectFit: "fill", borderRadius: "7px"}} className={classList} src={"https://dienste.badw.de:9996"+zettel.img_path+".jpg"}></img>
-            {props.showDate?<div className="zettel_msg" dangerouslySetInnerHTML={parseHTML(zettel.date_own_display?zettel.date_own_display:zettel.date_display)}></div>:null}
-            {props.showDate?
+            {props.showDetail?<div className="zettel_msg" dangerouslySetInnerHTML={parseHTML(zettel.date_own_display?zettel.date_own_display:zettel.date_display)}></div>:null}
+            {props.showDetail?
             <div className="zettel_menu">
                 <span style={{float: "left", overflow: "hidden", maxHeight: "50px", maxWidth: "250px"}} dangerouslySetInnerHTML={parseHTML(zettel.lemma_display)}></span>
                 <span style={{float: "right"}} dangerouslySetInnerHTML={parseHTML(zettel.opus)}></span>
@@ -204,7 +204,6 @@ function BatchInputType(props){
             return <div style={{color: "red"}}>Unbekannter Stapel-Typ!</div>;  
     }
 }
-
 function ZettelAddLemmaContent(props){
     const [newLemma, setNewLemma]=useState(props.newLemma);
     const [newLemmaDisplay, setNewLemmaDisplay]=useState(props.newLemmaDisplay);
@@ -263,9 +262,107 @@ function ZettelAddLemmaContent(props){
         </Row>
     </>;
 }
-
+function ZettelSingleContent(props){
+    const [type, setType]=useState(props.item.type);
+    const [lemmaAc, setLemmaAc]=useState(props.item.lemma_ac);
+    const [lemmaId, setLemmaId]=useState(props.item.lemma_id);
+    const [work, setWork]=useState(props.item.ac_web);
+    const [workId, setWorkId]=useState(props.item.work_id);
+    const [dateType, setDateType]=useState(props.item.date_type);
+    const [dateDisplay, setDateDisplay]=useState(props.item.date_display);
+    const [dateOwn, setDateOwn]=useState(props.item.date_own);
+    const [dateOwnDisplay, setDateOwnDisplay]=useState(props.item.date_own_display);
+    const [dateOwnError, setDateOwnError]=useState(false);
+    const [dateOwnDisplayError, setDateOwnDisplayError]=useState(false);
+    const [txt, setTxt]=useState(props.item.txt);
+    useEffect(()=>{
+        setType(props.item.type);
+        setLemmaAc(props.item.lemma_ac);
+        setLemmaId(props.item.lemma_id);
+        setWork(props.item.ac_web);
+        setWorkId(props.item.work_id);
+        setDateType(props.item.date_type);
+        setDateDisplay(props.item.date_display);
+        setDateOwn(props.item.date_own);
+        setDateOwnDisplay(props.item.date_own_display);
+        setTxt(props.item.txt);
+    },[props.item.id]);
+    useEffect(()=>{
+        if(!isNaN(dateOwn)&&dateOwn!==" "&&dateOwn!==""&&dateOwn!==null){setDateOwnError(false)}
+        else{setDateOwnError(true)}
+    },[dateOwn]);
+    useEffect(()=>{
+        if(dateOwnDisplay!==" "&&dateOwnDisplay!==""&&dateOwnDisplay!==null){setDateOwnDisplayError(false)}
+        else{setDateOwnDisplayError(true)}
+    },[dateOwnDisplay]);
+    useEffect(()=>{
+        props.setZettelObject({
+            id: props.item.id,
+            type: type,
+            lemma_id: lemmaId>0?lemmaId:null,
+            work_id: workId>0?workId:null,
+            date_type: dateType,
+            date_own: dateType===9?dateOwn:null,
+            date_own_display: dateType===9?dateOwnDisplay:null,
+            txt: txt,
+        });
+        if(!(dateOwnDisplay===null||dateOwnDisplay==="")&&(dateOwn===null||dateOwn==="")){
+            props.setZettelObjectErr({status: 2, msg: "Sie dürfen kein Anzeigedatum speichern, ohne ein Sortierdatum anzugeben!"});
+        } else if(workId>0&&dateType===9&&((dateOwn!=""&&dateOwn!=null&&!Number.isInteger(dateOwn))||((dateOwn===""||dateOwn===null)))){
+            props.setZettelObjectErr({status: 1, msg: "Achtung: Dieser Zettel benötigt eine Datierung! Soll er trotzdem ohne Datierung gespeichert werden?"});
+        } else if (dateType===9&&!(dateOwn===null||dateOwn==="")&&(dateOwnDisplay===null||dateOwnDisplay==="")){
+            props.setZettelObjectErr({status: 2, msg: "Setzen Sie ein Anzeigedatum für den Zettel!"});
+        }else{props.setZettelObjectErr(null)}
+    },[txt,type,lemmaId,workId,dateType,dateOwn,dateOwnDisplay]);
+    useEffect(()=>{props.setLemma(lemmaAc)},[lemmaAc]);
+    return <>
+        <Row className="mb-2">
+            <Col xs={4}>Zetteltyp:</Col>
+            <Col><SelectMenu style={{width: "100%"}} value={type?type:0} options={[[0, "..."],[1, "verzettelt"],[2,"Exzerpt"],[3,"Index"],[4,"Literatur"], [6, "Index (unkl. Werk)"], [7, "Notiz"]]} onChange={event=>{setType(parseInt(event.target.value))}} classList="zettel_type" /></Col>
+        </Row>
+        <Row className="mb-2">
+            <Col xs={4}>Wort:</Col>
+            <Col><AutoComplete style={{width: "100%"}} onChange={(value, id)=>{setLemmaAc(value); setLemmaId(id)}} value={lemmaAc?lemmaAc:""} tbl="lemma" searchCol="lemma" returnCol="lemma_ac" /></Col>
+        </Row>
+        {type!==4&&type<6&&<Row className="mb-2">
+            <Col xs={4}>Werk:</Col>
+            <Col><AutoComplete style={{width: "100%"}}  value={work?work:""} tbl="work" searchCol="ac_web" returnCol="ac_web" onChange={async (value, id)=>{
+                setWork(value);setWorkId(id);
+                if(id>0){
+                    const newDateType = await arachne.work.get({id: id}, {select: ["date_display", "date_type"]});
+                    if(newDateType.length>0){setDateType(newDateType[0].date_type);setDateDisplay(newDateType[0].date_display)}
+                }
+            }} /></Col>
+        </Row>}
+        {type!==4&&type<6&&workId>0?<Row className="mb-2">
+            <Col xs={4}>Datierung:</Col>
+            <Col><span style={{width: "100%"}} dangerouslySetInnerHTML={parseHTML(dateDisplay)}></span></Col>
+        </Row>:null}
+        {dateType===9?<>
+            <Row className="mt-4 mb-2">
+                <Col><span className="minorTxt"><b>Achtung:</b> Dieser Zettel benötigt eine <a href="https://gitlab.lrz.de/haeberlin/dmlw/-/wikis/09-HiwiHow:-Zettel-verknüpfen#anzeigedatumsortierdatum" target="_blank" rel="noreferrer">eigene Datierung</a>.</span></Col>
+            </Row>
+            <Row className="mb-2">
+                <Col xs={4}>Sortierdatum:</Col>
+                <Col><input className={dateOwn?"invalidInput":null} style={{width:"100%"}} type="text" value={dateOwn?dateOwn:""} onChange={e=>{
+                    setDateOwn(e.target.value===""?null:e.target.value);
+                }} /></Col>
+            </Row>
+            <Row className="mb-4">
+                <Col xs={4}>Anzeigedatum:</Col>
+                <Col><input className={dateOwnDisplayError?"invalidInput":null} style={{width:"100%"}} type="text" value={dateOwnDisplay?dateOwnDisplay:""} onChange={e=>{
+                    setDateOwnDisplay(e.target.value);
+                }} /></Col>
+            </Row>
+        </>:null}
+        {props.item.img_path===null&&<Row className="mb-2">
+            <Col xs={4}>Text:</Col>
+            <Col><textarea style={{width: "100%"}} value={txt} onChange={e=>{setTxt(e.target.value)}}></textarea></Col>
+        </Row>}
+    </>;
+}
 export {
     arachneTbls,
     LemmaRow, LemmaHeader, lemmaSearchItems, LemmaAsideContent,
-    zettelSearchItems, ZettelCard, zettelBatchOptions, BatchInputType, ZettelAddLemmaContent
+    zettelSearchItems, ZettelCard, zettelBatchOptions, BatchInputType, ZettelAddLemmaContent, ZettelSingleContent
 }

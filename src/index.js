@@ -1,5 +1,3 @@
-// Version 2.0 17.05.2022
-
 import React, { useState, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 
@@ -7,9 +5,6 @@ import "./index.scss";
 
 import { arachne } from "./arachne.js";
 import { LoginScreen, AccountCreate } from "./login.js";
-
-const APP_NAME = "db" //db, argos, editor
-const PROJECT_NAME = "mlw" // mlw, dom
 
 let arachneTbls;
 let MainBody;
@@ -19,6 +14,9 @@ function App(){
     const [mode, setMode] = useState(null);
     const [res, setRes] = useState(null);
     const [resId, setResId] = useState(null);
+    const urlQueries = new URLSearchParams(window.location.search);
+    const APP_NAME = ["db", "argos", "editor"].includes(urlQueries.get("app"))?urlQueries.get("app"):"db"
+    const PROJECT_NAME = ["mlw", "dom"].includes(urlQueries.get("name"))?urlQueries.get("name"):"mlw"
     useEffect(()=>{
         const loadAsync = async () => {
             // load modules
@@ -37,7 +35,6 @@ function App(){
                 alert("Die Verbindung zum Server ist unterbrochen.");
             }
         });
-        const urlQueries = new URLSearchParams(window.location.search);
         if(urlQueries.get("site")){setRes(urlQueries.get("site"))}
         loadAsync();
     }, []);

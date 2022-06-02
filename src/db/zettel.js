@@ -2,21 +2,22 @@ import { Form, Row, Col, Button, Navbar, Modal, Offcanvas, Container, Spinner, A
 import React, { useState, useEffect } from "react";
 
 import { arachne } from "./../arachne.js";
-import { Navigator, parseHTML, SearchBox, SelectMenu, Selector, AutoComplete, ToolKit, SearchHint, StatusButton } from "./../elements.js";
+import { Navigator, parseHTML, SearchBox, SelectMenu, Selector, AutoComplete, ToolKit, SearchHint, StatusButton, CommentBox } from "./../elements.js";
 
 let zettelSearchItems;
 let zettelBatchOptions;
 let ZettelCard;
 let BatchInputType;
 let ZettelAddLemmaContent;
+let ZettelSingleContent;
 
 class Zettel extends React.Component{
     constructor(props){
         super(props);
-        this.state = {zettelSearchItems: [["id", "ID"]],searchStatus: "", setupItems: null, showPreset: false, showDate: true, count:0, selectionDetail:{ids:[], currentId:null}};
+        this.state = {zettelSearchItems: [["id", "ID"]],searchStatus: "", setupItems: null, showPreset: false, showDetail: true, count:0, selectionDetail:{ids:[], currentId:null}};
 
         const loadModules = async () =>{    
-            ({ zettelSearchItems, ZettelCard, zettelBatchOptions, BatchInputType, ZettelAddLemmaContent } = await import(`./../content/${props.PROJECT_NAME}.js`));
+            ({ zettelSearchItems, ZettelCard, zettelBatchOptions, BatchInputType, ZettelAddLemmaContent, ZettelSingleContent } = await import(`./../content/${props.PROJECT_NAME}.js`));
             this.setState({zettelSearchItems: zettelSearchItems()})
         };
         loadModules();
@@ -25,7 +26,6 @@ class Zettel extends React.Component{
         const menuItems = [
             ["Suchergebnisse exportieren", async ()=>{
                 const exportPdf = await arachne.zettel.search(this.state.query, {select: ["img_path", "date_display", "ac_web", "lemma_display", "txt"],export:true, order:this.state.queryOrder});
-                console.log(exportPdf);
                 window.open(exportPdf, "_blank");
             }]
         ];
@@ -79,18 +79,14 @@ class Zettel extends React.Component{
                     maxPage={this.state.maxPage}
                     presetSelection={this.state.presetSelection}
                     gridArea={(this.state.selectionDetail.ids.length>0)?"2/1/2/2":"2/1/2/3"}
-                    showDetail={item => {
+                    toggleShowDetail={item => {
                         this.setState({selectionDetail: item.selection, itemDetail: item.item});
                     }}
-                    showDate={this.state.showDate}
+                    showDetail={this.state.showDetail}
                 />
                 {this.state.count==0?<SearchHint />:null}
             </Container>
-            {(this.state.selectionDetail.ids.length>0)?<ZettelAside onReload={()=>{this.loadPage(this.state.currentPage)}} onClose={()=>{this.setState({selectionDetail: {ids: []}})}} selection={this.state.selectionDetail} item={this.state.itemDetail} onUpdate={ids=>{this.reloadZettel(ids)}} showDate={this.state.showDate} openNextItem={()=>{this.openNextItem()}} toggleShowDate={()=>{
-                if(this.state.showDate){this.setState({showDate: false})}
-                else{this.setState({showDate: true})}
-                
-                }} />:""}
+            {(this.state.selectionDetail.ids.length>0)?<ZettelAside onReload={()=>{this.loadPage(this.state.currentPage)}} onClose={()=>{this.setState({selectionDetail: {ids: []}})}} selection={this.state.selectionDetail} item={this.state.itemDetail} onUpdate={ids=>{this.reloadZettel(ids)}} showDetail={this.state.showDetail} openNextItem={()=>{this.openNextItem()}} toggleShowDetail={()=>{this.setState({showDetail: !this.state.showDetail})}} />:""}
         </>;
     }
     async openNextItem(){// save current element
@@ -150,7 +146,7 @@ class ZettelBox extends React.Component{
         if(this.props.count>0){
             let cEls = [];
             for(const cEl of this.props.currentElements){
-                cEls.push(<ZettelCard showDate={this.props.showDate} testProp={cEl.id+"_test"} id={cEl.id} item={cEl} key={cEl.id} />);
+                cEls.push(<ZettelCard showDetail={this.props.showDetail} testProp={cEl.id+"_test"} id={cEl.id} item={cEl} key={cEl.id} />);
             }
 
             return (
@@ -164,31 +160,33 @@ class ZettelBox extends React.Component{
         }
     }
     selectCallback(element, selection){
-        if(element){this.props.showDetail({selection: selection, item: element.props.item});}
-        else{this.props.showDetail({selection: selection, item: null});};
+        if(element){this.props.toggleShowDetail({selection: selection, item: element.props.item});}
+        else{this.props.toggleShowDetail({selection: selection, item: null});};
     }
 }
 function ZettelAside(props){
-    const [mode, setMode] = useState("batch") // batch, single, lemma
+    const [mode, setMode] = useState(props.selection.ids.length===1?"single":"batch") // batch, single, lemma
     const [lastMode, setLastMode]=useState("batch") // mode activated when add lemma is closed.
+    const [nextAfterLemmaAdd, setNextAfterLemmaAdd]=useState(false);
     const [content, setContent] = useState(null);
     const [newLemma, setNewLemma] = useState(null);
     const [newLemmaDisplay, setNewLemmaDisplay] = useState(null);
+    useEffect(()=>{setMode(props.selection.ids.length===1?"single":"batch")},[props.selection.ids]);
     useEffect(()=>{
         switch(mode){
             case "batch":
                 setContent(<ZettelAsideBatch  openAddLemma={(l,ld)=>openAddLemma(l,ld)} saveBatch={async (t,v,i)=>{return await saveBatch(t,v,i)}} onUpdate={props.onUpdate} selection={props.selection} />);
                 break;
             case "single":
-                setContent(null);
+                setContent(<ZettelAsideSingle openAddLemma={(l, ld, n)=>openAddLemma(l, ld, n)} onClose={props.onClose} onReload={props.onReload} showDetail={props.showDetail} toggleShowDetail={()=>{props.toggleShowDetail()}} item={props.item} openNextItem={props.openNextItem} onUpdate={id=>{props.onUpdate(id)}} />);
                 break;
             case "lemma":
-                setContent(<ZettelAddLemma newLemma={newLemma} newLemmaDisplay={newLemma} closeAddLemma={()=>{setMode(lastMode)}} />);
+                setContent(<ZettelAddLemma saveAfterAddLemma={async(l,l_id)=>{return await saveAfterAddLemma(l,l_id)}} newLemma={newLemma} newLemmaDisplay={newLemma} closeAddLemma={()=>{setMode(lastMode)}} />);
                 break;
             default:
                 setContent(null);
         }
-    },[mode]);
+    },[mode,props.item.id,props.showDetail]);
     const saveBatch = async(batchType,batchValue,batchValueId)=>{
         let newKey=null;
         let newValue=null;
@@ -215,296 +213,102 @@ function ZettelAside(props){
         props.onUpdate(props.selection.ids);
         return {status: true};
     }
-    const openAddLemma=(l, ld)=>{setLastMode(mode);setNewLemma(l);setNewLemmaDisplay(ld);setMode("lemma")};
+    const openAddLemma=(l, ld,next=false)=>{setLastMode(mode);setNewLemma(l);setNewLemmaDisplay(ld);setMode("lemma");setNextAfterLemmaAdd(next)};
+    const saveAfterAddLemma=async(lemma,lemma_id)=>{
+        let re;
+        if(props.selection.ids.length===1){
+            await arachne.zettel.save({id: props.item.id, lemma_id: lemma_id})
+            if(nextAfterLemmaAdd){props.openNextItem()}
+        } else {
+            re=await saveBatch(1,lemma, lemma_id);
+        }
+        setMode(lastMode);
+        return re;
+    };
     return <Offcanvas show={true} placement="end" scroll={true} backdrop={false} onHide={()=>{if(mode!="lemma"){props.onClose()}else{setMode(lastMode)}}}>{content}</Offcanvas>;
 }
-class ZettelAsideOLD extends React.Component{
-    constructor(props){
-        super(props);
-        this.state = {
-            comments: [],
-            addLemma: false,
-            addLemmaNext: false,
-            ressources: [],
-            batchType: 1,
-            id: this.props.item.id,
-            type: this.props.item.type,
-            date_display: this.props.item.date_display,
-            date_type: this.props.item.date_type,
-            lemma_id: this.props.item.lemma_id,
-            lemma_ac: this.props.item.lemma_ac,
-            work_id: this.props.item.work_id,
-            ac_web: this.props.item.ac_web,
-            date_own: this.props.item.date_own,
-            date_own_display: this.props.item.date_own_display,
-            txt: this.props.item.txt,
-            /* */
-            newLemma_Lemma: "",
-            newLemma_LemmaDisplay: "",
-            new_comment_txt: "",
+function ZettelAsideSingle(props){
+    const [ressourceLst, setRessourceLst]=useState([]);
+    const [lemma, setLemma]=useState("");
+    const [zettelObject, setZettelObject]=useState({});
+    const [zettelObjectErr, setZettelObjectErr]=useState(null); // null=no err; {status: 1|2, msg: "err txt"}: 1 = prompt warning ("ok" means proceed saving data), 2 = error, dont save data
+    useEffect(()=>{
+        const fetchData=async()=>{
+            setRessourceLst(await arachne.edition.get({work_id: zettelObject.work_id}));
         };
-    }
-    render(){
-        if(this.state.addLemma){ // add lemma
-            return <ZettelAddLemma closeAddLemma={()=>{this.setState({addLemma: false})}} newLemma={this.state.newLemma_Lemma} newLemmaDisplay={this.state.newLemma_LemmaDisplay} selection={this.props.selection} />;
-        } else if(this.props.selection.ids.length===1){ // single zettel
-            let cRes = [];
-            if(this.state.ressources.length>0){
-                let keyCount = -1;
-                for(const item of this.state.ressources){
-                    keyCount ++;
-                    let url = item.url;
-                    if(url===null||url===""){url=`/site/argos/${item.id}`}
-                    cRes.push(<div key={keyCount}><a href={url} target="_blank" rel="noreferrer">{item.label}</a></div>);
-                }
-            }
-            let dateOwn = null;
-            let dateStyle = {
-                borderTop: "1px solid #f2f2f2",
-                paddingTop: "30px",
-                display: "grid",
-                gridTemplateColumns: "150px auto",
-                gridTemplateRows: "1fr",
-                rowGap: "10px",
-                margin: "10px 0 30px 0"
-                };
-            if(this.state.date_type===9){
-                dateStyle.gridTemplateRows = "1fr 1fr 1fr 1fr";
-                dateOwn = [
-                    <Row key="1" className="mt-4 mb-2">
-                        <Col><span className="minorTxt"><b>Achtung:</b> Dieser Zettel benötigt eine <a href="https://gitlab.lrz.de/haeberlin/dmlw/-/wikis/09-HiwiHow:-Zettel-verknüpfen#anzeigedatumsortierdatum" target="_blank" rel="noreferrer">eigene Datierung</a>.</span></Col>
-                    </Row>,
-                    <Row key="2" className="mb-2">
-                        <Col xs={4}>Sortierdatum:</Col>
-                        <Col><input style={{width:"100%"}} type="text" value={this.state.date_own?this.state.date_own:""} onChange={e=>{
-                        if(e.target.value===""){
-                            this.setState({date_own: null});
-                        } else if(!isNaN(e.target.value)&&e.target.value!==" "){
-                            this.setState({date_own: parseInt(e.target.value)});
-                        }else{
-                            //this.props.status("error", "Sortierdatum muss eine Ganzzahl sein!");
-                        }
-                    }} /></Col>
-                    </Row>,
-                    <Row key="3" className="mb-4">
-                        <Col xs={4}>Anzeigedatum:</Col>
-                        <Col><input style={{width:"100%"}} type="text" value={this.state.date_own_display?this.state.date_own_display:""} onChange={e=>{this.setState({date_own_display: e.target.value})}} /></Col>
-                    </Row>,
-                ];
-            }
-            let commentBox = null;
-            if(arachne.access("comment")&&this.state.comments.length>0){
-                let commentList = [];
-                for(const comment of this.state.comments){
-                    commentList.push(<div key={comment.id} style={{marginBottom: "10px"}}><span className="minorTxt"><b>{comment.user}</b> am {comment.c_date?comment.c_date.substring(0, 10):null}:</span><br />{comment.comment}{arachne.me.id===comment.user_id||arachne.access("comment_moderator")?<i className="minorTxt" style={{cursor: "pointer"}} onClick={async ()=>{
-                        if(window.confirm("Soll der Kommentar wirklich gelöscht werden? Dieser Schritt kann nicht rückgängig gemacht werden.")){
-                            await arachne.comment.delete(comment.id);
-                            this.loadComments();
-                        }
-                        
-                    }}> (löschen)</i>:null}</div>);
-                }
-                commentBox = <div className="commentBox">{commentList}</div>;
-            }
-            let newComment = null;
-            if(arachne.access("comment")){
-                newComment = <div>
-                <textarea placeholder="neuer Kommentar" style={{width: "100%", height: "100px"}} onChange={e=>{this.setState({new_comment_txt: e.target.value})}} value={this.state.new_comment_txt}></textarea>
-                <StatusButton style={{fontSize: "15px", float: "right", marginRight: "60px"}} value="Kommentar erstellen" onClick={async ()=>{
-                    if(this.state.new_comment_txt!=""){
-                        await arachne.comment.save({
-                            user_id: arachne.me.id,
-                            zettel_id: this.state.id,
-                            comment: this.state.new_comment_txt
-                        });
-                        this.setState({new_comment_txt: ""})
-                        this.loadComments();
-                        return {status: true};
-                    }else{
-                        return {status: false, error: "Geben Sie einen Kommentar-Text ein."};
-                    }
-                }} />
-            </div>;
-            }
-            return <Offcanvas show={true} placement="end" scroll={true} backdrop={false} onHide={this.props.onClose}>
-                <Offcanvas.Header closeButton><Offcanvas.Title>ID {this.state.id}</Offcanvas.Title></Offcanvas.Header>
-                <Offcanvas.Body>
-                    <Accordion defaultActiveKey={0}>
-                        <Accordion.Item eventKey={0}>
-                            <Accordion.Header>Übersicht</Accordion.Header>
-                            <Accordion.Body>
-                            <Row className="mb-2">
-                                <Col xs={4}>Zetteltyp:</Col>
-                                <Col><SelectMenu style={{width: "100%"}} value={this.state.type?this.state.type:0} options={[[0, "..."],[1, "verzettelt"],[2,"Exzerpt"],[3,"Index"],[4,"Literatur"], [6, "Index (unkl. Werk)"], [7, "Notiz"]]} onChange={event=>{this.setState({type: parseInt(event.target.value)})}} classList="zettel_type" /></Col>
-                            </Row>
-                            <Row className="mb-2">
-                                <Col xs={4}>Wort:</Col>
-                                <Col><AutoComplete style={{width: "100%"}} onChange={(value, id)=>{this.setState({lemma_ac: value, lemma_id: id, newLemma_Lemma: value, newLemma_LemmaDisplay: value})}} value={this.state.lemma_ac?this.state.lemma_ac:""} tbl="lemma" searchCol="lemma" returnCol="lemma_ac" /></Col>
-                            </Row>
-                            {this.state.type!==4&&this.state.type<6&&<Row className="mb-2">
-                                <Col xs={4}>Werk:</Col>
-                                <Col><AutoComplete style={{width: "100%"}}  value={this.state.ac_web?this.state.ac_web:""} tbl="work" searchCol="ac_web" returnCol="ac_web" onChange={async (value, id)=>{
-                                    this.setState({ac_web: value, work_id: id});
-                                    const newDateType = await arachne.work.get({id: id}, {select: ["date_type"]});
-                                    if(newDateType.length>0){
-                                        this.setState({date_type: newDateType[0].date_type});
-                                    }
-                                }} /></Col>
-                            </Row>}
-                            {this.props.item.img_path===null&&<Row className="mb-2">
-                                <Col xs={4}>Text:</Col>
-                                <Col><textarea style={{width: "100%"}} value={this.state.txt} onChange={e=>{this.setState({txt: e.target.value})}}></textarea></Col>
-                            </Row>}
-                            {this.state.type!==4&&this.state.type<6&&this.state.work_id>0&&<Row className="mb-2">
-                                <Col xs={4}>Datierung:</Col>
-                                <Col><span style={{width: "100%"}} dangerouslySetInnerHTML={parseHTML(this.state.date_display)}></span></Col>
-                            </Row>}
-                            {dateOwn}
-                            <Row className="mb-3 mt-4">
-                                <Col>
-                                    <Button style={{marginRight: "10px"}} onClick={()=>{this.saveDetail(true)}}>speichern&weiter</Button>
-                                    <StatusButton onClick={()=>{return this.saveDetail();}} value="speichern" />
-                                </Col>
-                            </Row>
-                            <Row>
-                                <Col><Form>
-                                    <Form.Check size="sm" type="switch" label="Details ein-/ausblenden" checked={this.props.showDate} onChange={this.props.toggleShowDate} />
-                                </Form></Col>
-                            </Row>
-                            </Accordion.Body>
-                        </Accordion.Item>
-                        {cRes.length>0&&<Accordion.Item eventKey={1}>
-                            <Accordion.Header>Ressourcen</Accordion.Header>
-                            <Accordion.Body>
-                                {cRes}
-                            </Accordion.Body>
-                        </Accordion.Item>}
-                        <Accordion.Item eventKey={2}>
-                            <Accordion.Header>Kommentare</Accordion.Header>
-                            <Accordion.Body>
-                                {commentBox}
-                                {newComment}
-                            </Accordion.Body>
-                        </Accordion.Item>
-                        {arachne.access("admin")&&<Accordion.Item eventKey={3}>
-                            <Accordion.Header>Zettel löschen</Accordion.Header>
-                            <Accordion.Body>
-                            <Button variant="danger" onClick={async ()=>{
-                                if(window.confirm("Soll der Zettel wirklich gelöscht werden? Dieser Schritt kann nicht mehr rückgängig gemacht werden.")){
-                                    await arachne.zettel.delete(this.state.id);
-                                    this.props.onClose();
-                                    this.props.onReload();
-                                }
-                            }}>Zettel löschen</Button>
-                            </Accordion.Body>
-                        </Accordion.Item>}
-                    </Accordion>
-                </Offcanvas.Body>
-            </Offcanvas>
-        } else { // batch
-            return <ZettelAsideBatch  openAddLemma={(l,ld)=>this.openAddLemma(l,ld)} onUpdate={this.props.onUpdate} selection={this.props.selection} onClose={this.props.onClose} />;
-        }
-    }
-    componentDidMount(){
-        // loading ressources
-        if(this.state.work_id>0){
-            arachne.edition.get({work_id: this.state.work_id})
-            .then(res => {
-                this.setState({ressources: res});
-            })
-            .catch(e => {throw e;});
-        }
-        // loading comments
-        this.loadComments();
-    }
-    componentDidUpdate(){
-        if(this.state.id!==this.props.item.id){
-            if(this.props.item.work_id>0){
-                arachne.edition.get({work_id: this.props.item.work_id})
-                .then(res => {
-                    this.setState({
-                        addLemma: false,
-                        id: this.props.item.id,
-                        type: this.props.item.type,
-                        date_display: this.props.item.date_display,
-                        date_type: this.props.item.date_type,
-                        lemma_id: this.props.item.lemma_id,
-                        lemma_ac: this.props.item.lemma_ac,
-                        work_id: this.props.item.work_id,
-                        ac_web: this.props.item.ac_web,
-                        date_own: this.props.item.date_own,
-                        date_own_display: this.props.item.date_own_display,
-                        ressources: res
-                    });
-                })
-                .catch(e => {throw e;});
-            } else {this.setState({addLemma: false,
-                id: this.props.item.id,
-                type: this.props.item.type,
-                date_display: this.props.item.date_display,
-                date_type: this.props.item.date_type,
-                lemma_id: this.props.item.lemma_id,
-                lemma_ac: this.props.item.lemma_ac,
-                work_id: this.props.item.work_id,
-                ac_web: this.props.item.ac_web,
-                date_own: this.props.item.date_own,
-                date_own_display: this.props.item.date_own_display,
-                ressources: []})
-            }
-            // loading comments
-            if(arachne.access("comment")){
-                arachne.comment.get({zettel_id: this.state.id})
-                .then(comments=>{this.setState({comments: comments})})
-                .catch(e=>{throw e;});
-            }
-        }
-    }
-    async loadComments(){
-        if(arachne.access("comment")){
-            const comments = await arachne.comment.get({zettel_id: this.state.id});
-            this.setState({comments: comments});
-        }
-    }
-    async saveDetail(next=false){
-        if(!(this.state.date_own_display===null||this.state.date_own_display==="")&&(this.state.date_own===null||this.state.date_own==="")){
-            return {status: -1, error: "Sie dürfen kein Anzeigedatum setzen, ohne ein Sortierdatum anzugeben!"}
-        } else if(this.state.work_id>0&&this.state.date_type===9&&((this.state.date_own!=""&&this.state.date_own!=null&&!Number.isInteger(this.state.date_own))||((this.state.date_own===""||this.state.date_own===null)&&!window.confirm("Achtung: Dieser Zettel benötigt eine Datierung! Soll er trotzdem ohne Datierung gespeichert werden?")))){
-            return {status: 0};
-        } else if (this.state.date_type===9&&!(this.state.date_own===null||this.state.date_own==="")&&(this.state.date_own_display===null||this.state.date_own_display==="")){
-            return {status: -1, error: "Setzen Sie ein Anzeigedatum für den Zettel!"};
-        } else {
-            let nVals = {
-                id: this.state.id,
-                type: this.state.type,
-                user_id: arachne.me.id,
-                txt: this.state.txt,
-            };
-            if(this.state.work_id>0){nVals.work_id = this.state.work_id}
-            else{nVals.work_id = null}
+        if(zettelObject.work_id>0){fetchData()}
+    },[zettelObject.work_id])
+    const saveDetail=async(next=false)=>{
+        if(zettelObjectErr&&zettelObjectErr.status===2){
+            return {status: -1, error: zettelObjectErr.msg};
+        }else if(zettelObjectErr===null||(zettelObjectErr.status===1&&window.confirm(zettelObjectErr.msg))){
+            // save data
+            let saveObj = zettelObject;
+            saveObj.user_id = arachne.me.id;
+            await arachne.zettel.save(saveObj)
 
-            if(this.state.lemma_id===null&&this.state.newLemma_Lemma!==""){this.setState({addLemma: true, addLemmaNext: next})}
-            else if(this.state.lemma_id>0){nVals.lemma_id = this.state.lemma_id}
-            else {nVals.lemma_id = null}
-            if(this.state.date_type===9&&this.state.date_own!=""&&Number.isInteger(this.state.date_own)){
-                nVals.date_own = this.state.date_own;
-                nVals.date_own_display = this.state.date_own_display;
-            } else {
-                nVals.date_own = null;
-                nVals.date_own_display = null;
-            }
-            await arachne.zettel.save(nVals)
-            if(next){
+            if(saveObj.lemma_id===null&&lemma!==""){
                 document.querySelector("select.zettel_type").focus();
-                this.props.openNextItem();
+                props.openAddLemma(lemma, lemma, next);
+            }else if(next){
+                document.querySelector("select.zettel_type").focus();
+                props.openNextItem();
             }else{
-                this.props.onUpdate([this.state.id]);
+                props.onUpdate([props.item.id]);
             }
             return {status: 1};
-        }
+        }else{
+            return {status: 0};
+        };
     }
-    openAddLemma(l, ld){
-        this.setState({addLemma: true, newLemma_Lemma: l, newLemma_LemmaDisplay: ld});
-    }
+    return <>
+        <Offcanvas.Header closeButton><Offcanvas.Title>ID {props.item.id}</Offcanvas.Title></Offcanvas.Header>
+        <Offcanvas.Body>
+            <Accordion defaultActiveKey={0}>
+                <Accordion.Item eventKey={0}>
+                    <Accordion.Header>Übersicht</Accordion.Header>
+                    <Accordion.Body>
+                        <ZettelSingleContent setLemma={v=>{setLemma(v)}} setZettelObjectErr={err=>{setZettelObjectErr(err)}} setZettelObject={o=>{setZettelObject(o)}} item={props.item} />
+                        <Row className="mb-3 mt-4">
+                            <Col>
+                                <Button style={{marginRight: "10px"}} onClick={()=>{saveDetail(true)}}>speichern&weiter</Button>
+                                <StatusButton onClick={()=>{return saveDetail();}} value="speichern" />
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col><Form>
+                                <Form.Check size="sm" type="switch" label={props.showDetail?"Details ausblenden":"Details einblenden"} checked={props.showDetail} onChange={props.toggleShowDetail} />
+                            </Form></Col>
+                        </Row>
+                    </Accordion.Body>
+                </Accordion.Item>
+                {ressourceLst.length>0&&<Accordion.Item eventKey={1}>
+                    <Accordion.Header>Ressourcen</Accordion.Header>
+                    <Accordion.Body>
+                        {ressourceLst.map(r=><div key={r.id}><a href={r.url===null||r.url===""?`/site/argos/${r.id}`:r.url} target="_blank" rel="noreferrer">{r.label}</a></div>)}
+                    </Accordion.Body>
+                </Accordion.Item>}
+                {arachne.access("comment")?<Accordion.Item eventKey={2}>
+                    <Accordion.Header>Kommentare</Accordion.Header>
+                    <Accordion.Body>
+                        <CommentBox tbl="zettel" id={props.item.id} />
+                    </Accordion.Body>
+                </Accordion.Item>:null}
+                {arachne.access("admin")&&<Accordion.Item eventKey={3}>
+                    <Accordion.Header>Zettel löschen</Accordion.Header>
+                    <Accordion.Body>
+                    <Button variant="danger" onClick={async ()=>{
+                        if(window.confirm("Soll der Zettel wirklich gelöscht werden? Dieser Schritt kann nicht mehr rückgängig gemacht werden.")){
+                            await arachne.zettel.delete(props.item.id);
+                            props.onClose();
+                            props.onReload();
+                        }
+                    }}>Zettel löschen</Button>
+                    </Accordion.Body>
+                </Accordion.Item>}
+            </Accordion>
+        </Offcanvas.Body>
+    </>;
 }
 function ZettelAsideBatch(props){
     const [batchType, setBatchType] = useState(1);
@@ -539,19 +343,10 @@ function ZettelAddLemma(props){
         <Offcanvas.Body>
             <ZettelAddLemmaContent setNewLemmaOK={setNewLemmaOK} newLemma={props.newLemma} newLemmaDisplay={props.newLemmaDisplay} setLemmaObject={o=>{setLemmaObject(o)}} />
             <Row>
-                <Col><StatusButton type="button" value="neues Wort erstellen" onClick={async ()=>{
+                <Col><StatusButton type="button" value="neues Wort erstellen" onClick={async()=>{
                     if(newLemmaOK){
-                        const newId = 1//await arachne.lemma.save(lemmaObject);
-                        if(props.selection.ids.length===1){
-                            props.closeAddLemma();
-                            //this.setState({lemma_ac: this.state.newLemma_LemmaDisplay, lemma_id: newId});
-                            //this.saveDetail(this.state.addLemmaNext);
-                        } else {
-                            props.closeAddLemma();
-                            //this.setState({batch_lemma_ac: this.state.newLemma_LemmaDisplay, batch_lemma_id: newId});
-                            //this.saveBatch();
-                        }
-                        return {status: true};
+                        const newId = await arachne.lemma.save(lemmaObject);
+                        return await props.saveAfterAddLemma(lemmaObject.lemma,newId);
                     }else{
                         return {status: false, error: "Bitte füllen Sie alle Angaben korrekt aus!"}
                     }
