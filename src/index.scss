@@ -1,0 +1,311 @@
+/* Version 1.0 */
+
+@media (prefers-color-scheme: dark){
+    $white: #ffffff;
+        
+    /* zettel */
+    .selMarked{box-shadow: 0px 0px 18px #a3a3b5}
+        
+    /* opera */
+    .searchAllHits{background-color: var(--bs-gray-200);}
+    .searchHit{background-color: var(--bs-info);}
+}
+
+@media (prefers-color-scheme: light){
+    $white: #ffffff;
+
+    .mainColors{background-color: white;color: #353535;} // used in autocomplete!
+
+    /* zettel */
+    .selMarked{box-shadow: 0px 0px 18px #a3a3b5}
+        
+    /* opera */
+    .searchAllHits{background-color: var(--bs-gray-200);}
+    .searchHit{background-color: var(--bs-info);}
+}
+
+
+
+/* https://huemint.com/bootstrap-plus/ */
+
+@import "~bootstrap/scss/bootstrap";
+
+
+
+
+/* *************************************** */
+
+
+
+aut{font-variant:small-caps}
+rot{color: red}
+gelb{color: yellow}
+gruen{color: green}
+blau{color: blue}
+
+a:hover {cursor: pointer;} // links without href!
+
+
+.noneLst{ // used in opera-lists
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+.invalidInput{
+    border:  2px solid #dc3545;
+    background-color:  #ffeaec;
+}
+
+.mainBody{
+    /*box-shadow: 0 5px 10px lightgray;*/
+    border-radius: 2px;
+    padding: 5px 0;
+}
+
+
+textarea{
+    padding: 5px;
+    /*outline: none;*/
+    resize: none;
+    font-size: 90%;
+}
+
+.accessMarked{
+    color: var(--bs-primary);
+    font-weight: bold;
+} /* REPLACE THIS WITH A BUTTON OR REACT COMPONENT! - IN settings.js -> Account-Permission */
+
+
+/* *************************************** */
+/* *************************************** */
+/* *************************************** */
+
+
+
+
+.loginForm{
+    /*border: 1px solid map-get($theme-colors, "dark");*/
+    box-shadow: 0px 6px 20px 0.1px map-get($theme-colors, "dark");
+    border-radius: 2px;
+    padding: 15px 20px;
+    margin: 100px 0 0 0;
+    width: 500px;
+}
+
+.searchInput{
+    margin: 0 5px 5px 0;
+    padding: 5px 7px;
+    border: 1px solid map-get($theme-colors, "light");
+    border-radius: 5px;
+}
+.searchBox{
+    min-height: 43px;
+}
+
+
+/* ****************   OPERA   **************** */
+table.operaBox{
+    font-size: 13pt;
+    margin: 15px 0;
+    border-collapse: collapse;
+    width: 100%;
+    font-family: Georgia1, Georgia, serif;
+}
+
+table.operaBox > tbody > tr > td{
+    padding: 5px 10px;
+    vertical-align: top;
+    text-align: left;
+}
+.c1{
+    width: 11%;
+}
+.c2{
+    border-left: 1px solid;
+    width: 11%;
+}
+.c3{
+    border-left: 1px solid;
+    width: 26%;
+}
+.c4{
+    border-left: 1px solid;
+    width: 26%;
+    font-style: italic;
+}
+.c5{
+    border-left: double;
+    width: 26%;
+    font-size: 80%;
+}
+
+.c1_min{
+    width: 15%;
+}
+.c2_min{
+    border-left: 1px solid;
+    width: 55%;
+}
+.c5_min{
+    border-left: double;
+    width: 30%;
+    font-size: 80%;
+}
+
+
+
+
+/* ****************   ZETTEL   **************** */
+.searchFields>select{box-shadow: none;}
+
+.zettel_box {
+    display: grid;
+    justify-content: space-around;
+    width: 100%;
+}
+
+.zettel {
+    padding: 0;
+    margin: 0;
+    position: relative;
+    background: none;
+    transition: box-shadow 0.5s ease-out;
+    border-radius: 7px;
+}
+.zettel_img{width: 100%}
+div.zettel > img{border-radius: 7px}
+.zettel_menu{
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    font-size: 18px;
+    padding: 15px 12px;
+    text-align: center;
+    background: rgba(300,300,300,0.5);
+    border-radius: 0 0 7px 7px;
+}
+.zettel_msg{
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    padding: 10px 10px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: normal;
+}
+
+.no_use {background-color: var(--mainBG)}
+img.no_use {filter: grayscale(100%)}
+
+/* digital zettel */
+.digitalZettel{
+    display: grid;
+    grid-template-columns: 25% auto 25%;
+    grid-template-rows: 50px 30px auto;
+    grid-gap: 10px;
+    padding: 20px 30px;
+    background: linear-gradient(12deg, #f0e3d3,#ffeeca,#f7ecd8, #ffeeca,#f7ecd8);
+    filter: grayscale(0%);
+    background-size: contain;
+    border-radius: 7px;
+    height: 350px;
+}
+.digitalZettel > div{
+    -webkit-user-select:auto;
+    -webkit-touch-callout:auto;
+    -moz-user-select:auto;
+    -ms-user-select:auto;
+    user-select:auto;
+}
+.digitalZettelLemma{
+    text-align: left;
+    overflow: hidden;
+    grid-area: 1/1/1/3;
+}
+.digitalZettelDate{
+    grid-area: 1/3/1/4;
+    text-align: right;
+}
+.digitalZettelWork{
+    grid-area: 2/2/2/3;
+    text-align: center;
+}
+.digitalZettelText{
+    grid-area: 3/1/3/4;
+    padding: 0 20px;
+    text-align: justify;
+}
+
+mark{
+    padding: 1px;
+    margin: 0;
+    background-color: var(--bs-info);
+    border-radius: 2px;
+}
+
+#currentPageField{
+    color: inherit;
+    outline: none;
+    background-color: transparent;
+    border: none;
+    width: 50px;
+}
+.autocomplete-items {
+  position: absolute;
+  border: 1px solid  var(--bs-gray-400);
+  border-bottom: none;
+  /*border-top: none;*/
+  z-index: 99;
+  /*position the autocomplete items to be the same width as the container:*/
+  top: 100%;
+  left: 0;
+  right: 0;
+  font-size: 90%;
+}
+.autocomplete-items div {
+  padding: 3px;
+  cursor: pointer;
+  background-color: #fff;
+  border-bottom: 1px solid  var(--bs-gray-400);
+}
+.autocomplete-items div:hover {
+  /*when hovering an item:*/
+  background-color: #e9e9e9;
+}
+.autocomplete-active {
+  /*when navigating through the items using the arrow keys:*/
+  background-color: var(--bs-primary) !important;
+  color: #ffffff;
+}
+
+//////////////////////// Argos
+
+.pageTextEdit:focus{
+    box-shadow: none;
+}
+
+
+//////////////////////// Editor
+.articleBox{
+    cursor: pointer;
+    border-radius: 7px;
+    background-color: var(--bs-white); //var(--bs-light);
+    border: 3px dotted transparent;
+    padding: 5px 10px;
+    margin: 10px 20px
+}
+.articleBox:focus{
+    outline:none;
+    background-color: var(--bs-gray-400);
+    //box-shadow: 0px 2px 4px var(--bs-gray-500);
+    //box-shadow: 0px 1px 2px var(--bs-primary);
+    //border: 2px solid var(--bs-primary);
+}
+.ArticleBoxSections{
+    border-radius: 7px;
+    border: 1px solid var(--bs-primary);
+    margin: 0px 40px 10px 40px;
+    padding: 10px 20px;
+}
