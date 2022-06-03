@@ -18,6 +18,32 @@ function App(){
     const APP_NAME = ["db", "argos", "editor"].includes(urlQueries.get("app"))?urlQueries.get("app"):"db"
     const PROJECT_NAME = ["mlw", "dom"].includes(urlQueries.get("project"))?urlQueries.get("project"):"mlw"
     arachne.project = PROJECT_NAME;
+    let windowTitle = "";
+    switch(PROJECT_NAME){
+        case "mlw":
+            windowTitle = "dMLW";
+            break;
+        case "dom":
+            windowTitle = "dDOM";
+            break;
+        default:
+            windowTitle = "???";
+    }
+    switch(APP_NAME){
+        case "db":
+            windowTitle += "";
+            break;
+        case "argos":
+            windowTitle += " - Argos";
+            break;
+        case "editor":
+            windowTitle += " - Editor";
+            break;
+        default:
+            windowTitle += " - ???"
+    }
+    document.title= windowTitle;
+    
     useEffect(()=>{
         const loadAsync = async () => {
             // load modules
