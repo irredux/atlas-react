@@ -9,9 +9,6 @@ import { ChangeLog } from "./../changelog.js";
 import { Settings } from "./settings.js";
 import { arachne } from "./../arachne.js";
 
-function arachneTbls(){
-    return ["project", "article", "comment", "user", "lemma", "zettel", "tags", "tag_lnks", "sections", "edition"];
-}
 function getSettings(){
     let settings = JSON.parse(localStorage.getItem("editor_settings"));
     if(settings===null){settings = {}}
@@ -89,4 +86,4 @@ const dbChangeLog = [
         description: <><p>Beta Version online!</p></>
     },
 ]
-export { arachneTbls, MainBody, MainNavBar, getSettings, getSetting, setSetting };
+export { MainBody, MainNavBar, getSettings, getSetting, setSetting };

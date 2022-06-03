@@ -425,7 +425,7 @@ function SearchBox(props){
         if(props.presetOptions){ setSearchType(JSON.parse(props.presetOptions[0][0])) }
     }, [showSearch]);
     useEffect(() => {
-        let storedItems = localStorage.getItem(`${arachne.project}_searchBox_${props.boxName}`);
+        let storedItems = localStorage.getItem(`${arachne.project_name}_searchBox_${props.boxName}`);
         if(props.setupItems){
             /*
             setSearchFields(props.setupItems);
@@ -481,7 +481,7 @@ function SearchBox(props){
         }
 
         if(exportSF.length > 0){
-            localStorage.setItem(`${arachne.project}_searchBox_${props.boxName}`, JSON.stringify([searchFields, nextID, sOrder]));
+            localStorage.setItem(`${arachne.project_name}_searchBox_${props.boxName}`, JSON.stringify([searchFields, nextID, sOrder]));
             props.searchQuery(exportSF, sOrder);
             setShowSearch(false);
         } else {setError(<Alert variant="danger" style={{padding: "5px"}}>Geben Sie einen Suchtext ein!</Alert>)}

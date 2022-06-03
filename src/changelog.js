@@ -4,7 +4,7 @@ import { useState } from "react";
 
 function  ChangeLog(){
     arachne.changeLog = arachne.changeLog.sort((a,b)=>a.date<b.date);
-    arachne.changeLog = arachne.changeLog.filter(a=>(a.project===undefined||a.project===arachne.project));
+    arachne.changeLog = arachne.changeLog.filter(a=>(a.project===undefined||a.project===arachne.project_name));
     const [displayAll, setDisplayAll] = useState(arachne.changeLog.length>5?false:true);
     const formatDate = d=>{
         const numToMonth = {

@@ -10,9 +10,6 @@ import { ChangeLog } from "./../changelog.js";
 import { SearchBox } from "./search.js";
 import { Account } from "./../settings.js";
 
-function arachneTbls(){
-    return ["author", "edition", "scan_opera", "scan_opera_view", "scan", "scan_lnk", "work", "fulltext_search_view"];
-}
 function MainBody(props){
     arachne.changeLog = dbChangeLog;
     useEffect(()=>{
@@ -112,4 +109,4 @@ const dbChangeLog = [
         description: <><p>Erste Version des neuen Scan-Viewers ist online.</p></>
     }
 ]
-export { arachneTbls, MainBody, MainNavBar };
+export { MainBody, MainNavBar };

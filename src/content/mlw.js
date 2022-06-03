@@ -4,7 +4,7 @@ import { Col, Row, Container, NavDropdown } from "react-bootstrap";
 import { useState, useEffect } from "react";
 
 function arachneTbls(){
-    return ["author", "edition", "lemma", "opera_maiora", "opera_minora", "scan", "scan_lnk", "work", "zettel", "user", "seklit", "project", "article", "zettel_lnk", "statistics", "scan_paths", "ocr_jobs", "comment"];
+    return ["project", "author", "edition", "lemma", "opera_maiora", "opera_minora", "scan", "scan_lnk", "work", "zettel", "user", "seklit", "article", "zettel_lnk", "statistics", "scan_paths", "ocr_jobs", "comment", "scan_opera", "fulltext_search_view", "tags", "tag_lnks", "sections"];
 }
 
 /* ************************************************************************************* */

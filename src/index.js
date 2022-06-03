@@ -17,7 +17,7 @@ function App(){
     const urlQueries = new URLSearchParams(window.location.search);
     const APP_NAME = ["db", "argos", "editor"].includes(urlQueries.get("app"))?urlQueries.get("app"):"db"
     const PROJECT_NAME = ["mlw", "dom"].includes(urlQueries.get("project"))?urlQueries.get("project"):"mlw"
-    arachne.project = PROJECT_NAME;
+    arachne.project_name = PROJECT_NAME;
     let windowTitle = "";
     switch(PROJECT_NAME){
         case "mlw":
