@@ -6,7 +6,7 @@ import { Container, Navbar, Nav, NavDropdown } from "react-bootstrap";
 import { arachne } from "./../arachne.js";
 import { Overview } from "./overview.js";
 import { Edition, getEditions, storeEdition } from "./edition.js";
-import { ChangeLog } from "./changelog.js";
+import { ChangeLog } from "./../changelog.js";
 import { SearchBox } from "./search.js";
 import { Account } from "./../settings.js";
 
@@ -14,6 +14,7 @@ function arachneTbls(){
     return ["author", "edition", "scan_opera", "scan_opera_view", "scan", "scan_lnk", "work", "fulltext_search_view"];
 }
 function MainBody(props){
+    arachne.changeLog = dbChangeLog;
     useEffect(()=>{
         const fetchData=async ()=>{const urlQueries = new URLSearchParams(window.location.search);
             if(props.resId===null&&urlQueries.get("id")){
@@ -84,4 +85,31 @@ function MainNavBar(props){
         </Container>
 </Navbar>;
 }
+const dbChangeLog = [
+    {
+        title: "Beta 1.3",
+        date: "2022-05-18",
+        description: <><p>Volltextsuche angepasst und Shortcut-Taste über Einstellungen veränderbar.</p></>
+    },
+    {
+        title: "Beta 1.2",
+        date: "2022-04-14",
+        description: <><p>Shortcuts hinzugefügt.</p></>
+    },
+    {
+        title: "Beta 1.1",
+        date: "2022-03-31",
+        description: <><p>Neue Version online!</p></>
+    },
+    {
+        title: "dDOM Update",
+        date: "2022-06-03",
+        description: <><p>Korrektur des Seitenverhältnisses (auch über "Ressource bearbeiten" veränderbar).</p></>
+    },
+    {
+        title: "Beta 1.0",
+        date: "2022-02-26",
+        description: <><p>Erste Version des neuen Scan-Viewers ist online.</p></>
+    }
+]
 export { arachneTbls, MainBody, MainNavBar };

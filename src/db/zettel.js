@@ -10,29 +10,33 @@ let ZettelCard;
 let BatchInputType;
 let ZettelAddLemmaContent;
 let ZettelSingleContent;
+let newZettelObject;
+let exportZettelObject;
+let zettelPresetOptions;
+let zettelSortOptions;
 
 class Zettel extends React.Component{
     constructor(props){
         super(props);
-        this.state = {zettelSearchItems: [["id", "ID"]],searchStatus: "", setupItems: null, showPreset: false, showDetail: true, count:0, selectionDetail:{ids:[], currentId:null}};
+        this.state = {zettelSearchItems: [["id", "ID"]],searchStatus: "", setupItems: null, showPreset: false, showDetail: true, count:0, selectionDetail:{ids:[], currentId:null, sortOptions: null, presetOptions: null}};
 
         const loadModules = async () =>{    
-            ({ zettelSearchItems, ZettelCard, zettelBatchOptions, BatchInputType, ZettelAddLemmaContent, ZettelSingleContent } = await import(`./../content/${props.PROJECT_NAME}.js`));
-            this.setState({zettelSearchItems: zettelSearchItems()})
+            ({ zettelSearchItems, ZettelCard, zettelBatchOptions, BatchInputType, ZettelAddLemmaContent, ZettelSingleContent, newZettelObject, exportZettelObject, zettelPresetOptions, zettelSortOptions } = await import(`./../content/${props.PROJECT_NAME}.js`));
+            this.setState({zettelSearchItems: zettelSearchItems(), sortOptions: zettelSortOptions(), presetOptions: zettelPresetOptions()})
         };
         loadModules();
     }
     render(){
         const menuItems = [
             ["Suchergebnisse exportieren", async ()=>{
-                const exportPdf = await arachne.zettel.search(this.state.query, {select: ["img_path", "date_display", "ac_web", "lemma_display", "txt"],export:true, order:this.state.queryOrder});
+                const exportPdf = await arachne.zettel.search(this.state.query, {select: exportZettelObject(), export:true, order:this.state.queryOrder});
                 window.open(exportPdf, "_blank");
             }]
         ];
         if(arachne.access("z_edit")){
             menuItems.push(["neuer Zettel erstellen", async ()=>{
                 if(window.confirm("Soll ein neuer Zettel erstellt werden?")){
-                    const newId = await arachne.zettel.save({type: 2, txt: "Neuer Zettel"});
+                    const newId = await arachne.zettel.save(newZettelObject());
                     this.setState({setupItems: [{id: 0, c: "id", o: "=", v:newId}]});
                 }
             }]);
@@ -42,20 +46,15 @@ class Zettel extends React.Component{
                 <Container fluid>
                     <Navbar.Collapse className="justify-content-start">
                         <Navbar.Text>
-                            <SearchBox
-                            boxName="zettel"
-                            searchQuery={(q,order) => {this.searchQuery(q,order)}}
-                            setupItems={this.state.setupItems}
-                            searchOptions={this.state.zettelSearchItems}
-                            sortOptions={[['["id"]', "ID"], ['["lemma","lemma_nr","date_sort","date_type"]', "Datum"], ['["ocr_length"]', "Textlänge"]]}
-                            status={this.state.searchStatus}
-                            presetOptions={[
-                                ['[{"id":2,"c":"lemma","o":"=","v":"NULL"}]', "Wortzuweisung"],
-                                ['[{"id": 2,"c":"type","o":"=","v":"NULL"}]', "Typzuweisung"],
-                                ['[{"id": 2, "c": "ac_web", "o": "=", "v": "NULL"},{"id": 3, "c": "type", "o": "!=", "v": 4},{"id": 4, "c": "type", "o": "!=", "v": 6},{"id": 5, "c": "type", "o": "!=", "v": 7}]', "Werkzuweisung"],
-                                ['[{"id": 2, "c": "date_type", "o": "=", "v": 9},{"id": 3, "c": "date_own", "o": "!=", "v": "NULL"},{"id": 4, "c": "type", "o": "!=", "v": 3},{"id": 5, "c": "type", "o": "!=", "v": 6},{"id": 6, "c": "type", "o": "!=", "v": 7}]', "Datumszuweisung"],
-                            ]}
-                        />
+                            {this.state.sortOptions?<SearchBox
+                                boxName="zettel"
+                                searchQuery={(q,order) => {this.searchQuery(q,order)}}
+                                setupItems={this.state.setupItems}
+                                searchOptions={this.state.zettelSearchItems}
+                                sortOptions={this.state.sortOptions}
+                                status={this.state.searchStatus}
+                                presetOptions={this.state.presetOptions}
+                            />:null}
                         </Navbar.Text>
                     </Navbar.Collapse>
                     <Navbar.Collapse className="justify-content-end">
@@ -248,10 +247,10 @@ function ZettelAsideSingle(props){
             await arachne.zettel.save(saveObj)
 
             if(saveObj.lemma_id===null&&lemma!==""){
-                document.querySelector("select.zettel_type").focus();
+                document.querySelector(".onOpenSetFocus").focus();
                 props.openAddLemma(lemma, lemma, next);
             }else if(next){
-                document.querySelector("select.zettel_type").focus();
+                document.querySelector(".onOpenSetFocus").focus();
                 props.openNextItem();
             }else{
                 props.onUpdate([props.item.id]);
@@ -271,8 +270,8 @@ function ZettelAsideSingle(props){
                         <ZettelSingleContent setLemma={v=>{setLemma(v)}} setZettelObjectErr={err=>{setZettelObjectErr(err)}} setZettelObject={o=>{setZettelObject(o)}} item={props.item} />
                         <Row className="mb-3 mt-4">
                             <Col>
-                                <Button style={{marginRight: "10px"}} onClick={()=>{saveDetail(true)}}>speichern&weiter</Button>
-                                <StatusButton onClick={()=>{return saveDetail();}} value="speichern" />
+                                <StatusButton style={{marginRight: "10px"}} onClick={()=>{return saveDetail(true)}} value="speichern&weiter" />
+                                <StatusButton onClick={()=>{return saveDetail()}} value="speichern" />
                             </Col>
                         </Row>
                         <Row>

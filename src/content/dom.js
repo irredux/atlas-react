@@ -1,10 +1,10 @@
-import { parseHTML, StatusButton, SelectMenu, AutoComplete } from "./../elements.js";
+import { parseHTML, StatusButton, SelectMenu, AutoComplete, TableView } from "./../elements.js";
 import { arachne } from "./../arachne.js";
 import { useState, useEffect } from "react";
-import { Col, Row, Container } from "react-bootstrap";
+import { Col, Row, Container, NavDropdown } from "react-bootstrap";
 
 function arachneTbls(){
-    return ["lemma", "work", "zettel", "user", "konkordanz", "opera", "comment"];
+    return ["lemma", "work", "zettel", "user", "konkordanz", "opera", "comment", "etudaus", "ocr_jobs", "edition", "statistics"];
 }
 
 /* ************************************************************************************* */
@@ -163,8 +163,8 @@ function LemmaAsideContent(props){
 
 function zettelSearchItems(){
     return [
-        ["lemma_simple", "Lemma"],
-        ["lemma_id", "lemma-ID"],
+        ["lemma_simple", "Wort"],
+        ["lemma_id", "Wort-ID"],
         ["farbe", "Farbe"],
         ["id", "ID"],
         ["editor", "EditorIn"],
@@ -182,8 +182,8 @@ function ZettelCard(props){
         else{classList+="zettel_img in_use"}
         box =
         <div className="zettel" id={zettel.id} style={style}>
-            <img alt="" style={{objectFit: "fill", borderRadius: "7px"}} className={classList} src={"https://dienste.badw.de:9996"+zettel.img_path+".jpg"}></img>
-            {props.sh   ?
+            <img alt="" style={{objectFit: "fill", borderRadius: "7px"}} className={classList} src={zettel.img_path+".jpg"}></img>
+            {props.showDetail?
             <div className="zettel_menu">
                 <span style={{float: "left", overflow: "hidden", maxHeight: "50px", maxWidth: "250px"}} dangerouslySetInnerHTML={parseHTML(zettel.lemma_display)}></span>
                 <span style={{float: "right"}} dangerouslySetInnerHTML={parseHTML(zettel.zettel_sigel)}></span>
@@ -298,106 +298,203 @@ function ZettelAddLemmaContent(props){
     </>;
 }
 function ZettelSingleContent(props){
-    const [type, setType]=useState(props.item.type);
-    const [lemmaAc, setLemmaAc]=useState(props.item.lemma_ac);
+    const [lemmaAc, setLemmaAc]=useState(props.item.ac_w);
     const [lemmaId, setLemmaId]=useState(props.item.lemma_id);
-    const [work, setWork]=useState(props.item.ac_web);
-    const [workId, setWorkId]=useState(props.item.work_id);
-    const [dateType, setDateType]=useState(props.item.date_type);
-    const [dateDisplay, setDateDisplay]=useState(props.item.date_display);
-    const [dateOwn, setDateOwn]=useState(props.item.date_own);
-    const [dateOwnDisplay, setDateOwnDisplay]=useState(props.item.date_own_display);
-    const [dateOwnError, setDateOwnError]=useState(false);
-    const [dateOwnDisplayError, setDateOwnDisplayError]=useState(false);
+    const [sigel, setSigel]=useState(props.item.zettel_sigel);
+    const [sigelId, setSigelId]=useState(props.item.konkordanz_id);
     const [txt, setTxt]=useState(props.item.txt);
+    const [sigelPreview, setSigelPreview]=useState(null);
     useEffect(()=>{
-        setType(props.item.type);
-        setLemmaAc(props.item.lemma_ac);
+        const fetchData=async()=>{
+            const operaId = await arachne.konkordanz.get({id: sigelId}, {select: ["opera_id"]});
+            if(operaId.length>0){
+                const newSigelPreview = await arachne.opera.get({id: operaId[0].opera_id});
+                console.log(newSigelPreview);
+                if(newSigelPreview.length>0){setSigelPreview(newSigelPreview[0])}
+                else{setSigelPreview(null)}
+            }else{setSigelPreview(null)}
+        };
+        if(sigelId>0){fetchData()}else{setSigelPreview(null)}
+    },[sigelId])
+    useEffect(()=>{
+        setLemmaAc(props.item.ac_w);
         setLemmaId(props.item.lemma_id);
-        setWork(props.item.ac_web);
-        setWorkId(props.item.work_id);
-        setDateType(props.item.date_type);
-        setDateDisplay(props.item.date_display);
-        setDateOwn(props.item.date_own);
-        setDateOwnDisplay(props.item.date_own_display);
+        setSigel(props.item.zettel_sigel);
+        setSigelId(props.item.konkordanz_id);
         setTxt(props.item.txt);
     },[props.item.id]);
     useEffect(()=>{
-        if(!isNaN(dateOwn)&&dateOwn!==" "&&dateOwn!==""&&dateOwn!==null){setDateOwnError(false)}
-        else{setDateOwnError(true)}
-    },[dateOwn]);
-    useEffect(()=>{
-        if(dateOwnDisplay!==" "&&dateOwnDisplay!==""&&dateOwnDisplay!==null){setDateOwnDisplayError(false)}
-        else{setDateOwnDisplayError(true)}
-    },[dateOwnDisplay]);
-    useEffect(()=>{
         props.setZettelObject({
             id: props.item.id,
-            type: type,
             lemma_id: lemmaId>0?lemmaId:null,
-            work_id: workId>0?workId:null,
-            date_type: dateType,
-            date_own: dateType===9?dateOwn:null,
-            date_own_display: dateType===9?dateOwnDisplay:null,
+            konkordanz_id: sigelId>0?sigelId:null,
             txt: txt,
         });
-        if(!(dateOwnDisplay===null||dateOwnDisplay==="")&&(dateOwn===null||dateOwn==="")){
-            props.setZettelObjectErr({status: 2, msg: "Sie dürfen kein Anzeigedatum speichern, ohne ein Sortierdatum anzugeben!"});
-        } else if(workId>0&&dateType===9&&((dateOwn!=""&&dateOwn!=null&&!Number.isInteger(dateOwn))||((dateOwn===""||dateOwn===null)))){
-            props.setZettelObjectErr({status: 1, msg: "Achtung: Dieser Zettel benötigt eine Datierung! Soll er trotzdem ohne Datierung gespeichert werden?"});
-        } else if (dateType===9&&!(dateOwn===null||dateOwn==="")&&(dateOwnDisplay===null||dateOwnDisplay==="")){
-            props.setZettelObjectErr({status: 2, msg: "Setzen Sie ein Anzeigedatum für den Zettel!"});
-        }else{props.setZettelObjectErr(null)}
-    },[txt,type,lemmaId,workId,dateType,dateOwn,dateOwnDisplay]);
+    },[txt,lemmaId,sigelId]);
     useEffect(()=>{props.setLemma(lemmaAc)},[lemmaAc]);
     return <>
         <Row className="mb-2">
-            <Col xs={4}>Zetteltyp:</Col>
-            <Col><SelectMenu style={{width: "100%"}} value={type?type:0} options={[[0, "..."],[1, "verzettelt"],[2,"Exzerpt"],[3,"Index"],[4,"Literatur"], [6, "Index (unkl. Werk)"], [7, "Notiz"]]} onChange={event=>{setType(parseInt(event.target.value))}} classList="zettel_type" /></Col>
+            <Col xs={4}>Wort:</Col>
+            <Col><AutoComplete classList="onOpenSetFocus" style={{width: "100%"}} onChange={(value, id)=>{setLemmaAc(value); setLemmaId(id)}} value={lemmaAc?lemmaAc:""} tbl="lemma" searchCol="ac_w" returnCol="ac_w" /></Col>
         </Row>
         <Row className="mb-2">
-            <Col xs={4}>Wort:</Col>
-            <Col><AutoComplete style={{width: "100%"}} onChange={(value, id)=>{setLemmaAc(value); setLemmaId(id)}} value={lemmaAc?lemmaAc:""} tbl="lemma" searchCol="lemma" returnCol="lemma_ac" /></Col>
+            <Col xs={4}>Sigel:</Col>
+            <Col><AutoComplete style={{width: "100%"}}  value={sigel?sigel:""} tbl="konkordanz" searchCol="zettel_sigel" returnCol="zettel_sigel" onChange={async (value, id)=>{setSigel(value);setSigelId(id)}} /></Col>
         </Row>
-        {type!==4&&type<6&&<Row className="mb-2">
-            <Col xs={4}>Werk:</Col>
-            <Col><AutoComplete style={{width: "100%"}}  value={work?work:""} tbl="work" searchCol="ac_web" returnCol="ac_web" onChange={async (value, id)=>{
-                setWork(value);setWorkId(id);
-                if(id>0){
-                    const newDateType = await arachne.work.get({id: id}, {select: ["date_display", "date_type"]});
-                    if(newDateType.length>0){setDateType(newDateType[0].date_type);setDateDisplay(newDateType[0].date_display)}
-                }
-            }} /></Col>
-        </Row>}
-        {type!==4&&type<6&&workId>0?<Row className="mb-2">
-            <Col xs={4}>Datierung:</Col>
-            <Col><span style={{width: "100%"}} dangerouslySetInnerHTML={parseHTML(dateDisplay)}></span></Col>
+        {sigelPreview?<Row>
+            <Col><small><b>{sigelPreview.sigel}</b> = <span dangerouslySetInnerHTML={parseHTML(sigelPreview.werk)}></span></small></Col>
         </Row>:null}
-        {dateType===9?<>
-            <Row className="mt-4 mb-2">
-                <Col><span className="minorTxt"><b>Achtung:</b> Dieser Zettel benötigt eine <a href="https://gitlab.lrz.de/haeberlin/dmlw/-/wikis/09-HiwiHow:-Zettel-verknüpfen#anzeigedatumsortierdatum" target="_blank" rel="noreferrer">eigene Datierung</a>.</span></Col>
-            </Row>
-            <Row className="mb-2">
-                <Col xs={4}>Sortierdatum:</Col>
-                <Col><input className={dateOwn?"invalidInput":null} style={{width:"100%"}} type="text" value={dateOwn?dateOwn:""} onChange={e=>{
-                    setDateOwn(e.target.value===""?null:e.target.value);
-                }} /></Col>
-            </Row>
-            <Row className="mb-4">
-                <Col xs={4}>Anzeigedatum:</Col>
-                <Col><input className={dateOwnDisplayError?"invalidInput":null} style={{width:"100%"}} type="text" value={dateOwnDisplay?dateOwnDisplay:""} onChange={e=>{
-                    setDateOwnDisplay(e.target.value);
-                }} /></Col>
-            </Row>
-        </>:null}
         {props.item.img_path===null&&<Row className="mb-2">
             <Col xs={4}>Text:</Col>
             <Col><textarea style={{width: "100%"}} value={txt} onChange={e=>{setTxt(e.target.value)}}></textarea></Col>
         </Row>}
     </>;
 }
+function newZettelObject(){return {txt: "Neuer Zettel"}}
+function exportZettelObject(){return ["img_path", "zettel_sigel", "lemma_display", "txt"]}
+function zettelPresetOptions(){return null}
+function zettelSortOptions(){return [['["id"]', "ID"], ['["lemma_simple"]', "Lemma"]]}
+
+/* ************************************************************************************* */
+
+function MainMenuContent(props){
+
+
+    return <>
+        <NavDropdown.Item onClick={e => {props.loadMain(e, "konkordanz")}}>Konkordanz</NavDropdown.Item>
+        <NavDropdown.Item onClick={e => {props.loadMain(e, "quellenverzeichnis")}}>Quellenverzeichnis</NavDropdown.Item>
+        <NavDropdown.Item onClick={e => {props.loadMain(e, "etudaus")}}>Etudaus</NavDropdown.Item>
+        <NavDropdown.Item onClick={e => {props.loadMain(e, "domressource")}}>Ressourcen</NavDropdown.Item>
+    </>;
+}
+
+/* ************************************************************************************* */
+
+function DOMOpera(props){
+    const menuItems = [
+        ["neuer Eintrag", async(that)=>{
+            if(window.confirm("Soll ein neuer Eintrag erstellt werden?")){
+                const newId = await arachne.opera.save({sigel: "neues Werk"});
+                that.setState({newItemCreated: [{id: 0, c: "id", o: "=", v:newId}]});
+            }
+        }]
+    ];
+    const tblRow=(props)=>{
+        return <><td title={"ID: "+props.cEl.id} dangerouslySetInnerHTML={parseHTML(props.cEl.sigel)}></td><td dangerouslySetInnerHTML={parseHTML(props.cEl.werk)}></td><td className="minorTxt">
+                        {props.cEl.bibgrau&&<p dangerouslySetInnerHTML={parseHTML(props.cEl.bibgrau)}></p>}
+                        {props.cEl.bibvoll&&<p dangerouslySetInnerHTML={parseHTML(props.cEl.bibvoll)}></p>}
+                        {props.cEl.bibzusatz&&<p dangerouslySetInnerHTML={parseHTML(props.cEl.bibzusatz)}></p>}
+                </td></>;
+    };
+    const asideContent = [ // caption; type: t(ext-input), (text)a(rea), (auto)c(omplete); col names as array
+        {caption: "dol-ID", type: "text", col: "db_id"},
+        {caption: "Sigel", type: "text", col: "sigel"},
+        {caption: "Werk", type: "text", col: "werk"},
+        {caption: "Bib-Grau", type: "text", col: "bibgrau"},
+        {caption: "Bib-Zusatz", type: "text", col: "bibzusatz"},
+        {caption: "Bib-Voll", type: "text", col: "bibvoll"},
+    ];
+    return <TableView
+        tblName="opera"
+        searchOptions={[["sigel", "Sigel"], ["id", "ID"]]}
+        sortOptions={[['["id"]', "ID"], ['["sigel"]', "Sigel"]]}
+        menuItems={menuItems}
+        tblRow={tblRow}
+        tblHeader={<><th>Sigel</th><th>Werktitel</th><th>Bibliographie</th></>}
+        asideContent={asideContent}
+    />;
+}
+
+function Konkordanz(props){
+    const menuItems = [
+        ["neuer Eintrag", async(that)=>{
+            if(window.confirm("Soll ein neuer Eintrag erstellt werden?")){
+                const newId = await arachne.konkordanz.save({zettel_sigel: "neuer Verweis"});
+                that.setState({newItemCreated: [{id: 0, c: "id", o: "=", v:newId}]});
+            }
+        }]
+    ];
+    const tblRow=(props)=>{
+        return <><td title={"ID: "+props.cEl.id} dangerouslySetInnerHTML={parseHTML(props.cEl.zettel_sigel)}></td><td>{props.cEl.comment}</td><td>{props.cEl.opera_id&&<span>{props.cEl.opera} <i className="minorTxt">(ID: {props.cEl.opera_id})</i></span>}</td></>;
+    };
+    const asideContent = [ // caption; type: t(ext-input), (text)a(rea), (auto)c(omplete); col names as array
+        {caption: "Zettel-Sigel", type: "text", col: "zettel_sigel"},
+        {caption: "Verknüpftes Werk", type: "auto", col: ["sigel", "opera_id"], search: {tbl: "opera", sCol: "sigel", rCol: "sigel"}},
+        {caption: "Kommentar", type: "area", col: "comment"},
+    ];
+    return <TableView
+        tblName="konkordanz"
+        searchOptions={[["zettel_sigel", "Sigel"], ["id", "ID"], ["opera_id", "Werk-ID"]]}
+        sortOptions={[['["id"]', "ID"], ['["zettel_sigel"]', "Sigel"]]}
+        menuItems={menuItems}
+        tblRow={tblRow}
+        tblHeader={<><th>Angabe auf Zettel</th><th>Bemerkung</th><th>Quelle</th></>}
+        asideContent={asideContent}
+    />;
+}
+
+function Etudaus(props){
+    const menuItems = [
+        ["neuer Eintrag", async(that)=>{
+            if(window.confirm("Soll ein neuer Eintrag erstellt werden?")){
+                const newId = await arachne.etudaus.save({zettel_sigel: "neuer Verweis"});
+                that.setState({newItemCreated: [{id: 0, c: "id", o: "=", v:newId}]});
+            }
+        }]
+    ];
+    const tblRow=(props)=>{
+        return <><td title={"ID: "+props.cEl.id} dangerouslySetInnerHTML={parseHTML(props.cEl.sigel)}></td><td dangerouslySetInnerHTML={parseHTML(props.cEl.werk)}></td><td>{props.cEl.opera_id}</td></>;
+    };
+    const asideContent = [ // caption; type: t(ext-input), (text)a(rea), (auto)c(omplete); col names as array
+        {caption: "Sigel", type: "text", col: "sigel"},
+        {caption: "Werk", type: "area", col: "werk"},
+    ];
+    return <TableView
+        tblName="etudaus"
+        searchOptions={[["sigel", "Sigel"], ["id", "ID"], ["opera_id", "Werk-ID"], ["werk", "Quelle"]]}
+        sortOptions={[['["id"]', "ID"], ['["sigel"]', "Sigel"]]}
+        menuItems={menuItems}
+        tblRow={tblRow}
+        tblHeader={<><th>Angabe auf Zettel</th><th>Werk</th><th>Quelle</th></>}
+        asideContent={asideContent}
+    />;
+}
+
+function DOMRessource(props){
+    const menuItems = [
+        ["neuer Eintrag", async(that)=>{
+            if(window.confirm("Soll ein neuer Eintrag erstellt werden?")){
+                const newId = await arachne.edition.save({editor: "EditorIn", year: 2022});
+                that.setState({newItemCreated: [{id: 0, c: "id", o: "=", v:newId}]});
+            }
+        }]
+    ];
+    const tblRow=(props)=>{
+        return <><td title={"ID: "+props.cEl.id}>{props.cEl.editor} {props.cEl.year}</td><td>{props.cEl.sigel} <small>(ID {props.cEl.opera_id})</small></td></>;
+    };
+    const asideContent = [ // caption; type: t(ext-input), (text)a(rea), (auto)c(omplete); col names as array
+        {caption: "EditorIn", type: "text", col: "editor"},
+        {caption: "Jahr", type: "text", col: "year"},
+        {caption: "verknpft. Werk", type: "auto", col: ["sigel", "opera_id"], search: {tbl: "opera", sCol: "sigel", rCol: "sigel"}},
+        {caption: <span>URL <small>(extern)</small></span>, type: "text", col: "url"},
+        {caption: <span>Pfad <small>(auf dem Server)</small></span>, type: "text", col: "path"},
+        {caption: "Kommentar", type: "area", col: "comment"},
+        {caption: "Seiten-verhältnis", type: "text", col: "aspect_ratio"},
+    ];
+    return <TableView
+        tblName="edition"
+        searchOptions={[["editor", "EditorIn"], ["year", "Jahr"]]}
+        sortOptions={[['["id"]', "ID"]]}
+        menuItems={menuItems}
+        tblRow={tblRow}
+        tblHeader={<><th>Kürzel</th><th>verknpft. Werk</th></>}
+        asideContent={asideContent}
+    />;
+}
 export {
     arachneTbls,
     LemmaRow, LemmaHeader, lemmaSearchItems, LemmaAsideContent,
-    zettelSearchItems, ZettelCard, zettelBatchOptions, BatchInputType, ZettelAddLemmaContent, ZettelSingleContent
+    zettelSearchItems, ZettelCard, zettelBatchOptions, BatchInputType, ZettelAddLemmaContent, ZettelSingleContent, newZettelObject, exportZettelObject, zettelPresetOptions, zettelSortOptions,
+    MainMenuContent,
+    DOMOpera, Konkordanz, Etudaus, DOMRessource
 }

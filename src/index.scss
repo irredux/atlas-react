@@ -309,3 +309,41 @@ mark{
     margin: 0px 40px 10px 40px;
     padding: 10px 20px;
 }
+
+.indexBoxLst{
+    position:  absolute;
+    padding:  0 0 0 10px;
+    top:  60px;
+    left:  0;
+    width:  300px;
+    bottom:  0;
+}
+.indexBoxLstResultBox{
+    position:  absolute;
+    top:  80px;
+    bottom:  10px;
+    width: 290px;
+    overflow:  scroll;
+}
+.indexBoxDetail{
+    position: absolute;
+    top:  60px;
+    left:  330px;
+    right:  0;
+    bottom:  0;
+    overflow:  scroll;
+}
+.indexBox_result_hit{
+    background-color:  #e7f1ff;
+    color:  #0c63e4;
+}
+.indexBox_result_hit:hover,.indexBox_result_hit:focus{
+    background-color:  #cee2ff;
+    color:  #0b58cc;
+}
+.indexBox_result{
+    background-color:  #e7f1ff;
+}
+.indexBox_result:hover,.indexBox_result:focus{
+    background-color:  #cee2ff;
+}

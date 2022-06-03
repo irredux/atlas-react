@@ -1,6 +1,6 @@
 import { parseHTML, parseHTMLPreview, SelectMenu, StatusButton, AutoComplete } from "./../elements.js";
 import { arachne } from "./../arachne.js";
-import { Col, Row, Container } from "react-bootstrap";
+import { Col, Row, Container, NavDropdown } from "react-bootstrap";
 import { useState, useEffect } from "react";
 
 function arachneTbls(){
@@ -165,7 +165,7 @@ function ZettelCard(props){
         else{classList+="zettel_img in_use"}
         box =
         <div className="zettel" id={zettel.id} style={style}>
-            <img alt="" style={{objectFit: "fill", borderRadius: "7px"}} className={classList} src={"https://dienste.badw.de:9996"+zettel.img_path+".jpg"}></img>
+            <img alt="" style={{objectFit: "fill", borderRadius: "7px"}} className={classList} src={zettel.img_path+".jpg"}></img>
             {props.showDetail?<div className="zettel_msg" dangerouslySetInnerHTML={parseHTML(zettel.date_own_display?zettel.date_own_display:zettel.date_display)}></div>:null}
             {props.showDetail?
             <div className="zettel_menu">
@@ -318,7 +318,7 @@ function ZettelSingleContent(props){
     return <>
         <Row className="mb-2">
             <Col xs={4}>Zetteltyp:</Col>
-            <Col><SelectMenu style={{width: "100%"}} value={type?type:0} options={[[0, "..."],[1, "verzettelt"],[2,"Exzerpt"],[3,"Index"],[4,"Literatur"], [6, "Index (unkl. Werk)"], [7, "Notiz"]]} onChange={event=>{setType(parseInt(event.target.value))}} classList="zettel_type" /></Col>
+            <Col><SelectMenu style={{width: "100%"}} value={type?type:0} options={[[0, "..."],[1, "verzettelt"],[2,"Exzerpt"],[3,"Index"],[4,"Literatur"], [6, "Index (unkl. Werk)"], [7, "Notiz"]]} onChange={event=>{setType(parseInt(event.target.value))}} classList="onOpenSetFocus" /></Col>
         </Row>
         <Row className="mb-2">
             <Col xs={4}>Wort:</Col>
@@ -361,8 +361,29 @@ function ZettelSingleContent(props){
         </Row>}
     </>;
 }
+function newZettelObject(){return {type: 2, txt: "Neuer Zettel"}}
+function exportZettelObject(){return ["img_path", "date_display", "ac_web", "lemma_display", "txt"]}
+function zettelPresetOptions(){return [
+    ['[{"id":2,"c":"lemma","o":"=","v":"NULL"}]', "Wortzuweisung"],
+    ['[{"id": 2,"c":"type","o":"=","v":"NULL"}]', "Typzuweisung"],
+    ['[{"id": 2, "c": "ac_web", "o": "=", "v": "NULL"},{"id": 3, "c": "type", "o": "!=", "v": 4},{"id": 4, "c": "type", "o": "!=", "v": 6},{"id": 5, "c": "type", "o": "!=", "v": 7}]', "Werkzuweisung"],
+    ['[{"id": 2, "c": "date_type", "o": "=", "v": 9},{"id": 3, "c": "date_own", "o": "!=", "v": "NULL"},{"id": 4, "c": "type", "o": "!=", "v": 3},{"id": 5, "c": "type", "o": "!=", "v": 6},{"id": 6, "c": "type", "o": "!=", "v": 7}]', "Datumszuweisung"],
+]}
+function zettelSortOptions(){return [['["id"]', "ID"], ['["lemma","lemma_nr","date_sort","date_type"]', "Datum"], ['["ocr_length"]', "Textlänge"]]}
+
+/* ************************************************************************************* */
+
+function MainMenuContent(props){
+    return <>
+        <NavDropdown.Item onClick={e => {props.loadMain(e, "maiora")}}><i>opera maiora</i>-Liste</NavDropdown.Item>
+        <NavDropdown.Item onClick={e => {props.loadMain(e, "minora")}}><i>opera minora</i>-Liste</NavDropdown.Item>
+        <NavDropdown.Item onClick={e => {props.loadMain(e, "seklit")}}>Sekundärliteratur</NavDropdown.Item>
+        <NavDropdown.Item onClick={e => {props.loadMain(e, "ressources")}}>Ressourcen</NavDropdown.Item>
+    </>;
+}
 export {
     arachneTbls,
     LemmaRow, LemmaHeader, lemmaSearchItems, LemmaAsideContent,
-    zettelSearchItems, ZettelCard, zettelBatchOptions, BatchInputType, ZettelAddLemmaContent, ZettelSingleContent
+    zettelSearchItems, ZettelCard, zettelBatchOptions, BatchInputType, ZettelAddLemmaContent, ZettelSingleContent, newZettelObject, exportZettelObject, zettelPresetOptions, zettelSortOptions,
+    MainMenuContent,
 }

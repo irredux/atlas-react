@@ -5,8 +5,9 @@ import { Container, Navbar, Nav, NavDropdown } from "react-bootstrap";
 
 import { Overview } from "./overview.js";
 import { Editor } from "./editor.js";
-import { ChangeLog } from "./changelog.js";
+import { ChangeLog } from "./../changelog.js";
 import { Settings } from "./settings.js";
+import { arachne } from "./../arachne.js";
 
 function arachneTbls(){
     return ["project", "article", "comment", "user", "lemma", "zettel", "tags", "tag_lnks", "sections", "edition"];
@@ -29,6 +30,7 @@ function setSetting(key, value){
 }
 
 function MainBody(props){
+    arachne.changeLog = dbChangeLog;
     let main = null;
     switch(props.res){
         case null:
@@ -80,4 +82,11 @@ function MainNavBar(props){
         </Container>
 </Navbar>;
 }
+const dbChangeLog = [
+    {
+        title: "Beta 1.0",
+        date: "2022-06-10",
+        description: <><p>Beta Version online!</p></>
+    },
+]
 export { arachneTbls, MainBody, MainNavBar, getSettings, getSetting, setSetting };

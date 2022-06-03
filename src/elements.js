@@ -1,10 +1,192 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { faBan, faPlusCircle, faMinusCircle, faCheckCircle, faCloudMoon, faTimesCircle, faSyncAlt, faCat, faDog, faRecycle, faTrashAlt, faEllipsisV, faSearch, faCheck, faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
-import { Offcanvas, Alert, ButtonGroup, Button, Form, Modal, ListGroup, OverlayTrigger, Popover, Accordion, Spinner } from "react-bootstrap";
+import { Navbar, Container, Table, Row, Col, Offcanvas, Alert, ButtonGroup, Button, Form, Modal, ListGroup, OverlayTrigger, Popover, Accordion, Spinner } from "react-bootstrap";
 import DOMPurify from "dompurify";
 
 import { arachne } from "./arachne.js";
+
+
+
+class TableView extends React.Component{
+    constructor(props){
+        super(props);
+        /* given in props:
+            tblName
+            searchOptions
+            sortOptions
+            menuItems
+            tblRow
+            tblHeader
+            asideContent
+        */
+        this.state = {item: null, newItemCreated: null};
+    }
+
+    render(){
+        return <>
+            <Navbar fixed="bottom" bg="light">
+                <Container fluid>
+                    <Navbar.Collapse className="justify-content-start">
+                        <Navbar.Text>
+                            <SearchBox
+                            setupItems={this.state.newItemCreated}
+                            boxName={this.props.tblName}
+                            searchQuery={(q,order) => {this.searchQuery(q,order)}}
+                            searchOptions={this.props.searchOptions}
+                            sortOptions={this.props.sortOptions}
+                            status={this.state.searchStatus}
+                        />
+                        </Navbar.Text>
+                    </Navbar.Collapse>
+                    <Navbar.Collapse className="justify-content-end">
+                        <Navbar.Text>
+                        {this.state.count>0?
+                        <Navigator loadPage={newPage=>{this.loadPage(newPage)}} currentPage={this.state.currentPage} maxPage={this.state.maxPage} />
+                        :null}
+                        </Navbar.Text>
+                        <Navbar.Text>
+                            <ToolKit that={this} menuItems={this.props.menuItems} />
+                        </Navbar.Text>
+                    </Navbar.Collapse>
+                </Container>
+            </Navbar>
+            <Container className="mainBody">
+                <TableViewBox
+                    tblRow={this.props.tblRow}
+                    tblHeader={this.props.tblHeader}
+                    loadPage={newPage => {this.loadPage(newPage)}}
+                    currentElements={this.state.currentElements}
+                    count={this.state.count}
+                    currentPage={this.state.currentPage}
+                    maxPage={this.state.maxPage}
+                    gridArea={(this.state.item)?"2/1/2/2":"2/1/2/3"}
+                    showDetail={item => {
+                        this.setState({item: item});
+                    }}
+                />
+            </Container>
+            {(this.state.item)?<TableViewAside tblName={this.props.tblName} asideContent={this.props.asideContent} item={this.state.item} onUpdate={id=>{this.reloadEntry(id)}} onReload={()=>{this.loadPage(this.state.currentPage)}} onClose={()=>{this.setState({item: null})}} />:""}
+        </>;
+    }
+    async reloadEntry(id){
+        if(id>0){
+            let newItem = await arachne[this.props.tblName].get({id: id}); newItem = newItem[0];
+            let currentElements = this.state.currentElements;
+            const indexOfNewItem = currentElements.findIndex(i => i.id===newItem.id)
+            currentElements[indexOfNewItem] = newItem;
+            this.setState({currentElements: currentElements, item: newItem});
+        } else {
+            this.setState({currentElements: [], item: null});
+        }
+    }
+    async searchQuery(newQuery, order){
+        const count = await arachne[this.props.tblName].search(newQuery, {count:true, order:order});
+        const currentElements = await arachne[this.props.tblName].search(newQuery, {limit:50, order:order});
+        if(count[0]["count"]>1){this.setState({searchStatus: `${count[0]["count"]} Einträge gefunden.`})}
+        else if(count[0]["count"]===1){this.setState({searchStatus: "1 Eintrag gefunden."})}
+        else{this.setState({searchStatus: "Keine Einträge gefunden."})}
+        this.setState({
+            query: newQuery,
+            queryOrder: order,
+            count: count[0]["count"],
+            maxPage: Math.floor(count[0]["count"]/50)+1,
+            currentPage: 1,
+            currentElements: currentElements,
+            selectionDetail: {ids:[]}
+        });
+    }
+    async loadPage(newPage){
+        const currentElements = await arachne[this.props.tblName].search(this.state.query, {limit:50, offset:((newPage-1)*50), order:this.state.queryOrder});
+            this.setState({
+                currentPage: newPage,
+                currentElements: currentElements,
+                selectionDetail: {ids:[]}
+            });
+    }
+}
+class TableViewBox extends React.Component{
+    constructor(props){
+        super(props);
+        this.state = {selection: {currentId: null, ids:[]}}
+    }
+    render(){
+        if(this.props.count>0){
+            let cEls = [];
+            for(const cEl of this.props.currentElements){
+                cEls.push(<tr key={cEl.id} id={cEl.id} onDoubleClick={e=>{this.props.showDetail(this.props.currentElements.find(i =>i.id === parseInt(e.target.closest("tr").id)))}}>{React.createElement(this.props.tblRow, {cEl: cEl})}</tr>);
+            }
+
+            return (
+            <div style={{gridArea: this.props.gridArea, padding:"0 10px"}}>
+                <Table width="100%" striped>
+                    <thead style={{textAlign:"left"}}><tr>{this.props.tblHeader}</tr></thead>
+                    <tbody>{cEls}</tbody>
+                </Table>
+            </div>);
+        } else {
+            return <SearchHint />;
+        }
+    }
+}
+function TableViewAside(props){
+    const [tblObject, setTblObject]=useState(Object.assign({},props.item));
+    const [contentLst, setContentLst]=useState([]);
+    useEffect(()=>{
+        setTblObject(Object.assign({},props.item));
+        setContentLst(props.asideContent.map((a,i)=><TableViewAsideRow changeTblObject={(v,k)=>{changeTblObject(v,k)}} item={props.item} a={a} key={i} />));
+    },[props.item.id]);
+    const changeTblObject = (value, key)=>{
+        const oldTblObject = tblObject;
+        oldTblObject[key]=value;
+        setTblObject(oldTblObject);
+    };
+    return <Offcanvas show={true} placement="end" scroll={true} backdrop={false} onHide={()=>{props.onClose()}}>
+            <Offcanvas.Header closeButton>
+                <Offcanvas.Title>ID {props.item.id}</Offcanvas.Title>
+            </Offcanvas.Header>
+            <Offcanvas.Body>
+                {contentLst}
+                <Row>
+                    <Col><StatusButton value="speichern" onClick={async ()=>{
+                    await arachne[props.tblName].save(Object.assign({},tblObject)); //shallow copy!
+                    props.onUpdate(tblObject.id);
+                    return {status: true};
+                }} />
+                <Button variant="danger" style={{marginLeft: "10px"}} onClick={async ()=>{
+                            if(window.confirm("Soll der Eintrag gelöscht werden? Dieser Schritt kann nicht rückgängig gemacht werden!")){
+                                await arachne[props.tblName].delete(props.item.id);
+                                props.onClose();
+                                props.onReload();
+                            }
+                        }}>löschen</Button></Col>
+                </Row>
+            </Offcanvas.Body>
+        </Offcanvas>;
+}
+function TableViewAsideRow(props){
+    const [value, setValue]=useState(props.a.type==="a"?props.item[props.a.col[0]]:props.item[props.a.col]);
+    const [valueId, setValueId]=useState(props.a.type==="a"?props.item[props.a.col[1]]:null)
+    useEffect(()=>{
+        setValue(props.a.type==="a"?props.item[props.a.col[0]]:props.item[props.a.col]);
+        setValueId(props.a.type==="a"?props.item[props.a.col[1]]:null)
+    },[props.item]);
+    let inputBox = null;
+    switch(props.a.type){
+        case "text": //type
+            inputBox = <input type="text" value={value?value:""} onChange={e=>{props.changeTblObject(e.target.value, props.a.col);setValue(e.target.value)}} />;
+            break;
+        case "auto": // autocomplete
+            inputBox = <AutoComplete onChange={(value, id)=>{props.changeTblObject(id, props.a.col[1]);setValue(value); setValueId(id)}} value={value?value:""} tbl={props.a.search.tbl} searchCol={props.a.search.sCol} returnCol={props.a.search.rCol} />;
+            break;
+        case "area": // textarea
+            inputBox = <textarea style={{width: "230px", height: "100px"}} value={value?value:""} onChange={e=>{props.changeTblObject(e.target.value, props.a.col);setValue(e.target.value)}}></textarea>;
+            break;
+        default:
+            inputBox = <span className="text-danger">Fehler: Unbekannter Input-Typ!</span>;
+        }
+    return <Row className="mb-2"><Col>{props.a.caption}:</Col><Col>{inputBox}</Col></Row>
+}
 
 function CommentBox(props){
     const [commentLst, setCommentLst]=useState([]);
@@ -151,14 +333,13 @@ function SearchHint(props){
 function ToolKit(props){
     const [active, setActive] = useState(null);
     const isMounted = useIsMounted();
-
     let cKey = -1;
         let menuItems = [];
         for(const item of props.menuItems){
             cKey ++;
             menuItems.push(<ListGroup.Item key={cKey} id={cKey} variant="light" onClick={async e=>{
                 setActive(parseInt(e.target.id));
-                await item[1]();
+                await item[1](props.that);
                 if(isMounted()){
                     setActive(null);
                     document.body.click();
@@ -244,7 +425,7 @@ function SearchBox(props){
         if(props.presetOptions){ setSearchType(JSON.parse(props.presetOptions[0][0])) }
     }, [showSearch]);
     useEffect(() => {
-        let storedItems = localStorage.getItem("searchBox_"+props.boxName);
+        let storedItems = localStorage.getItem(`${arachne.project}_searchBox_${props.boxName}`);
         if(props.setupItems){
             /*
             setSearchFields(props.setupItems);
@@ -300,7 +481,7 @@ function SearchBox(props){
         }
 
         if(exportSF.length > 0){
-            localStorage.setItem("searchBox_"+props.boxName, JSON.stringify([searchFields, nextID, sOrder]));
+            localStorage.setItem(`${arachne.project}_searchBox_${props.boxName}`, JSON.stringify([searchFields, nextID, sOrder]));
             props.searchQuery(exportSF, sOrder);
             setShowSearch(false);
         } else {setError(<Alert variant="danger" style={{padding: "5px"}}>Geben Sie einen Suchtext ein!</Alert>)}
@@ -597,7 +778,7 @@ class AutoComplete extends React.Component{
             }
         }
         return <div>
-            <input style={this.props.style} type="text" value={this.props.value} onBlur={()=>{setTimeout(()=>{this.setState({userSelected: true})},300)}} onChange={e=>{this.changeInputValue(e.target.value)}} onKeyDown={e=>{this.changeSelectedOption(e)}} />
+            <input className={this.props.classList} style={this.props.style} type="text" value={this.props.value} onBlur={()=>{setTimeout(()=>{this.setState({userSelected: true})},300)}} onChange={e=>{this.changeInputValue(e.target.value)}} onKeyDown={e=>{this.changeSelectedOption(e)}} />
             {optionsElement.length>0?<div style={optionsBoxStyle} className="mainColors">{optionsElement}</div>:null}
         </div>;
     }
@@ -848,4 +1029,4 @@ function useShortcuts(callback, debug=false){
     }, [handleKeyUp]);
 }
 
-export { CommentBox, Navigator, parseHTML, parseHTMLPreview, SearchBox, SearchInput, Status, SelectMenu, Selector, ToolKit, AutoComplete, Aside, SearchHint, StatusButton, sleep, sqlDate, Message, useIntersectionObserver, useShortcuts };
+export { CommentBox, Navigator, parseHTML, parseHTMLPreview, SearchBox, SearchInput, Status, SelectMenu, Selector, ToolKit, AutoComplete, Aside, SearchHint, StatusButton, sleep, sqlDate, Message, useIntersectionObserver, useShortcuts, TableView };

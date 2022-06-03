@@ -1,4 +1,4 @@
-// VERSION 1.3 - 13.03.2022
+// VERSION 1.5 - 2.06.2022
 
 class ArachneTable {
     constructor(tblName, url, key){
@@ -15,7 +15,7 @@ class ArachneTable {
         return await this.search(qLst, options);
     }
     async search(query, options={}){
-        let url = `${this.url}/data/${this.tblName}?query=${JSON.stringify(query)}`;
+        let url = `${this.url}/${options.export?"export":"data"}/${this.tblName}?query=${JSON.stringify(query)}`;
         if(options.count===true){url += "&count=1"}
         if(options.limit){url += "&limit="+options.limit}
         if(options.offset){url += "&offset="+options.offset}
@@ -24,8 +24,10 @@ class ArachneTable {
         if(options.group){url += "&group="+options.group}
         url = encodeURI(url);
         const re = await fetch(url, {headers: {"Authorization": `Bearer ${this.key}`}});
-        if(re.status === 200){return re.json()}
-        else{
+        if(re.status === 200){
+            if(options.export){return re.text()}
+            else{return re.json()}
+        }else{
             let errorEvent = new CustomEvent("arachneError", {detail: {method: "search", status: re.status}});
             window.dispatchEvent(errorEvent);
         }

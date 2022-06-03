@@ -1,5 +1,6 @@
 import { Alert, Button, Row, Col, Offcanvas, Table, Form, Navbar, Container, Tabs, Tab } from "react-bootstrap";
 import React from "react";
+import 'chart.js/auto';
 import { Bar, Pie } from "react-chartjs-2";
 import { faSun, faMoon } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -247,7 +248,7 @@ class Server extends React.Component{
                             return {status: false, error: "Es ist bereits ein Auftrag aktiv! Warten Sie, bis dieser abgeschlossen ist."}
                         } else{return {status: false, error: "Es ist ein Fehler aufgetreten."};}
                     }} />
-                    <StatusButton value="neuer Scan-Auftrag aufgeben" onClick={async ()=>{
+                    <StatusButton style={{float: "right"}} value="neuer Scan-Auftrag aufgeben" onClick={async ()=>{
                         const re = await arachne.exec("ocr_job_scans");
                         if(re===200){
                             await sleep(500);
