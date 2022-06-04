@@ -443,7 +443,7 @@ function Etudaus(props){
         }]
     ];
     const tblRow=(props)=>{
-        return <><td title={"ID: "+props.cEl.id} dangerouslySetInnerHTML={parseHTML(props.cEl.sigel)}></td><td dangerouslySetInnerHTML={parseHTML(props.cEl.werk)}></td><td>{props.cEl.opera_id}</td></>;
+        return <><td title={"ID: "+props.cEl.id} dangerouslySetInnerHTML={parseHTML(props.cEl.sigel)}></td><td dangerouslySetInnerHTML={parseHTML(props.cEl.werk)}></td><td>{props.cEl.opera}</td></>;
     };
     const asideContent = [ // caption; type: t(ext-input), (text)a(rea), (auto)c(omplete); col names as array
         {caption: "Sigel", type: "text", col: "sigel"},
@@ -475,7 +475,7 @@ function DOMRessource(props){
     const asideContent = [ // caption; type: t(ext-input), (text)a(rea), (auto)c(omplete); col names as array
         {caption: "EditorIn", type: "text", col: "editor"},
         {caption: "Jahr", type: "text", col: "year"},
-        {caption: "verknpft. Werk", type: "auto", col: ["sigel", "opera_id"], search: {tbl: "opera", sCol: "sigel", rCol: "sigel"}},
+        {caption: "verknpft. Werk", type: "auto", col: ["opera", "opera_id"], search: {tbl: "opera", sCol: "sigel", rCol: "sigel"}},
         {caption: <span>URL <small>(extern)</small></span>, type: "text", col: "url"},
         {caption: <span>Pfad <small>(auf dem Server)</small></span>, type: "text", col: "path"},
         {caption: "Kommentar", type: "area", col: "comment"},
