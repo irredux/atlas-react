@@ -177,7 +177,7 @@ function TableViewAsideRow(props){
             inputBox = <input type="text" value={value?value:""} onChange={e=>{props.changeTblObject(e.target.value, props.a.col);setValue(e.target.value)}} />;
             break;
         case "auto": // autocomplete
-            inputBox = <AutoComplete onChange={(value, id)=>{props.changeTblObject(id, props.a.col[1]);setValue(value); setValueId(id)}} value={value?value:""} tbl={props.a.search.tbl} searchCol={props.a.search.sCol} returnCol={props.a.search.rCol} />;
+            inputBox = <AutoComplete value={value} onChange={(value, id)=>{props.changeTblObject(id, props.a.col[1]);setValue(value); setValueId(id)}} value={value?value:""} tbl={props.a.search.tbl} searchCol={props.a.search.sCol} returnCol={props.a.search.rCol} />;
             break;
         case "area": // textarea
             inputBox = <textarea style={{width: "230px", height: "100px"}} value={value?value:""} onChange={e=>{props.changeTblObject(e.target.value, props.a.col);setValue(e.target.value)}}></textarea>;
