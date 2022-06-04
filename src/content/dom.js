@@ -443,7 +443,7 @@ function Etudaus(props){
         }]
     ];
     const tblRow=(props)=>{
-        return <><td title={"ID: "+props.cEl.id} dangerouslySetInnerHTML={parseHTML(props.cEl.sigel)}></td><td dangerouslySetInnerHTML={parseHTML(props.cEl.werk)}></td><tddangerouslySetInnerHTML={parseHTML(props.cEl.opera)}></td></>;
+        return <><td title={"ID: "+props.cEl.id} dangerouslySetInnerHTML={parseHTML(props.cEl.sigel)}></td><td dangerouslySetInnerHTML={parseHTML(props.cEl.werk)}></td><td dangerouslySetInnerHTML={parseHTML(props.cEl.opera)}></td></>;
     };
     const asideContent = [ // caption; type: t(ext-input), (text)a(rea), (auto)c(omplete); col names as array
         {caption: "Sigel", type: "text", col: "sigel"},
