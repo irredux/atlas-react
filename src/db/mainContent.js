@@ -75,8 +75,8 @@ function MainNavBar(props){
                     <NavDropdown title="Einstellungen">
                         <NavDropdown.Item onClick={e => {props.loadMain(e, "account")}}>Konto</NavDropdown.Item>
                         <NavDropdown.Item onClick={e => {props.loadMain(e, "server")}}>Server</NavDropdown.Item>
-                        <NavDropdown.Item onClick={e => {props.loadMain(e, "import")}}>Import</NavDropdown.Item>
-                        <NavDropdown.Item onClick={e => {props.loadMain(e, "stats")}}>Statistik</NavDropdown.Item>
+                        {arachne.project_name!="dom"&&<NavDropdown.Item onClick={e => {props.loadMain(e, "import")}}>Import</NavDropdown.Item>}
+                        {arachne.project_name!="dom"&&<NavDropdown.Item onClick={e => {props.loadMain(e, "stats")}}>Statistik</NavDropdown.Item>}
                     </NavDropdown>
                     <Nav.Link>
                     <FontAwesomeIcon icon={faSignOutAlt} onClick={e => {props.loadMain(e, "logout")}} title="abmelden" />
