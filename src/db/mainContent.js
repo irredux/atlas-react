@@ -92,7 +92,7 @@ const dbChangeLog = [
         project: "dom",
         title: "dDOM Update",
         date: "2022-06-03",
-        description: <><p>Neue Version ist online!</p></>
+        description: <><p>Die neue Version ist online!</p></>
     },
     {
         title: "Beta 12.10",
