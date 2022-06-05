@@ -165,11 +165,11 @@ function TableViewAside(props){
         </Offcanvas>;
 }
 function TableViewAsideRow(props){
-    const [value, setValue]=useState(props.a.type==="auto"?props.item[props.a.col[0]]:props.item[props.a.col]);
-    const [valueId, setValueId]=useState(props.a.type==="auto"?props.item[props.a.col[1]]:null)
+    const [value, setValue]=useState(null);
+    const [valueId, setValueId]=useState(null)
     useEffect(()=>{
-        setValue(props.a.type==="a"?props.item[props.a.col[0]]:props.item[props.a.col]);
-        setValueId(props.a.type==="a"?props.item[props.a.col[1]]:null)
+        setValue(props.a.type==="auto"?props.item[props.a.col[0]]:props.item[props.a.col]);
+        setValueId(props.a.type==="auto"?props.item[props.a.col[1]]:null)
     },[props.item]);
     let inputBox = null;
     switch(props.a.type){
