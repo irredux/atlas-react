@@ -144,6 +144,7 @@ function LemmaAsideContent(props){
 function zettelSearchItems(){
     return [
         ["lemma", "Wort"],
+        ["lemma_id", "Wort-ID"],
         ["type", "Typ"],
         ["id", "ID"],
         ["ac_web", "Werk"],
