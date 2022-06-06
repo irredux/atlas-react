@@ -150,8 +150,8 @@ function ArticleBoxSections(props){
     const loadACLst=async()=>{
         if(inputValue!==""){
             let allSections = await arachne.sections.get({project_id: props.project.id})
-            allSections = allSections.filter(a=>a.ref.toLowerCase().indexOf(inputValue.toLowerCase())>-1);
-            allSections = allSections.map(a=>{return {id: a.id, type: "section", name: `${a.ref}; ${a.text.substring(0, 10)}...`}});
+            allSections = allSections.filter(a=>a.ref!==null&&a.ref.toLowerCase().indexOf(inputValue.toLowerCase())>-1);
+            allSections = allSections.map(a=>{return {id: a.id, type: "section", name: `${a.ref}; ${a.text!==null?a.text.substring(0, 10):""}...`}});
             let allTags = await arachne.tags.get({project_id: props.project.id});
             allTags = allTags.filter(a=>a.name.toLowerCase().indexOf(inputValue.toLowerCase())>-1);
             allTags = allTags.map(t=>{return {id: t.id, type: "tag", name: t.name}});
@@ -216,11 +216,7 @@ function ArticleBoxSections(props){
             }else{e.target.parentNode.parentNode.firstChild.lastChild.focus()}
         } else if (e.keyCode===13) {
             e.preventDefault();
-            /*if (currentFocus > -1) {
-                createNewTag(acTags[currentFocus].name);
-            } else if(e.target.value!=="") {
-                createNewTag(e.target.value);
-            }*/
+            addSections(acLst[currentFocus]);
         }
     }
     return <>
@@ -253,7 +249,6 @@ function SectionBox(props){
         fetchData();
     }, []);
     return <div key={props.s.id} className="sectionBox" tabIndex="0" onClick={e=>{
-            console.log(e.target.closest(".sectionBox"));
             e.target.closest(".sectionBox").focus();
         }} onKeyDown={e=>{
             if(e.keyCode===38){ // up
@@ -269,7 +264,7 @@ function SectionBox(props){
                 e.preventDefault();
                 props.setSectionDetailId(props.s.id);
             }
-        }}><span className="sectionBoxTitle">{props.s.ref};</span> {props.s.text}
+        }}><span className="sectionBoxTitle">{props.s.ref}</span> {props.s.text}
         <div className="outlineSectionTagBox">{tagLst.map(t=><div className="outlineSectionTags" style={{backgroundColor: t.color}}>{t.name}</div>)}</div>
     </div>;
 }

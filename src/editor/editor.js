@@ -311,10 +311,10 @@ function SectionCard(props){
             setTags([]);
         }
     },[isVisible]);
-    useEffect(()=>{if(isVisible){setImg(section.img+`${verso?"v":""}.jpg`)}}, [verso]);
+    useEffect(()=>{if(isVisible){setImg(arachne.url+section.img+`${verso?"v":""}.jpg`)}}, [verso]);
     const loadSection = async () =>{
         const newSection = await arachne.sections.get({id: props.sId});
-        setImg(newSection[0].img+`${verso?"v":""}.jpg`);
+        setImg(arachne.url+newSection[0].img+`${verso?"v":""}.jpg`);
         setReference(newSection[0].ref);
         setText(newSection[0].text);
         setComment(newSection[0].comment);
@@ -374,7 +374,7 @@ function RessourcesButtons(props){
     }
     useEffect(()=>{
         if(props.ressources.length===0){setButton(null)}
-        else if(props.ressources.length===1){setButton(<Button tabIndex="-1" size="sm" variant="outline-secondary" style={{width: "100%"}} onClick={()=>{openRessource(props.ressources[0].url===null||props.ressources[0].url===""?"/argos/"+props.ressources[0].id:props.ressources[0].url)}}>{props.ressources[0].label}</Button>)}
+        else if(props.ressources.length===1){setButton(<Button tabIndex="-1" size="sm" variant="outline-secondary" style={{width: "100%"}} onClick={()=>{openRessource(props.ressources[0].url===null||props.ressources[0].url===""?"/site/argos/"+props.ressources[0].id:props.ressources[0].url)}}>{props.ressources[0].label}</Button>)}
         else{
             setSelected(props.ressources[0]);
         }
@@ -382,7 +382,7 @@ function RessourcesButtons(props){
     useEffect(()=>{
         if(selected!=null){
             setButton(<Dropdown as={ButtonGroup}>
-                <Button size="sm" variant="outline-secondary" style={{width: "100%"}} onClick={()=>{openRessource(selected.url===null||selected.url===""?"/argos/"+selected.id:selected.url)}}>{selected.label}</Button>
+                <Button size="sm" variant="outline-secondary" style={{width: "100%"}} onClick={()=>{openRessource(selected.url===null||selected.url===""?"/site/argos/"+selected.id:selected.url)}}>{selected.label}</Button>
                 <Dropdown.Toggle split size="sm" variant="secondary" id="dropdown-split-basic" />
                 <Dropdown.Menu>
                     {props.ressources.map(r=><Dropdown.Item key={r.id} onClick={()=>{setSelected(r)}}>{r.label}</Dropdown.Item>)}

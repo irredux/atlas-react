@@ -288,6 +288,7 @@ function ZettelSingleContent(props){
         setTxt(props.item.txt);
     },[props.item.id]);
     useEffect(()=>{
+        console.log(!isNaN(dateOwn)&&dateOwn!==" "&&dateOwn!==""&&dateOwn!==null);
         if(!isNaN(dateOwn)&&dateOwn!==" "&&dateOwn!==""&&dateOwn!==null){setDateOwnError(false)}
         else{setDateOwnError(true)}
     },[dateOwn]);
@@ -344,7 +345,7 @@ function ZettelSingleContent(props){
             </Row>
             <Row className="mb-2">
                 <Col xs={4}>Sortierdatum:</Col>
-                <Col><input className={dateOwn?"invalidInput":null} style={{width:"100%"}} type="text" value={dateOwn?dateOwn:""} onChange={e=>{
+                <Col><input className={dateOwnError?"invalidInput":null} style={{width:"100%"}} type="text" value={dateOwn?dateOwn:""} onChange={e=>{
                     setDateOwn(e.target.value===""?null:e.target.value);
                 }} /></Col>
             </Row>
