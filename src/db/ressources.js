@@ -373,7 +373,7 @@ class RessourceBox extends React.Component{
             let cEls = [];
             for(const cEl of this.props.currentElements){
                 let url = cEl.url;
-                if(url===""||url===null){url = "/site/viewer/"+cEl.id}
+                if(url===""||url===null){url = "/site/argos/"+cEl.id}
                 cEls.push(<tr key={cEl.id} id={cEl.id} onDoubleClick={e=>{this.props.showDetail(this.props.currentElements.find(i =>i.id === parseInt(e.target.closest("tr").id)))}}><td title={"ID: "+cEl.id}>{cEl.label}</td><td>{resTypes[cEl.ressource]}</td><td dangerouslySetInnerHTML={parseHTML(cEl.opus)}></td><td><a href={url} target="_blank">öffnen</a>{
                     cEl.url?<FontAwesomeIcon style={{fontSize:"14px", marginLeft: "10px"}} icon={faExternalLinkAlt} />:null
                 }</td></tr>);

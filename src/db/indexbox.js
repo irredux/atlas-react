@@ -104,7 +104,7 @@ function Detail(props){
                         </Accordion.Body>
                     </Accordion.Item>
                     <Accordion.Item eventKey="v">
-                        <Accordion.Header>verzetteles Material&nbsp;{vZettels?<span>({vZettels.length})</span>:<Spinner size="sm" animation="border" />}</Accordion.Header>
+                        <Accordion.Header>verzetteltes Material&nbsp;{vZettels?<span>({vZettels.length})</span>:<Spinner size="sm" animation="border" />}</Accordion.Header>
                         <Accordion.Body>
                             <Container className="d-flex flex-wrap justify-content-center">{vZettels?vZettels.map(z=>{return <Zettel key={z.id} z={z} />;}):null}</Container></Accordion.Body>
                     </Accordion.Item>

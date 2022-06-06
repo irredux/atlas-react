@@ -223,7 +223,8 @@ class Server extends React.Component{
         this.state = {
             ocrJobs: [],
             faszikelJobs: [],
-            users: []
+            users: [],
+            ocrDisplayAll: false,
         };
     }
     render(){
@@ -241,7 +242,7 @@ class Server extends React.Component{
                     <StatusButton value="neuer Zettel-Auftrag aufgeben" onClick={async ()=>{
                         const re = await arachne.exec("ocr_job");
                         if(re===200){
-                            await sleep(500);
+                            await sleep(1000);
                             this.loadOcrJobs();
                             return {status: true};
                         } else if (re===409){
@@ -251,7 +252,7 @@ class Server extends React.Component{
                     <StatusButton style={{float: "right"}} value="neuer Scan-Auftrag aufgeben" onClick={async ()=>{
                         const re = await arachne.exec("ocr_job_scans");
                         if(re===200){
-                            await sleep(500);
+                            await sleep(1000);
                             this.loadOcrJobs();
                             return {status: true};
                         } else if (re===409){
@@ -271,14 +272,21 @@ class Server extends React.Component{
                             </tr>
                         </thead>
                         <tbody>
-                            {this.state.ocrJobs.map(row=>{
-                                let status=<td className="text-primary">aktiv</td>;
-                                if(row.finished===1){status=<td className="text-secondary">beendet</td>}
-                                else if(new Date()-sqlDate(row.u_date)>1800000){status=<td className="text-warning">inaktiv</td>}
-                                return <tr key={row.id}><td>{row.c_date.substring(0, 10)}</td><td>{row.source}</td>{status}<td>{row.total}</td><td>{Math.round(1000/row.total*row.count)/10}%</td></tr>})}
+                            {this.state.ocrJobs.map((row,i)=>{
+                                if(this.state.ocrDisplayAll||i<12){
+                                    let status=<td className="text-primary">aktiv</td>;
+                                    if(row.finished===1){status=<td className="text-secondary">beendet</td>}
+                                    else if(new Date()-sqlDate(row.u_date)>1800000){status=<td className="text-warning">inaktiv</td>}
+                                    return <tr key={row.id}><td>{row.c_date.substring(0, 10)}</td><td>{row.source}</td>{status}<td>{row.total}</td><td>{Math.round(1000/row.total*row.count)/10}%</td></tr>;
+                                }else{
+                                    return null;
+                                }
+                                
+                            })}
                         </tbody>
                     </Table>
                 </Col></Row>
+                {this.state.ocrDisplayAll?null:<Alert style={{cursor: "pointer", marginTop: "50px", textAlign: "center"}} variant="secondary" onClick={()=>{this.setState({ocrDisplayAll: true})}}>Alle Einträge anzeigen.</Alert>}
             </Tab>}
             {arachne.access("faszikel")&&<Tab eventKey="d" title="Druckausgabe" style={{padding: "0 25%"}}>
                 <Row className="mb-2">
@@ -332,6 +340,7 @@ class Server extends React.Component{
     async loadOcrJobs(){
         this.setState({ocrJobs: []});
         const newOcrJobs = await arachne.ocr_jobs.getAll();
+        newOcrJobs.sort((a,b)=>a.c_date<b.c_date);
         this.setState({ocrJobs: newOcrJobs});
     }
     async loadUsers(){

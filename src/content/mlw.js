@@ -99,7 +99,7 @@ function LemmaAsideContent(props){
         <Row>
             <Col>
             <StatusButton value="speichern" onClick={async ()=>{
-        if(lemma==="" || lemma.indexOf(" ")>-1){
+        if(lemma===""||lemma.indexOf(" ")>-1||lemma.indexOf("*")>-1||lemma.indexOf("[")>-1){
             return {status: false, error: "Bitte ein gültiges Wort eintragen!"};
         } else if(lemma_display===""){
             return {status: false, error: "Bitte tragen Sie eine gültige Wort-Anzeige ein!"};
@@ -223,13 +223,13 @@ function ZettelAddLemmaContent(props){
             Fragezeichen: Fragezeichen,
             Stern: Stern,
         });
-        if(newLemma==="" || newLemma.indexOf(" ")>-1){setErrorLemma(true)}
+        if(newLemma==="" || newLemma.indexOf(" ")>-1||newLemma.indexOf("*")>-1||newLemma.indexOf("[")>-1){setErrorLemma(true)}
         else{setErrorLemma(false)}
 
         if(newLemmaDisplay===""){setErrorLemmaDisplay(true)}
         else{setErrorLemmaDisplay(false)}
 
-        if((newLemma==="" || newLemma.indexOf(" ")>-1)||newLemmaDisplay===""){props.setNewLemmaOK(false)}
+        if((newLemma===""||newLemma.indexOf(" ")>-1)||newLemma.indexOf("*")>-1||newLemma.indexOf("[")>-1||newLemmaDisplay===""){props.setNewLemmaOK(false)}
         else{props.setNewLemmaOK(true)}
     },[newLemma,newLemmaDisplay,homonym,MLW,Stern,Fragezeichen]);
     return <>
