@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { Button, Modal, Card, Col, Container, Form, Row } from "react-bootstrap";
+import { Modal, Card, Col, Container, Form, Row } from "react-bootstrap";
 import { arachne } from "./../arachne";
 import { parseHTML } from "./../elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlusCircle, faMinusCircle, faTimesCircle, faRotate, faPenToSquare, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faRotate } from "@fortawesome/free-solid-svg-icons";
 import { RessourcesButtons, TagBox } from "./editor.js";
 
 function OutlineBox(props){
@@ -293,7 +293,7 @@ function SectionDetailEdit(props) {
         setReference(newSection[0].ref);
         setText(newSection[0].text);
         setComment(newSection[0].comment);
-        if(newSection[0].comment!=null&&newSection[0].comment!=""){setShowComment(true)}
+        if(newSection[0].comment!==null&&newSection[0].comment!==""){setShowComment(true)}
         setSection(newSection[0]);
         // load ressources
         setRessources(await arachne.edition.get({work_id: newSection[0].work_id}, {select: ["id", "label", "url"]}));

@@ -1,4 +1,4 @@
-import { Container, Col, Row, Modal, Button, Table, Tabs, Tab, Dropdown, Navbar } from "react-bootstrap";
+import { Container, Table, Tabs, Tab, Dropdown, Navbar } from "react-bootstrap";
 import { useEffect, useState } from "react";
 import { getSettings, setSetting } from "./mainContent.js";
 

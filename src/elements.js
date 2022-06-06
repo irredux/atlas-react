@@ -1,12 +1,9 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { faBan, faPlusCircle, faMinusCircle, faCheckCircle, faCloudMoon, faTimesCircle, faSyncAlt, faCat, faDog, faRecycle, faTrashAlt, faEllipsisV, faSearch, faCheck, faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
+import { faBan, faPlusCircle, faMinusCircle, faEllipsisV, faSearch, faCheck, faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 import { Navbar, Container, Table, Row, Col, Offcanvas, Alert, ButtonGroup, Button, Form, Modal, ListGroup, OverlayTrigger, Popover, Accordion, Spinner } from "react-bootstrap";
 import DOMPurify from "dompurify";
-
 import { arachne } from "./arachne.js";
-
-
 
 class TableView extends React.Component{
     constructor(props){
@@ -166,10 +163,8 @@ function TableViewAside(props){
 }
 function TableViewAsideRow(props){
     const [value, setValue]=useState(null);
-    const [valueId, setValueId]=useState(null)
     useEffect(()=>{
         setValue(props.a.type==="auto"?props.item[props.a.col[0]]:props.item[props.a.col]);
-        setValueId(props.a.type==="auto"?props.item[props.a.col[1]]:null)
     },[props.item]);
     let inputBox = null;
     switch(props.a.type){
@@ -177,7 +172,7 @@ function TableViewAsideRow(props){
             inputBox = <input type="text" value={value?value:""} onChange={e=>{props.changeTblObject(e.target.value, props.a.col);setValue(e.target.value)}} />;
             break;
         case "auto": // autocomplete
-            inputBox = <AutoComplete onChange={(value, id)=>{props.changeTblObject(id, props.a.col[1]);setValue(value); setValueId(id)}} value={value?value:""} tbl={props.a.search.tbl} searchCol={props.a.search.sCol} returnCol={props.a.search.rCol} />;
+            inputBox = <AutoComplete onChange={(value, id)=>{props.changeTblObject(id, props.a.col[1]);setValue(value)}} value={value?value:""} tbl={props.a.search.tbl} searchCol={props.a.search.sCol} returnCol={props.a.search.rCol} />;
             break;
         case "area": // textarea
             inputBox = <textarea style={{width: "230px", height: "100px"}} value={value?value:""} onChange={e=>{props.changeTblObject(e.target.value, props.a.col);setValue(e.target.value)}}></textarea>;
@@ -187,7 +182,6 @@ function TableViewAsideRow(props){
         }
     return <Row className="mb-2"><Col>{props.a.caption}:</Col><Col>{inputBox}</Col></Row>
 }
-
 function CommentBox(props){
     const [commentLst, setCommentLst]=useState([]);
     const [newComment, setNewComment]=useState("");
@@ -211,7 +205,7 @@ function CommentBox(props){
         <div style={{textAlign: "right"}}>
             <textarea placeholder="neuer Kommentar" style={{width: "100%", height: "100px"}} onChange={e=>{setNewComment(e.target.value)}} value={newComment}></textarea>
             <StatusButton className="mt-2" value="Kommentar erstellen" onClick={async ()=>{
-                if(newComment!=""){
+                if(newComment!==""){
                     let newCommentObject = {
                         user_id: arachne.me.id,
                         comment: newComment
@@ -227,10 +221,6 @@ function CommentBox(props){
             }} />
         </div>
     </>;
-}
-function ask(question){
-    const event = new CustomEvent('msg', {detail: {q: question}});
-    document.body.dispatchEvent(event);
 }
 function Message(props){
     const [inputTxt, setInputTxt] = useState(props.input)
@@ -273,9 +263,7 @@ function sqlDate(s){ // s = sql date string
         s.length>19?parseInt(s.substring(20, 23)):0
     );
 }
-
 async function sleep(milliseconds){await new Promise((resolve, reject)=>{setTimeout(()=>{resolve()}, milliseconds)})}
-
 function useIsMounted(){
     const isMountedRef = useRef(true);
     const isMounted = useCallback(()=>isMountedRef.current, []);
@@ -363,7 +351,6 @@ function ToolKit(props){
         }
     ><Button variant="dark" size="sm"><FontAwesomeIcon id="mainAddButton" icon={faEllipsisV} /></Button></OverlayTrigger>;
 }
-
 class SearchInput extends React.Component{
     constructor(props){
         super(props);
@@ -400,12 +387,11 @@ class SearchInput extends React.Component{
         );
     }
     componentDidUpdate(prevProps, prevState){
-        if(prevState.c!=this.state.c||prevState.o!=this.state.o||prevState.v!=this.state.v){
+        if(prevState.c!==this.state.c||prevState.o!==this.state.o||prevState.v!==this.state.v){
             this.props.changeItem(this.state);
         }
     }
 }
-
 function SearchBox(props){
     const [showSearch, setShowSearch] = useState(false);
     const [error, setError] = useState(null);
@@ -423,7 +409,7 @@ function SearchBox(props){
     const errorMsg = <Alert variant="danger" style={{padding: "5px"}}>Bitte tragen Sie gültige IDs ein!</Alert>;
     useEffect(()=>{
         if(props.presetOptions){ setSearchType(JSON.parse(props.presetOptions[0][0])) }
-    }, [showSearch]);
+    }, [showSearch, props.presetOptions]);
     useEffect(() => {
         let storedItems = localStorage.getItem(`${arachne.project_name}_searchBox_${props.boxName}`);
         if(props.setupItems){
@@ -440,7 +426,7 @@ function SearchBox(props){
             setForcedUpdate(true);
             //this.setState({forceSearch: true, searchFields: storedItems[0], nextID: storedItems[1] , sOrder: storedItems[2]});
         }
-    }, []);
+    }, [props.boxName, props.setupItems]);
     useEffect(() => {
         if(props.setupItems){
             setSearchFields(props.setupItems);
@@ -496,14 +482,13 @@ function SearchBox(props){
     return <>
         <ButtonGroup>
             <Button style={{width: "300px"}} variant="outline-dark" disabled>{props.status?props.status:""}</Button>
-            <Button variant="dark" accessKey="s" onClick={()=>setShowSearch(true)}><FontAwesomeIcon icon={faSearch} /></Button>
+            <Button variant="dark" onClick={()=>setShowSearch(true)}><FontAwesomeIcon icon={faSearch} /></Button>
         </ButtonGroup>
         <Modal show={showSearch} onHide={()=>setShowSearch(false)} centered={true} size="lg">
             <Modal.Header closeButton>
                 <Modal.Title>Suche</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                <div accessKey="w" onClick={()=>{setShowSearch(false)}} hidden />
                 <Accordion defaultActiveKey="search">
                     <Accordion.Item eventKey="search">
                         <Accordion.Header>normale Suche</Accordion.Header>
@@ -574,7 +559,6 @@ function SearchBox(props){
         </Modal>
     </>;
 }
-
 class Navigator extends React.Component{
     constructor(props){
         super(props);
@@ -608,7 +592,7 @@ class Navigator extends React.Component{
         
     }
     componentDidUpdate(prevProps){
-        if(prevProps.currentPage!=this.props.currentPage){
+        if(prevProps.currentPage!==this.props.currentPage){
             this.setState({currentPage: this.props.currentPage})
         }
     }
@@ -617,125 +601,6 @@ class Navigator extends React.Component{
             this.props.loadPage(this.props.currentPage+move);
         } else {
             this.setState({currentPage: this.props.currentPage});
-        }
-    }
-}
-class Status extends React.Component{
-    constructor(props){
-        super(props);
-        this.state = {id: this.props.status.id, visible: false}
-        this.timeOutHandle = null;
-    }
-    render(){
-        if(this.state.visible){
-            let style={
-                position: "fixed",
-                bottom: "30px",
-                left: "30px",
-                /*backgroundColor: "white",*/
-                boxShadow: "0 2px 5px #d9d9d9",
-                transition: "opacity 0.5s",
-                opacity: "1",
-                borderRadius: "3px",
-                overflow: "hidden",
-                zIndex: 9000000
-            };
-            let statusTxt = "";
-            let statusSymbol = null;
-            switch(this.state.type){
-                case "searching":
-                    statusSymbol = <div style={{display: "inline-block", backgroundColor:"#246EB9"}}><FontAwesomeIcon color="#FDFFFC" style={{padding: "3px", fontSize:"40px"}} icon={faSyncAlt} spin /></div>;
-                    statusTxt = "Suche läuft...";
-                    if(this.timeOutHandle!=null){clearTimeout(this.timeOutHandle)};
-                    break;
-                case "found":
-                    statusSymbol = <FontAwesomeIcon color="#FDFFFC" style={{padding: "3px", backgroundColor:"#4CB944", fontSize:"40px"}} icon={faDog} />;
-                    statusTxt = "Einträge gefunden!";
-                    if(this.timeOutHandle!=null){clearTimeout(this.timeOutHandle)};
-                    this.timeOutHandle = setTimeout(()=>{
-                        if(this.statusBox.current!=null){
-                            this.statusBox.current.style.opacity = "0";
-                            setTimeout(()=>{this.setState({visible: false})}, 500);
-                        }
-                    }, 3000);
-                    break;
-                case "notFound":
-                    statusSymbol = <FontAwesomeIcon color="#FDFFFC" style={{padding: "3px", backgroundColor:"#353535", fontSize:"40px"}} icon={faCat} />;
-                    statusTxt = "Keine Einträge gefunden!";
-                    if(this.timeOutHandle!=null){clearTimeout(this.timeOutHandle)};
-                    this.timeOutHandle = setTimeout(()=>{
-                        if(this.statusBox.current!=null){
-                            this.statusBox.current.style.opacity = "0";
-                            setTimeout(()=>{this.setState({visible: false})}, 500);
-                        }
-                    }, 3000);
-                    break;
-                case "saved":
-                    statusSymbol = <FontAwesomeIcon color="#FDFFFC" style={{padding: "3px", backgroundColor:"#4CB944", fontSize:"40px"}} icon={faCheckCircle} />;
-                    statusTxt = "Speichern erfolgreich.";
-                    if(this.timeOutHandle!=null){clearTimeout(this.timeOutHandle)};
-                    this.timeOutHandle = setTimeout(()=>{
-                        if(this.statusBox.current!=null){
-                            this.statusBox.current.style.opacity = "0";
-                            setTimeout(()=>{this.setState({visible: false})}, 500);
-                        }
-                    }, 2000);
-                    break;
-                case "error":
-                    statusSymbol = <FontAwesomeIcon color="#FDFFFC" style={{padding: "3px", backgroundColor:"#F06543", fontSize:"40px"}} icon={faTimesCircle} />;
-                    statusTxt = "Ein Fehler ist aufgetreten.";
-                    if(this.timeOutHandle!=null){clearTimeout(this.timeOutHandle)};
-                    this.timeOutHandle = setTimeout(()=>{
-                        if(this.statusBox.current!=null){
-                            this.statusBox.current.style.opacity = "0";
-                            setTimeout(()=>{this.setState({visible: false})}, 500);
-                        }
-                    }, 3000);
-                    break;
-                case "saving":
-                    statusTxt = "Einträge werden gespeichert.";
-                    statusSymbol = <div style={{display: "inline-block", backgroundColor:"#246EB9"}}><FontAwesomeIcon color="#FDFFFC" style={{padding: "3px", fontSize:"40px"}} icon={faSyncAlt} spin /></div>;
-                    if(this.timeOutHandle!=null){clearTimeout(this.timeOutHandle)};
-                    this.timeOutHandle = null;
-                    break;
-                case "deleting":
-                    statusTxt = "Eintrag wird gelöscht.";
-                    statusSymbol = <div style={{display: "inline-block", backgroundColor:"#246EB9"}}><FontAwesomeIcon color="#FDFFFC" style={{padding: "3px", fontSize:"40px"}} icon={faRecycle} spin /></div>;
-                    if(this.timeOutHandle!=null){clearTimeout(this.timeOutHandle)};
-                    this.timeOutHandle = null;
-                    break;
-                case "deleted":
-                    statusSymbol = <FontAwesomeIcon color="#FDFFFC" style={{padding: "3px", backgroundColor:"#F06543", fontSize:"40px"}} icon={faTrashAlt} />;
-                    statusTxt = "Löschen erfolgreich.";
-                    if(this.timeOutHandle!=null){clearTimeout(this.timeOutHandle)};
-                    this.timeOutHandle = setTimeout(()=>{
-                        if(this.statusBox.current!=null){
-                            this.statusBox.current.style.opacity = "0";
-                            setTimeout(()=>{this.setState({visible: false})}, 500);
-                        }
-                    }, 2000);
-                    break;
-                default:
-                    statusTxt = "Programm arbeitet.";
-                    statusSymbol = <FontAwesomeIcon color="#FDFFFC" style={{padding: "3px", backgroundColor:"#F5EE9E", fontSize:"40px"}} icon={faCloudMoon} />;
-                    if(this.timeOutHandle!=null){clearTimeout(this.timeOutHandle)};
-                    this.timeOutHandle = setTimeout(()=>{
-                        if(this.statusBox.current!=null){
-                            this.statusBox.current.style.opacity = "0";
-                            setTimeout(()=>{this.setState({visible: false})}, 500);
-                        }
-                    }, 2000);
-            }
-            if(this.state.value!=null){statusTxt=this.state.value}
-            return null;
-            //return <div ref={this.statusBox} style={style}  className="mainColors">{statusSymbol}<span style={{position:"relative", top: "-10px", padding: "10px 20px"}}>{statusTxt}</span></div>;
-        } else {
-            return null;
-        }
-    }
-    componentDidUpdate(){
-        if(this.props.status.id!=this.state.id){
-            this.setState({id: this.props.status.id, visible: true, type: this.props.status.type, value: this.props.status.value});
         }
     }
 }
@@ -784,7 +649,7 @@ class AutoComplete extends React.Component{
     }
     async changeInputValue(newValue){
         this.props.onChange(newValue, null);
-        if(newValue!=""){
+        if(newValue!==""){
             let query = {};
             query[this.props.searchCol] = newValue+"*";
             const newOptions = await arachne[this.props.tbl].get(query, {select: ["id", this.props.returnCol], limit:10, order: [this.props.searchCol]});
@@ -808,11 +673,7 @@ class AutoComplete extends React.Component{
         }
     }
 }
-
 class SelectorWrapper extends React.Component{
-    constructor(props){
-        super(props);
-    }
     render(){
         return <div className={"selectWrapper"+(this.props.isSelected==="1"?" selMarked":"")} style={{display:"block", transition:"box-shadow 0.3s", margin: "10px 5px", marginLeft: "auto", marginRight: "auto", width: arachne.options.z_width+"px", minHeight: arachne.options.z_height+"px", borderRadius: "7px"}} id={this.props.children.props.id} ref={this.element} onClick={event=>{event.stopPropagation()}} onMouseUp={event=>{this.props.onSelect(this.props.children, {shift: event.shiftKey, meta: event.metaKey, ctrl: event.ctrlKey})}}>{this.props.children}</div>;
     }
@@ -858,7 +719,7 @@ class Selector  extends React.Component{
                 let inRange = false;
                 let newIds = [];
                 React.Children.forEach(this.props.children, child => {
-                    if(inRange==false&&(child.props.id===targetId||child.props.id===this.state.currentId)){
+                    if(inRange===false&&(child.props.id===targetId||child.props.id===this.state.currentId)){
                         // start of range
                         inRange = true;
                         newIds.push(child.props.id);
@@ -873,11 +734,11 @@ class Selector  extends React.Component{
                 });
                 this.setState({currentId: targetId, ids: newIds});
                 this.props.selectCallback(element, {currentId: targetId, ids: newIds});
-            } else if(this.props.multiSelect&&(arachne.me.selectKey==="cmd"&&keys.meta||arachne.me.selectKey==="ctrl"&&keys.ctrl)){
+            } else if(this.props.multiSelect&&((arachne.me.selectKey==="cmd"&&keys.meta)||(arachne.me.selectKey==="ctrl"&&keys.ctrl))){
                 // select/deselect while keeping selection
                 let newIds = this.state.ids;
                 if(newIds.includes(targetId)){
-                    newIds = newIds.filter(itemId => itemId!=targetId);
+                    newIds = newIds.filter(itemId => itemId!==targetId);
                 } else {newIds.push(targetId)}
                 this.setState({currentId: targetId, ids: newIds});
                 this.props.selectCallback(element, {currentId: targetId, ids: newIds});
@@ -898,7 +759,6 @@ class Selector  extends React.Component{
         }
     }
 }
-
 function parseHTML(i, replaceEntities=true){
     // parses masked HTML tags and purifies them.
     if(i==null){
@@ -935,7 +795,6 @@ function Aside(props){
         </Offcanvas.Body>
     </Offcanvas>;
 }
-
 const useIntersectionObserver = ({
     target,
     onIntersect,
@@ -956,7 +815,6 @@ const useIntersectionObserver = ({
             }
     });
 };
-
 function useShortcuts(callback, debug=false){
     const handleKeyUp = useCallback(e => {
         if(debug){console.log("key press:", e.key)}
@@ -1022,11 +880,10 @@ function useShortcuts(callback, debug=false){
             }
             if(found){item[1]();break;};
         }
-    }, [callback]);
+    }, [callback, debug]);
     useEffect(() => {
         window.addEventListener("keyup", handleKeyUp);
         return () => {window.removeEventListener("keyup", handleKeyUp)};
     }, [handleKeyUp]);
 }
-
-export { CommentBox, Navigator, parseHTML, parseHTMLPreview, SearchBox, SearchInput, Status, SelectMenu, Selector, ToolKit, AutoComplete, Aside, SearchHint, StatusButton, sleep, sqlDate, Message, useIntersectionObserver, useShortcuts, TableView };
+export { CommentBox, Navigator, parseHTML, parseHTMLPreview, SearchBox, SearchInput, SelectMenu, Selector, ToolKit, AutoComplete, Aside, SearchHint, StatusButton, sleep, sqlDate, Message, useIntersectionObserver, useShortcuts, TableView };

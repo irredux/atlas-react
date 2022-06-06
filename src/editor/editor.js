@@ -4,7 +4,6 @@ import { arachne } from "./../arachne.js";
 import { AutoComplete, SearchInput, ToolKit, useIntersectionObserver, Message, useShortcuts } from "./../elements.js"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlusCircle, faMinusCircle, faTimesCircle, faRotate, faPenToSquare, faTrashCan } from "@fortawesome/free-solid-svg-icons";
-import { getSetting } from "./mainContent.js";
 import { OutlineBox } from "./outline.js";
 import { ExportBox } from "./export.js";
 

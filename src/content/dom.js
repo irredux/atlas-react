@@ -135,7 +135,7 @@ function LemmaAsideContent(props){
                 comment: comment,
             };
             if(!isNaN(nr)){newLemmaValue.nr=nr}
-            const newId = await arachne.lemma.save(newLemmaValue);
+            await arachne.lemma.save(newLemmaValue);
             props.onUpdate(props.id);
             return {status: true};
         }
@@ -208,10 +208,8 @@ function BatchInputType(props){
     switch(props.batchType){
         case 1:
             return <AutoComplete onChange={(value, id)=>{props.setBatchValue(value);props.setBatchValueId(id)}} value={props.batchValue} tbl="lemma" searchCol="ac_w" returnCol="ac_w" />;
-            break;
         case 2:
             return <AutoComplete  value={props.batchValue} tbl="konkordanz" searchCol="zettel_sigel" returnCol="zettel_sigel" onChange={(value, id)=>{props.setBatchValue(value);props.setBatchValueId(id)}} />;
-            break;
         default:
             return <div style={{color: "red"}}>Unbekannter Stapel-Typ!</div>         
     }
@@ -242,7 +240,7 @@ function ZettelAddLemmaContent(props){
             dom_normgraphie: domNormgraphie,
             verworfen: verworfen,
             unsicher: unsicher,
-            comment: comment!=""?comment:null
+            comment: comment!==""?comment:null
         });
         if(newLemma===""){setErrorLemma(true)}
         else{setErrorLemma(false)}

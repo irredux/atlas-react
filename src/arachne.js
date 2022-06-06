@@ -185,7 +185,7 @@ class Arachne {
             headers: {"Authorization": `Bearer ${this.key}`}});
         if(re.status!==201){
             alert("Ein Fehler ist aufgetreten! Bitte überprüfen Sie die hochgeladenen Zettel.");
-            throw "Error: Fehler beim Zettel-Upload!";
+            throw new Error("Error: Fehler beim Zettel-Upload!");
         } else {return await re.json();}
     }
     async exec(mode, body=false){
@@ -232,7 +232,7 @@ class Arachne {
                 const bc = new BroadcastChannel("echo");
                 bc.postMessage(data);
             }
-            else{throw "Cannot connect to echo."}
+            else{throw new Error("Cannot connect to echo.")}
         }
     }
 }

@@ -1,4 +1,4 @@
-import { Card, Form, Row, Col, Button, Navbar, Offcanvas, Container, Placeholder, Spinner, Accordion, ListGroup } from "react-bootstrap";
+import { Card, Row, Col, Container, Spinner, Accordion, ListGroup } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSync, faAngleRight, faAngleLeft } from "@fortawesome/free-solid-svg-icons";
 import React, { useState, useEffect } from "react";
@@ -6,7 +6,7 @@ import 'chart.js/auto';
 import { Bar } from "react-chartjs-2";
 
 import { arachne } from "./../arachne.js";
-import { Navigator, parseHTML, SearchBox, SelectMenu, Selector, AutoComplete, ToolKit, SearchHint, StatusButton, sleep } from "./../elements.js";
+import { parseHTML, sleep } from "./../elements.js";
 
 function Zettel(props){
     const [verso, setVerso] = useState("");
@@ -18,7 +18,7 @@ function Zettel(props){
                 const newEditions = await arachne.edition.get({work_id: props.z.work_id}, {select: ["id", "label", "url"]});
                 let editionsLst = [];
                 for(const e of newEditions){
-                    editionsLst.push(<ListGroup.Item key={e.id}><a href={e.url===""?`/site/argos/${e.id}`:e.url} target="_blank">{e.label}</a></ListGroup.Item>);
+                    editionsLst.push(<ListGroup.Item key={e.id}><a href={e.url===""?`/site/argos/${e.id}`:e.url} target="_blank" rel="noreferrer">{e.label}</a></ListGroup.Item>);
                 }
                 setEditons(editionsLst)
             }

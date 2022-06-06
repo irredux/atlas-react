@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { createRoot } from "react-dom/client";
 
 import "./index.scss";
@@ -14,9 +14,9 @@ function App(){
     const [mode, setMode] = useState(null);
     const [res, setRes] = useState(null);
     const [resId, setResId] = useState(null);
-    const urlQueries = new URLSearchParams(window.location.search);
-    const APP_NAME = ["db", "argos", "editor", "echo"].includes(urlQueries.get("app"))?urlQueries.get("app"):"db"
-    const PROJECT_NAME = ["mlw", "dom"].includes(urlQueries.get("project"))?urlQueries.get("project"):"mlw"
+    const urlQueries = useMemo(()=>{return new URLSearchParams(window.location.search)},[]);
+    const APP_NAME = useMemo(()=>{return ["db", "argos", "editor", "echo"].includes(urlQueries.get("app"))?urlQueries.get("app"):"db"},[urlQueries]);
+    const PROJECT_NAME = useMemo(()=>{return ["mlw", "dom"].includes(urlQueries.get("project"))?urlQueries.get("project"):"mlw"},[urlQueries]);
     arachne.project_name = PROJECT_NAME;
     let windowTitle = "";
     switch(PROJECT_NAME){
@@ -67,7 +67,7 @@ function App(){
         });
         if(urlQueries.get("site")){setRes(urlQueries.get("site"))}
         loadAsync();
-    }, []);
+    }, [APP_NAME, PROJECT_NAME, urlQueries]);
     const sendLogin = async (email, password) => {
         if(email!==""&&password!==""){
             let re = await arachne.login(email, password, arachneTbls());

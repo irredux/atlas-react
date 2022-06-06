@@ -92,7 +92,7 @@ function Account(){
                     <option value="ctrl">Strg</option>
                     <option value="cmd">Befehlstaste</option>
                 </Form.Select>
-                <small>Eine Liste mit Tastenkürzeln finden Sie <a className="text-primary" href="https://gitlab.lrz.de/haeberlin/dmlw/-/wikis/06-Argos#tastenkürzel" target="_blank">hier</a>.</small>
+                <small>Eine Liste mit Tastenkürzeln finden Sie <a className="text-primary" rel="noreferrer" href="https://gitlab.lrz.de/haeberlin/dmlw/-/wikis/06-Argos#tastenkürzel" target="_blank">hier</a>.</small>
             </Col>
         </Row>
         {displaySettings}
