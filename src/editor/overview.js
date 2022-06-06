@@ -57,28 +57,33 @@ function Overview(props){
         oldProject.shared_id = null;
         oldProject.name = `${oldProject.name}  (Kopie)`;
         const newProjectId = await arachne.project.save(oldProject);
-        //copy zettelLnk
+        //copy sections
         const zettelLnk = await arachne.sections.get({project_id: oldProjectId});
-        for(const z of zettelLnk){
-            delete z.id;
+        await arachne.sections.save(zettelLnk.map(z=>{
             z.project_id = newProjectId;
             z.shared_id = null;
-            await arachne.sections.save(z)
-        }
-        //copy article + zettelLnk
+            return z;
+        }));
+        //copy article + sections
         const articleLst = await arachne.article.get({project_id: oldProjectId});
-        for(const a of articleLst){
-            const oldArticleId = a.id;
-            delete a.id;
+        await arachne.article.save(articleLst.map(a=>{
             a.project_id = newProjectId;
             a.shared_id = null;
-            const newArticleId = await arachne.article.save(a);
-            const zettelLnk = await arachne.sections.get({project_id: newProjectId, article_id: oldArticleId});
-            for(const z of zettelLnk){
-                z.article_id = newArticleId;
-                await arachne.sections.save(z)
-            }
-        }
+            return a;
+        }));
+        // copy tags and tag_lnks!
+        const oldTags = await arachne.tags.get({project_id: oldProjectId});
+        await arachne.tags.save(oldTags.map(t=>{
+            t.project_id = newProjectId;
+            t.shared_id = null;
+            return t;
+        }))
+        const oldTagLnks = await arachne.tag_lnks.get({project_id: oldProjectId});
+        await arachne.tag_lnks.save(oldTagLnks.map(t=>{
+            t.project_id = newProjectId;
+            t.shared_id = null;
+            return t;
+        }))
         await refreshPage();
     };
     const shareProject = async (newUserId, projectId) => {
@@ -119,7 +124,10 @@ function Overview(props){
         setRenameId(0);
         }} />
         <Message show={shareId>0?true:false} title="Projekt freigeben" msg="Wem wollen Sie das Projekt freigeben?" dropDown={userLst} onReplay={async e=>{
-            await shareProject(e, shareId);
+            console.log(e);
+            if(e!=-1 && e!=""){
+                await shareProject(e, shareId);
+            }
             setShareId(0);
         }} />
         <Container>

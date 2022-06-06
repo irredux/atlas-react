@@ -80,14 +80,14 @@ function ArticleBox(props){
                         props.dropArticle(props.a.id, parentArticle.parent_id, parentArticle.sort_nr+1);
                     }
                     
-                }else if(e.keyCode===37){ // left
+                }else if(e.keyCode===37&&e.shiftKey===false){ // left
                     props.toogleCollapse(props.a.id);
                 }else if(e.keyCode===38&&e.shiftKey){ // up+shift
                     let previousArticles = props.articles.filter(a=>a.parent_id===props.a.parent_id&&a.sort_nr<props.a.sort_nr).sort((a,b)=>a.sort_nr>b.sort_nr);
                     if(previousArticles.length>0){
                         props.dropArticle(props.a.id, props.a.parent_id, previousArticles[previousArticles.length-1].sort_nr);
                     }
-                }else if(e.keyCode===38){ // up
+                }else if(e.keyCode===38&&e.shiftKey===false){ // up
                     const articleBoxes = document.getElementsByClassName("articleBox");
                     for(let i = 0; i<articleBoxes.length;i++){
                         if(articleBoxes[i].id === e.target.id){
@@ -103,13 +103,13 @@ function ArticleBox(props){
                         if(previousArticleChildren.length>0){props.dropArticle(props.a.id, previousArticles[previousArticles.length-1].id, previousArticleChildren[previousArticleChildren.length-1].sort_nr+1)}
                         else{props.dropArticle(props.a.id, previousArticles[previousArticles.length-1].id, 1)}
                     }
-                }else if(e.keyCode===39){ // right
+                }else if(e.keyCode===39&&e.shiftKey===false){ // right
                     if(displaySections){setDisplaySections(false)}
                     else{setDisplaySections(true)}
                 }else if(e.keyCode===40&&e.shiftKey){ // down+shift
                     const nextArticle = props.articles.find(a=>a.parent_id===props.a.parent_id&&a.sort_nr>props.a.sort_nr);
                     if(nextArticle){props.dropArticle(props.a.id, props.a.parent_id, props.a.sort_nr+1)};
-                }else if(e.keyCode===40){ // down
+                }else if(e.keyCode===40&&e.shiftKey===false){ // down
                     const articleBoxes = document.getElementsByClassName("articleBox");
                     for(let i = 0; i<articleBoxes.length;i++){
                         if(articleBoxes[i].id === e.target.id){
@@ -179,10 +179,10 @@ function ArticleBoxSections(props){
         const tagLnkLst = [];
         for(const s of articleSections){
             const tagLnks = await arachne.tag_lnks.get({section_id: s.id});
-            tagLnks.forEach(t=>{if(!tagLnkLst.includes(t.id)){tagLnkLst.push(t.id)}});
+            tagLnks.forEach(t=>{if(!tagLnkLst.includes(t.tag_id)){tagLnkLst.push(t.tag_id)}});
         }
         const newTags = [];
-        for (const tl in tagLnkLst){
+        for (const tl of tagLnkLst){
             const newTag = await arachne.tags.get({id: tl});
             if(newTag[0]){newTags.push(newTag[0])}
         }

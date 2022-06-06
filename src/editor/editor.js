@@ -86,7 +86,7 @@ function Editor(props){
         }));
     };
     const dropArticle = async (id, parent_id, sort_nr) => {
-        let newArticles = Object.assign({},articles);
+        let newArticles = articles;
 
         // close gap in old position
         const currentArticle = articles.find(a=>a.id===id);
@@ -322,7 +322,8 @@ function SectionCard(props){
     useEffect(()=>{if(isVisible){setImg(arachne.url+section.img+`${verso?"v":""}.jpg`)}}, [verso]);
     const loadSection = async () =>{
         const newSection = await arachne.sections.get({id: props.sId});
-        setImg(arachne.url+newSection[0].img+`${verso?"v":""}.jpg`);
+        if(newSection[0].img){setImg(arachne.url+newSection[0].img+`${verso?"v":""}.jpg`)}
+        else{setImg(null)}
         setReference(newSection[0].ref);
         setText(newSection[0].text);
         setComment(newSection[0].comment);
@@ -350,10 +351,10 @@ function SectionCard(props){
         localStorage.setItem("searchBox_zettel",`[[{"id":0,"c":"id","o":"=","v":"${section.zettel_id}"}],1,["id"]]`);
         window.open("/?site=zettel");
     }//style={{ width: '80%', maxWidth: "600px", margin: "auto" }}>
-    return <Card className={props.wideScreen?"largeScreen":null} id={"s_"+props.sId} style={{ width: "80%", margin: "auto" }}>
-        <Card.Img ref={refImg} style={{aspectRatio: "10/7"}} variant="top" src={img} />
+    return <Card ref={refImg} className={props.wideScreen?"largeScreen":null} id={"s_"+props.sId} style={{ width: "80%", margin: "auto" }}>
+        {img?<Card.Img style={{aspectRatio: "10/7"}} variant="top" src={img} />:null}
         <Card.Body>
-            <div style={{position: "absolute", top:"5px", left: "10px", right: props.wideScreen?"430px":"10px", opacity: "0.5"}}><a onClick={()=>{setVerso(!verso)}} title="Zettel drehen"><FontAwesomeIcon icon={faRotate} /></a>{section.zettel_id>0?<a onClick={()=>{openZettelDB()}} style={{float: "right"}} title="Zettel bearbeiten"><FontAwesomeIcon icon={faPenToSquare} /></a>:null}</div>
+            <div style={{position: "absolute", top:"5px", left: "10px", right: props.wideScreen?"430px":"10px", opacity: "0.5"}}>{img?<a onClick={()=>{setVerso(!verso)}} title="Zettel drehen"><FontAwesomeIcon icon={faRotate} /><br /></a>:null}{section.zettel_id>0?<a onClick={()=>{openZettelDB()}} title="Zettel bearbeiten"><FontAwesomeIcon icon={faPenToSquare} /></a>:null}</div>
             <Row className="mb-2"><Col><Form.Control placeholder="Zitiertitel..." onFocus={()=>{centerSection()}} size="sm" type="text" value={reference?reference:""} onChange={e=>{setReference(e.target.value)}} onBlur={async e=>{await arachne.sections.save({id: props.sId, ref: e.target.value})}} /></Col><Col style={{textAlign: "right"}} xs={4}><RessourcesButtons setRessourceView={url=>{props.setRessourceView(url)}} ressources={ressources} /></Col></Row>
         
             <Form.Control placeholder="Text der Stelle..." onFocus={()=>{centerSection()}} as="textarea" rows={3} style={{fontSize: "95%"}} value={text?text:""} onChange={e=>{setText(e.target.value)}} onBlur={async e=>{await arachne.sections.save({id: props.sId, text: e.target.value})}} />
