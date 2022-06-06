@@ -236,7 +236,7 @@ class Server extends React.Component{
         <Tabs defaultActiveKey={defaultActive} className="mb-5">
             {arachne.access("ocr_jobs")&&<Tab eventKey="o" title="ocr-Aufträge" style={{padding: "0 25%"}}>
                 <Row className="mb-2">
-                    <Col>Hier finden Sie die auf dem Server laufenden und abgeschlossenen Aufträge zur ocr-Erkennung.</Col>
+                    <Col>Hier finden Sie die auf dem Server laufenden und abgeschlossenen Aufträge.</Col>
                 </Row>
                 <Row><Col>
                     <StatusButton value="neuen Zettel-Auftrag aufgeben" onClick={async ()=>{

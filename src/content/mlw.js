@@ -16,7 +16,7 @@ function LemmaRow(props){
     return <tr id={props.lemma.id} onDoubleClick={e=>{props.showDetail(parseInt(e.target.closest("tr").id))}}>
 		<td title={"ID: "+props.lemma.id}>
 			<a dangerouslySetInnerHTML={parseHTML(props.lemma.lemma_display)} onClick={e=>{
-    			localStorage.setItem("searchBox_zettel", `[[{"id":0,"c":"lemma_id","o":"=","v":${props.lemma.id}}],1,["id"]]`);
+    			localStorage.setItem("mlw_searchBox_zettel", `[[{"id":0,"c":"lemma_id","o":"=","v":${props.lemma.id}}],1,["id"]]`);
     			props.loadMain(e);
 			}}>
 			</a>
