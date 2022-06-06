@@ -289,7 +289,7 @@ function SectionDetailEdit(props) {
     const loadSection = async () =>{
         const newSection = await arachne.sections.get({id: props.sectionDetailId});
         //console.log(newSection[0].img+`${verso?"v":""}.jpg`);
-        setImg("http://localhost:8080"+newSection[0].img+`${verso?"v":""}.jpg`);
+        setImg(arachne.url+newSection[0].img+`${verso?"v":""}.jpg`);
         setReference(newSection[0].ref);
         setText(newSection[0].text);
         setComment(newSection[0].comment);
