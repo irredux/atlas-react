@@ -2,6 +2,8 @@ import { Card, Form, Row, Col, Button, Navbar, Offcanvas, Container, Placeholder
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSync, faAngleRight, faAngleLeft } from "@fortawesome/free-solid-svg-icons";
 import React, { useState, useEffect } from "react";
+import 'chart.js/auto';
+import { Bar } from "react-chartjs-2";
 
 import { arachne } from "./../arachne.js";
 import { Navigator, parseHTML, SearchBox, SelectMenu, Selector, AutoComplete, ToolKit, SearchHint, StatusButton, sleep } from "./../elements.js";
@@ -16,7 +18,7 @@ function Zettel(props){
                 const newEditions = await arachne.edition.get({work_id: props.z.work_id}, {select: ["id", "label", "url"]});
                 let editionsLst = [];
                 for(const e of newEditions){
-                    editionsLst.push(<ListGroup.Item key={e.id}><a href={e.url===""?`/site/viewer/${e.id}`:e.url} target="_blank">{e.label}</a></ListGroup.Item>);
+                    editionsLst.push(<ListGroup.Item key={e.id}><a href={e.url===""?`/site/argos/${e.id}`:e.url} target="_blank">{e.label}</a></ListGroup.Item>);
                 }
                 setEditons(editionsLst)
             }
@@ -39,7 +41,7 @@ function Detail(props){
     const [eZettels, setEZettels] = useState(null);
     const [iZettels, setIZettels] = useState(null);
     const [rZettels, setRZettels] = useState(null);
-
+    const [timeLineData, setTimeLineData] = useState([]);
     useEffect(()=>{
         const fetchData=async()=>{
             setLemma(null);
@@ -49,9 +51,13 @@ function Detail(props){
             setRZettels(null);
             const newLemma = await arachne.lemma.get({id: props.lemma_id});
             setLemma(newLemma[0]);
-            setVZettels(await arachne.zettel.get({lemma_id: props.lemma_id, type: 1}, {order: ["date_sort","date_type"], select: ["id", "opus", "img_path", "work_id"]}));
-            setEZettels(await arachne.zettel.get({lemma_id: props.lemma_id, type: 2}, {order: ["date_sort","date_type"], select: ["id", "opus", "img_path", "work_id"]}));
-            setIZettels(await arachne.zettel.search([{c: "lemma_id", o: "=", v: props.lemma_id}, {c: "type", o: ">=", v: "3"}, {c: "type", o: "<=", v: "6"}, {c: "type", o: "!=", v: "4"}], {order: ["date_sort","date_type"], select: ["id", "opus", "img_path", "work_id"]}));
+            const nVZettel = await arachne.zettel.get({lemma_id: props.lemma_id, type: 1}, {order: ["date_sort","date_type"], select: ["id", "opus", "img_path", "work_id", "date_sort", "date_own"]});
+            setVZettels(nVZettel);
+            const nEZettel = await arachne.zettel.get({lemma_id: props.lemma_id, type: 2}, {order: ["date_sort","date_type"], select: ["id", "opus", "img_path", "work_id", "date_sort", "date_own"]});
+            setEZettels(nEZettel);
+            const nIZettel = await arachne.zettel.search([{c: "lemma_id", o: "=", v: props.lemma_id}, {c: "type", o: ">=", v: "3"}, {c: "type", o: "<=", v: "6"}, {c: "type", o: "!=", v: "4"}], {order: ["date_sort","date_type"], select: ["id", "opus", "img_path", "work_id", "date_sort", "date_own"]})
+            setIZettels(nIZettel);
+            setTimeLineData(nVZettel.concat(nEZettel.concat(nIZettel)))
             setRZettels(await arachne.zettel.search([{c: "lemma_id", o: "=", v: props.lemma_id}, {c: "type", o: ">=", v: "4"}, {c: "type", o: "!=", v: "6"}], {order: ["date_sort","date_type"], select: ["id", "opus", "img_path", "work_id"]}));
         };
         fetchData();
@@ -70,6 +76,34 @@ function Detail(props){
             <Row>
                 <Col>
                     <Accordion defaultActiveKey="">
+                    <Accordion.Item eventKey="s">
+                        <Accordion.Header>Statistik</Accordion.Header>
+                        <Accordion.Body>
+                            <div style={{width: "70%", margin: "auto"}}>
+                                <Bar options={{aspectRatio: false, plugins: {legend:{display: true, position: "bottom"}}}} data={{
+                                    labels: ["6. Jh.","7. Jh.","8. Jh.","9. Jh.","10. Jh.","11. Jh.","12. Jh.","13. Jh.",],
+                                    datasets: [
+                                        {
+                                            label: 'Anzahl Zettel',
+                                            data: [
+                                                timeLineData.filter(t=>t.date_sort<600).length,
+                                                timeLineData.filter(t=>t.date_sort>599&&t.date_sort<700).length,
+                                                timeLineData.filter(t=>t.date_sort>699&&t.date_sort<800).length,
+                                                timeLineData.filter(t=>t.date_sort>799&&t.date_sort<900).length,
+                                                timeLineData.filter(t=>t.date_sort>899&&t.date_sort<1000).length,
+                                                timeLineData.filter(t=>t.date_sort>999&&t.date_sort<1100).length,
+                                                timeLineData.filter(t=>t.date_sort>1099&&t.date_sort<1200).length,
+                                                timeLineData.filter(t=>t.date_sort>1199).length,
+                                            ],
+                                            backgroundColor: ['#347F9F'],
+                                            borderColor: ['#347F9F'],
+                                            borderWidth: 1,
+                                        },
+                                    ],
+                                }} />
+                            </div>
+                        </Accordion.Body>
+                    </Accordion.Item>
                     <Accordion.Item eventKey="v">
                         <Accordion.Header>verzetteles Material&nbsp;{vZettels?<span>({vZettels.length})</span>:<Spinner size="sm" animation="border" />}</Accordion.Header>
                         <Accordion.Body>

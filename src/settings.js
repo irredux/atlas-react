@@ -12,7 +12,7 @@ function Account(){
     const [newPassword, setNewPassword] = useState("");
     const [zWidth, setZWidth] = useState(arachne.options.z_width);
     const [actionKey, setActionKey] = useState(arachne.options.action_key);
-
+    const [openExternally, setOpenExternally]=useState(arachne.options.openExternally);
     const displaySettings = [
         <Row key={1} className="mb-2">
             <Col xs={2}>Breite der Zettel:</Col>
@@ -21,6 +21,14 @@ function Account(){
                 arachne.setOptions("z_height", 350/500*parseInt(e.target.value));
                 setZWidth(e.target.value);
             }}/></Col>
+        </Row>,
+        <Row key={2} className="mb-2">
+            <Col xs={4}>Öffnen der Ressourcen (Zettel im Editor):</Col>
+            <Col><Form.Select size="sm" value={openExternally} onChange={e=>{arachne.setOptions("openExternally", parseInt(e.target.value));setOpenExternally(e.target.value)}}>
+                    <option value="0">im gleichen Fenster</option>
+                    <option value="1">nebeneinander</option>
+                    <option value="2">in Echo</option>
+                </Form.Select></Col>
         </Row>
     ];
     return <Container style={{padding: "0 10% 0 10%"}}>

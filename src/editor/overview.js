@@ -35,9 +35,15 @@ function Overview(props){
             //article
             const articleLst = await arachne.article.get({project_id: id});
             if(articleLst.length>0){await arachne.article.delete(articleLst.map(a=>a.id))}
-            //zettelLnk
+            //sections
             const zettelLst = await arachne.sections.get({project_id: id});
             if(zettelLst.length>0){await arachne.sections.delete(zettelLst.map(z=>z.id))}
+            // tags
+            const tagLst = await arachne.tags.get({project_id: id});
+            if(tagLst.length>0){await arachne.tags.delete(tagLst.map(z=>z.id))}
+            // tag_lnks
+            const tagLnkLst = await arachne.tag_lnks.get({project_id: id});
+            if(tagLnkLst.length>0){await arachne.tag_lnks.delete(tagLnkLst.map(z=>z.id))}
             //project
             await arachne.project.delete(id)
             await refreshPage();

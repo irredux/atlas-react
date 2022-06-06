@@ -15,7 +15,7 @@ function App(){
     const [res, setRes] = useState(null);
     const [resId, setResId] = useState(null);
     const urlQueries = new URLSearchParams(window.location.search);
-    const APP_NAME = ["db", "argos", "editor"].includes(urlQueries.get("app"))?urlQueries.get("app"):"db"
+    const APP_NAME = ["db", "argos", "editor", "echo"].includes(urlQueries.get("app"))?urlQueries.get("app"):"db"
     const PROJECT_NAME = ["mlw", "dom"].includes(urlQueries.get("project"))?urlQueries.get("project"):"mlw"
     arachne.project_name = PROJECT_NAME;
     let windowTitle = "";
@@ -38,6 +38,9 @@ function App(){
             break;
         case "editor":
             windowTitle += " - Editor";
+            break;
+        case "echo":
+            windowTitle += " - Echo";
             break;
         default:
             windowTitle += " - ???"

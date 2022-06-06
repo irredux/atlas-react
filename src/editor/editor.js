@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlusCircle, faMinusCircle, faTimesCircle, faRotate, faPenToSquare, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { getSetting } from "./mainContent.js";
 import { OutlineBox } from "./outline.js";
+import { ExportBox } from "./export.js";
 
 function Editor(props){
     const [mode, setMode] = useState("zettel")
@@ -124,10 +125,18 @@ function Editor(props){
     };
 
     let modeBox = null;
-    if(mode==="zettel"){
-        modeBox = <ZettelBox setLimitFilterResults={v=>{setLimitFilterResults(v)}} showImport={showImport} showMenuLeft={showMenuLeft} filterTags={filterTags} setFilterTags={newTags=>{setFilterTags(newTags)}} setShowMenuLeft={()=>{setShowMenuLeft(false)}} setShowImport={v=>{setShowImport(v)}} project={project} filterLst={filterLst} updateSections={()=>{updateSections()}} />;
-    }else if(mode==="outline"){
-        modeBox = <OutlineBox project={project} dropArticle={(a,b,c)=>{dropArticle(a,b,c)}} articlesLst={articlesLst} articles={articles} collapsedArticlesLst={collapsedArticlesLst} toogleCollapse={a=>{toogleCollapse(a)}} />;
+    switch(mode){
+        case "zettel":
+            modeBox = <ZettelBox setLimitFilterResults={v=>{setLimitFilterResults(v)}} showImport={showImport} showMenuLeft={showMenuLeft} filterTags={filterTags} setFilterTags={newTags=>{setFilterTags(newTags)}} setShowMenuLeft={()=>{setShowMenuLeft(false)}} setShowImport={v=>{setShowImport(v)}} project={project} filterLst={filterLst} updateSections={()=>{updateSections()}} />;
+            break;
+        case "outline":
+            modeBox = <OutlineBox project={project} dropArticle={(a,b,c)=>{dropArticle(a,b,c)}} articlesLst={articlesLst} articles={articles} collapsedArticlesLst={collapsedArticlesLst} toogleCollapse={a=>{toogleCollapse(a)}} />;
+            break;
+        case "export":
+            modeBox = <ExportBox project={project} />;
+            break;
+        default:
+        modeBox = <div>Modus '{mode}' nicht gefunden.</div>;
     }
     return <>
     <Navbar bg="dark" variant="dark" fixed="top" style={{top: "0px"}}>
@@ -154,12 +163,25 @@ function Editor(props){
     </>;
 }
 function ZettelBox(props){
+    const [wideScreen, setWideScreen] = useState(true);
     const [splitView, setSplitView] = useState(false);
     const [splitViewURL, setSplitViewURL] = useState("");
     const setRessourceView = url => {
         if(!splitView){setSplitView(true)}
         setSplitViewURL(url)
     }
+    useEffect(()=>{
+        const resizeObserver = new ResizeObserver(entries=>{
+            if(wideScreen===true&&entries[0].contentRect.width<1000){
+                setWideScreen(false)
+            }
+            if(wideScreen===false&&entries[0].contentRect.width>=1000){
+                setWideScreen(true)
+            }
+        });
+        resizeObserver.observe(document.getElementById("cardBox"));
+        return ()=>{if(document.getElementById("cardBox")){resizeObserver.unobserve(document.getElementById("cardBox"))}};
+    },[wideScreen]);
     return <>
     <ImportZettel show={props.showImport} project={props.project} onReplay={e=>{
             if(e){props.updateSections()};
@@ -167,9 +189,9 @@ function ZettelBox(props){
         }} />
     <Container fluid>
         <Row>
-            <Col>
+            <Col id="cardBox">
                 <Stack gap={5}>
-                    {props.filterLst.map(sId=><SectionCard setRessourceView={url=>{setRessourceView(url)}} project={props.project} sId={sId} key={sId} />)}
+                    {props.filterLst.map(sId=><SectionCard wideScreen={wideScreen} setRessourceView={url=>{setRessourceView(url)}} project={props.project} sId={sId} key={sId} />)}
                 </Stack>
             </Col>
             {splitView?<Col>
@@ -290,10 +312,10 @@ function SectionCard(props){
             setTags([]);
         }
     },[isVisible]);
-    useEffect(()=>{if(isVisible){setImg("http://localhost:8080"+section.img+`${verso?"v":""}.jpg`)}}, [verso]);
+    useEffect(()=>{if(isVisible){setImg(section.img+`${verso?"v":""}.jpg`)}}, [verso]);
     const loadSection = async () =>{
         const newSection = await arachne.sections.get({id: props.sId});
-        setImg("http://localhost:8080"+newSection[0].img+`${verso?"v":""}.jpg`);
+        setImg(newSection[0].img+`${verso?"v":""}.jpg`);
         setReference(newSection[0].ref);
         setText(newSection[0].text);
         setComment(newSection[0].comment);
@@ -319,12 +341,12 @@ function SectionCard(props){
     };
     const openZettelDB = () =>{
         localStorage.setItem("searchBox_zettel",`[[{"id":0,"c":"id","o":"=","v":"${section.zettel_id}"}],1,["id"]]`);
-        window.open("http://localhost:8080/?site=zettel");
-    }
-    return <Card id={"s_"+props.sId} style={{ width: '80%', maxWidth: "600px", margin: "auto" }}>
+        window.open("/?site=zettel");
+    }//style={{ width: '80%', maxWidth: "600px", margin: "auto" }}>
+    return <Card className={props.wideScreen?"largeScreen":null} id={"s_"+props.sId} style={{ width: "80%", margin: "auto" }}>
         <Card.Img ref={refImg} style={{aspectRatio: "10/7"}} variant="top" src={img} />
         <Card.Body>
-            <div style={{position: "absolute", top:"5px", left: "10px", right: "10px", opacity: "0.5"}}><a onClick={()=>{setVerso(!verso)}} title="Zettel drehen"><FontAwesomeIcon icon={faRotate} /></a>{section.zettel_id>0?<a onClick={()=>{openZettelDB()}} style={{float: "right"}} title="Zettel bearbeiten"><FontAwesomeIcon icon={faPenToSquare} /></a>:null}</div>
+            <div style={{position: "absolute", top:"5px", left: "10px", right: props.wideScreen?"430px":"10px", opacity: "0.5"}}><a onClick={()=>{setVerso(!verso)}} title="Zettel drehen"><FontAwesomeIcon icon={faRotate} /></a>{section.zettel_id>0?<a onClick={()=>{openZettelDB()}} style={{float: "right"}} title="Zettel bearbeiten"><FontAwesomeIcon icon={faPenToSquare} /></a>:null}</div>
             <Row className="mb-2"><Col><Form.Control placeholder="Zitiertitel..." onFocus={()=>{centerSection()}} size="sm" type="text" value={reference?reference:""} onChange={e=>{setReference(e.target.value)}} onBlur={async e=>{await arachne.sections.save({id: props.sId, ref: e.target.value})}} /></Col><Col style={{textAlign: "right"}} xs={4}><RessourcesButtons setRessourceView={url=>{props.setRessourceView(url)}} ressources={ressources} /></Col></Row>
         
             <Form.Control placeholder="Text der Stelle..." onFocus={()=>{centerSection()}} as="textarea" rows={3} style={{fontSize: "95%"}} value={text?text:""} onChange={e=>{setText(e.target.value)}} onBlur={async e=>{await arachne.sections.save({id: props.sId, text: e.target.value})}} />
@@ -337,12 +359,23 @@ function RessourcesButtons(props){
     const [button, setButton] = useState(null);
     const [selected, setSelected] = useState(null);
     const openRessource = (url) => {
-        if(getSetting("openExternal")){window.open(url)}
-        else{props.setRessourceView(url)}
+        switch(arachne.options.openExternally){
+            case 0:
+                props.setRessourceView(url);
+                break;
+            case 1:
+                window.open(url);
+                break;
+            case 2:
+                arachne.sendEcho({type: "edition", url: url});
+                break;
+            default:
+                props.setRessourceView(url);
+        }
     }
     useEffect(()=>{
         if(props.ressources.length===0){setButton(null)}
-        else if(props.ressources.length===1){setButton(<Button tabIndex="-1" size="sm" variant="outline-secondary" style={{width: "100%"}} onClick={()=>{openRessource(props.ressources[0].url===null||props.ressources[0].url===""?"http://localhost:8080/static/argos/index.html?site=edition&id="+props.ressources[0].id:props.ressources[0].url)}}>{props.ressources[0].label}</Button>)}
+        else if(props.ressources.length===1){setButton(<Button tabIndex="-1" size="sm" variant="outline-secondary" style={{width: "100%"}} onClick={()=>{openRessource(props.ressources[0].url===null||props.ressources[0].url===""?"/argos/"+props.ressources[0].id:props.ressources[0].url)}}>{props.ressources[0].label}</Button>)}
         else{
             setSelected(props.ressources[0]);
         }
@@ -350,7 +383,7 @@ function RessourcesButtons(props){
     useEffect(()=>{
         if(selected!=null){
             setButton(<Dropdown as={ButtonGroup}>
-                <Button size="sm" variant="outline-secondary" style={{width: "100%"}} onClick={()=>{openRessource(selected.url===null||selected.url===""?"http://localhost:8080/static/argos/index.html?site=edition&id="+selected.id:selected.url)}}>{selected.label}</Button>
+                <Button size="sm" variant="outline-secondary" style={{width: "100%"}} onClick={()=>{openRessource(selected.url===null||selected.url===""?"/argos/"+selected.id:selected.url)}}>{selected.label}</Button>
                 <Dropdown.Toggle split size="sm" variant="secondary" id="dropdown-split-basic" />
                 <Dropdown.Menu>
                     {props.ressources.map(r=><Dropdown.Item key={r.id} onClick={()=>{setSelected(r)}}>{r.label}</Dropdown.Item>)}
@@ -533,7 +566,7 @@ function TagBoxInput(props){
             if(!props.tags.find(t=>t.name.toLowerCase()===newTag.toLowerCase())){
                 const inTags = acTags.find(t=>t.name.toLowerCase()===newTag.toLowerCase());
                 if(inTags){
-                    await arachne.tag_lnks.save({tag_id: inTags.id, section_id: props.sectionId});
+                    await arachne.tag_lnks.save({tag_id: inTags.id, section_id: props.sectionId, project_id: props.project.id});
                     await props.loadTags();
                 }else{
                     const newTagId = await arachne.tags.save({
@@ -543,7 +576,7 @@ function TagBoxInput(props){
                         user_id: props.project.user_id,
                         shared_id: props.project.shared_id,
                     });
-                    await arachne.tag_lnks.save({tag_id: newTagId, section_id: props.sectionId});
+                    await arachne.tag_lnks.save({tag_id: newTagId, section_id: props.sectionId, project_id: props.project.id});
                     await props.loadTags();
                 }
             }
@@ -729,6 +762,7 @@ function ImportZettel(props){
                             section_id: newSecId,
                             user_id: props.project.user_id,
                             shared_id: props.project.shared_id,
+                            project_id: props.project.id,
                         });
                     }
                 }
@@ -747,4 +781,4 @@ function colorPicker(){
     ];
     return colors[Math.floor(Math.random() * colors.length)];
 }
-export { Editor }
+export { Editor, RessourcesButtons, TagBox }

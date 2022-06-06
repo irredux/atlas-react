@@ -6,7 +6,7 @@ import { Container, Navbar, Nav, NavDropdown } from "react-bootstrap";
 import { Overview } from "./overview.js";
 import { Editor } from "./editor.js";
 import { ChangeLog } from "./../changelog.js";
-import { Settings } from "./settings.js";
+import { Account } from "./../settings.js";
 import { arachne } from "./../arachne.js";
 
 function getSettings(){
@@ -40,7 +40,7 @@ function MainBody(props){
             main = <ChangeLog />;
             break;
         case "settings":
-            main = <Settings />;
+            main = <Account />;
             break;
         default:
             main = <div>Unbekannter Menü-Punkt: "{props.res}"</div>;

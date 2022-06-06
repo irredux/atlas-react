@@ -113,6 +113,7 @@ class Arachne {
             argos_mode: 0,
             argos_query: "",
             argos_zoom: 70,
+            openExternally: 0, // 0 = open in same window, 1 = open externally, 2 = open in echo.
         };
         let localOptions = localStorage.getItem("dmlwOptions");
         if(localOptions){
@@ -204,6 +205,35 @@ class Arachne {
         const newImg = await fetch(`${this.url}/file/scan/${scanId}`, {headers: {"Authorization": `Bearer ${this.key}`}}).then(re => re.blob());
         let nURL = URL.createObjectURL(newImg);
         return nURL;
+    }
+    async sendEcho(data){
+        const isOnline = await new Promise((resolve, reject)=>{
+            const bc = new BroadcastChannel("echo");
+            bc.onmessage = e => {
+                if(e.data.type==="hello"&&e.data.msg==="back"){resolve(true)}
+            };
+            bc.postMessage({type: "hello", msg: "echo"});
+            setTimeout(()=>{resolve(false)},500);
+
+        });
+        if(isOnline){
+            const bc = new BroadcastChannel("echo");
+            bc.postMessage(data);
+        }else{
+            const isOpened= await new Promise((resolve, reject)=>{
+                const bc = new BroadcastChannel("echo");
+                bc.onmessage = e => {
+                    if(e.data.type==="hello"&&e.data.msg==="world"){resolve(true)}
+                }
+                window.open(`/?project=${this.project_name}&app=echo`, "_blank");
+                setTimeout(()=>{resolve(false)},1000);
+            });
+            if(isOpened){
+                const bc = new BroadcastChannel("echo");
+                bc.postMessage(data);
+            }
+            else{throw "Cannot connect to echo."}
+        }
     }
 }
 
