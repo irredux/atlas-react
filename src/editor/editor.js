@@ -77,8 +77,16 @@ function Editor(props){
         newArticles.push(newArticle);
         updateArticles(newArticles);
     };
+    const changeArticle=a=>{
+        updateArticles(articles.map(l=>{
+            if(l.id!==a.id){return l}
+            else{
+                return {...l, ...a}
+            }
+        }));
+    };
     const dropArticle = async (id, parent_id, sort_nr) => {
-        let newArticles = articles;
+        let newArticles = Object.assign({},articles);
 
         // close gap in old position
         const currentArticle = articles.find(a=>a.id===id);
@@ -129,7 +137,7 @@ function Editor(props){
             modeBox = <ZettelBox setLimitFilterResults={v=>{setLimitFilterResults(v)}} showImport={showImport} showMenuLeft={showMenuLeft} filterTags={filterTags} setFilterTags={newTags=>{setFilterTags(newTags)}} setShowMenuLeft={()=>{setShowMenuLeft(false)}} setShowImport={v=>{setShowImport(v)}} project={project} filterLst={filterLst} updateSections={()=>{updateSections()}} />;
             break;
         case "outline":
-            modeBox = <OutlineBox project={project} dropArticle={(a,b,c)=>{dropArticle(a,b,c)}} articlesLst={articlesLst} articles={articles} collapsedArticlesLst={collapsedArticlesLst} toogleCollapse={a=>{toogleCollapse(a)}} />;
+            modeBox = <OutlineBox changeArticle={changeArticle} project={project} dropArticle={(a,b,c)=>{dropArticle(a,b,c)}} articlesLst={articlesLst} articles={articles} collapsedArticlesLst={collapsedArticlesLst} toogleCollapse={a=>{toogleCollapse(a)}} />;
             break;
         case "export":
             modeBox = <ExportBox project={project} />;

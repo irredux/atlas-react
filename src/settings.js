@@ -26,7 +26,7 @@ function Account(){
             <Col xs={4}>Öffnen der Ressourcen (Zettel im Editor):</Col>
             <Col><Form.Select size="sm" value={openExternally} onChange={e=>{arachne.setOptions("openExternally", parseInt(e.target.value));setOpenExternally(e.target.value)}}>
                     <option value="0">im gleichen Fenster</option>
-                    <option value="1">nebeneinander</option>
+                    <option value="1">in einem neuen Fenster</option>
                     <option value="2">in Echo</option>
                 </Form.Select></Col>
         </Row>

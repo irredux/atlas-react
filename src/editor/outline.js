@@ -21,7 +21,7 @@ function OutlineBox(props){
                 onDragOver={e=>{e.preventDefault();e.target.style.borderColor="var(--bs-primary)"}}
                 onDragLeave={e=>{e.target.style.borderColor="transparent"}}
             ></div>
-            <ArticleBox project={props.project} articles={props.articles} a={a} dragObjectId={dragObjectId} setDragObjectId={id=>{setDragObjectId(id)}} dropArticle={(a,b,c)=>{props.dropArticle(a,b,c)}} collapsed={props.collapsedArticlesLst.includes(a.id)} toogleCollapse={a=>{props.toogleCollapse(a)}} />
+            <ArticleBox changeArticle={props.changeArticle} project={props.project} articles={props.articles} a={a} dragObjectId={dragObjectId} setDragObjectId={id=>{setDragObjectId(id)}} dropArticle={(a,b,c)=>{props.dropArticle(a,b,c)}} collapsed={props.collapsedArticlesLst.includes(a.id)} toogleCollapse={a=>{props.toogleCollapse(a)}} />
         </div>;
     };
     return <Container className="outlineBox" fluid>
@@ -127,6 +127,7 @@ function ArticleBox(props){
             e.target.contentEditable=false;
             e.target.parentElement.focus();
             await arachne.article.save({id: props.a.id, name: e.target.innerText})
+            props.changeArticle({id: props.a.id, name: e.target.innerText});
         }}
         onKeyDown={e=>{
             if(e.keyCode===13){

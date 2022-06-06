@@ -18,7 +18,7 @@ function ExportBox(props){
 				}else{
 					exportLst.push(`${"    ".repeat(depth)}${"U".repeat(depth)}_BEDEUTUNG ${article.name}`);
 				}
-				sections.filter(s=>s.article_id===article.id).forEach(s=>exportLst.push(`${"    ".repeat(depth+1)}* ${s.ref}; ${s.text}`))
+				sections.filter(s=>s.article_id===article.id).forEach(s=>exportLst.push(`${"    ".repeat(depth+1)}* ${s.ref} "${s.text}"`))
 				articles.filter(a=>a.parent_id===article.id).forEach(a=>{getArticle(a,depth+1)});
 			}
 			articles.filter(a=>a.parent_id===0).forEach(a=>{getArticle(a,0)});
