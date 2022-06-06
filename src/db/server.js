@@ -239,7 +239,7 @@ class Server extends React.Component{
                     <Col>Hier finden Sie die auf dem Server laufenden und abgeschlossenen Aufträge zur ocr-Erkennung.</Col>
                 </Row>
                 <Row><Col>
-                    <StatusButton value="neuer Zettel-Auftrag aufgeben" onClick={async ()=>{
+                    <StatusButton value="neuen Zettel-Auftrag aufgeben" onClick={async ()=>{
                         const re = await arachne.exec("ocr_job");
                         if(re===200){
                             await sleep(1000);
@@ -249,7 +249,7 @@ class Server extends React.Component{
                             return {status: false, error: "Es ist bereits ein Auftrag aktiv! Warten Sie, bis dieser abgeschlossen ist."}
                         } else{return {status: false, error: "Es ist ein Fehler aufgetreten."};}
                     }} />
-                    <StatusButton style={{float: "right"}} value="neuer Scan-Auftrag aufgeben" onClick={async ()=>{
+                    <StatusButton style={{float: "right"}} value="neuen Scan-Auftrag aufgeben" onClick={async ()=>{
                         const re = await arachne.exec("ocr_job_scans");
                         if(re===200){
                             await sleep(1000);
