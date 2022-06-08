@@ -8,11 +8,18 @@ import { Bar } from "react-chartjs-2";
 import { arachne } from "./../arachne.js";
 import { parseHTML, sleep } from "./../elements.js";
 
+let fetchIndexBoxData;
+
 function Zettel(props){
     const [verso, setVerso] = useState("");
     const [editions, setEditons] = useState([]);
 
     useEffect(()=>{
+        const loadModules = async () =>{
+            ({ fetchIndexBoxData } = await import(`./../content/${props.PROJECT_NAME}.js`));
+        };
+        loadModules();
+
         const fetchData=async()=>{
             if(props.z.work_id>0){
                 const newEditions = await arachne.edition.get({work_id: props.z.work_id}, {select: ["id", "label", "url"]});
@@ -141,11 +148,9 @@ function IndexBox(props){
     const [wordLst, setWordLst] = useState([]); // contains all words
     useEffect(()=>{
         const fetchData=async()=>{
-            let wl = await arachne.lemma.getAll({select: ["id", "lemma", "lemma_display"], order: ["lemma"]})
-            wl=wl.map(w=>{return {id: w.id, lemma_display: w.lemma_display, lemma: w.lemma.toLowerCase()}})
-            setWordLst(wl)
+            setWordLst(await fetchIndexBoxData());
             setQuery("");
-        }
+        };
         fetchData();
     },[])
 

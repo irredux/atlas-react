@@ -383,9 +383,19 @@ function MainMenuContent(props){
         <NavDropdown.Item onClick={e => {props.loadMain(e, "ressources")}}>Ressourcen</NavDropdown.Item>
     </>;
 }
+
+/* ************************************************************************************* */
+
+const fetchIndexBoxData=async()=>{
+    let wl = await arachne.lemma.getAll({select: ["id", "lemma", "lemma_display"], order: ["lemma"]})
+    wl=wl.map(w=>{return {id: w.id, lemma_display: w.lemma_display, lemma: w.lemma.toLowerCase()}})
+    return wl;
+}
+
 export {
     arachneTbls,
     LemmaRow, LemmaHeader, lemmaSearchItems, LemmaAsideContent,
     zettelSearchItems, ZettelCard, zettelBatchOptions, BatchInputType, ZettelAddLemmaContent, ZettelSingleContent, newZettelObject, exportZettelObject, zettelPresetOptions, zettelSortOptions,
     MainMenuContent,
+    fetchIndexBoxData,
 }
