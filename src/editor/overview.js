@@ -228,7 +228,7 @@ function ProjectRow(props){
         if(props.p.shared_id>0&&props.p.status===4){getUserName(props.p.user_id)}
         else if(props.p.shared_id>0&&props.p.status===1){getUserName(props.p.shared_id);setIsShared(true)}
     },[]);
-    return <tr style={{height: "49px"}} className={isShared?"text-primary":null} onMouseEnter={()=>{setShowEdit(true)}} onMouseLeave={()=>{setShowEdit(false)}}><td><b style={{cursor: props.openProject?"pointer":"default"}} onClick={()=>{if(props.openProject){props.openProject(props.p.id)}}}>{props.p.name}</b></td><td>{shared}</td><td>{props.p.u_date.substring(0, 16)}</td><td>{props.p.c_date.substring(0, 16)}</td><td>
+    return <tr style={{height: "49px"}} className={isShared?"text-primary":null} onMouseEnter={()=>{setShowEdit(true)}} onMouseLeave={()=>{setShowEdit(false)}}><td><b style={{cursor: props.openProject?"pointer":"default"}} onClick={()=>{if(props.openProject){props.openProject(props.p.id)}}}>{props.p.name}</b></td><td>{shared}</td><td>{props.p.u_date.substring(0, 16)}</td><td>{props.p.c_date.substring(0, 16)}</td><td style={{minWidth: "115px"}}>
     <Dropdown style={{display: showEdit?"block":"none"}}>
         <Dropdown.Toggle size="sm" variant="outline-primary">bearbeiten</Dropdown.Toggle>
         <Dropdown.Menu variant="dark">

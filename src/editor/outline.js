@@ -1,18 +1,38 @@
 import { useState, useEffect } from "react";
-import { Modal, Card, Col, Container, Form, Row } from "react-bootstrap";
+import { Modal, Card, Col, Container, Form, Row, FormControl, InputGroup, Dropdown, DropdownButton } from "react-bootstrap";
 import { arachne } from "./../arachne";
 import { parseHTML } from "./../elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRotate } from "@fortawesome/free-solid-svg-icons";
-import { RessourcesButtons, TagBox } from "./editor.js";
+import { RessourcesButtons, TagBox } from "./zettel.js";
 
 function OutlineBox(props){
     const [dragObjectId, setDragObjectId] = useState(null);
+    const [articleHeadFields, setArticleHeadFields] = useState([]);
+    const [articleHeadSelect, setArticleHeadSelect] = useState("");
+    const [articleHeadSelectId, setArticleHeadSelectId] = useState(null);
     const devider = {
         borderTop: "4px dotted transparent",
         margin: "0 20px",
         height: "10px"
     }
+    useEffect(()=>{
+        const defaultArticleHeadFields = [
+            [900, "LEMMA"],
+            [901, "VEL"],
+            [902, "GRAMMATIK"],
+            [903, "ETYMOLOGIE"],
+            [904, "SCHREIBWEISE"],
+            [905, "FORM"],
+            [906, "STRUKTUR"],
+            [907, "GEBRAUCH"],
+            [908, "METRIK"],
+            [909, "VERWECHSELBAR"],
+        ];
+        const articleTypes = props.articles.map(a=>a.type);
+        setArticleHeadFields(defaultArticleHeadFields.filter(d=>!articleTypes.includes(d[0])));
+    }, [props.articles]);
+    useEffect(()=>{if(articleHeadFields.length>0){setArticleHeadSelect(articleHeadFields[0][1]);setArticleHeadSelectId(articleHeadFields[0][0])}}, [articleHeadFields]);
     const displayArticles = (a, depth) => {
         return <div key={a.id} style={{marginLeft: `${25*depth}px`}}>
             <div
@@ -30,6 +50,28 @@ function OutlineBox(props){
                 <Col xs="8" style={{textAlign: "right", cursor: "pointer"}}>Artikelkopf</Col>
                 <Col></Col>
             </Row>
+            {articleHeadFields.length>0?<Row>
+                <Col></Col>
+                <Col>
+                <InputGroup className="mb-3">
+                    <DropdownButton
+                    variant="outline-secondary"
+                    title={articleHeadSelect}
+                    id="input-group-dropdown-1"
+                    >
+                        {articleHeadFields.map(f=><Dropdown.Item onClick={()=>{setArticleHeadSelect(f[1]);setArticleHeadSelectId(f[0])}} key={f[0]} value={f[0]}>{f[1]}</Dropdown.Item>)}
+                    </DropdownButton>
+                    <FormControl onKeyUp={e=>{
+                        if(e.keyCode===13){
+                        console.log({type: articleHeadSelectId, name: e.target.value});
+                        e.target.value = "";
+                        }
+                    }} />
+                </InputGroup>
+                </Col>
+                <Col></Col>
+                
+            </Row>:null}
             <Row>
                 <Col></Col>
                 <Col xs="8" style={{paddingBottom: "15px", marginBottom: "15px", borderBottom: "1px solid black"}}></Col>

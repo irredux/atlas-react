@@ -22,6 +22,7 @@ function ExportBox(props){
 				articles.filter(a=>a.parent_id===article.id).forEach(a=>{getArticle(a,depth+1)});
 			}
 			articles.filter(a=>a.parent_id===0).forEach(a=>{getArticle(a,0)});
+			exportLst.push(`AUTORIN ${arachne.me.last_name}`)
 			setExportTxt(exportLst.join("\n"));
 
 		};
