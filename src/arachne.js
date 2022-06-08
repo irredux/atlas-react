@@ -188,10 +188,21 @@ class Arachne {
             throw new Error("Error: Fehler beim Zettel-Upload!");
         } else {return await re.json();}
     }
-    async exec(mode, body=false){
-        const re = await fetch(this.url+"/exec/"+mode, {method: "GET", 
-        headers: {"Authorization": `Bearer ${this.key}`}
+    async exec(mode, body=false, data=null){
+        let re;
+        if(data){
+            re = await fetch(this.url+"/exec/"+mode, {method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${this.key}`,
+                    "Content-Type": "application/json"
+                },
+                "body": JSON.stringify(data)
         });
+        }else{
+            re = await fetch(this.url+"/exec/"+mode, {method: "GET", 
+            headers: {"Authorization": `Bearer ${this.key}`}
+            });
+        }
         if(body){return await re.json()}
         else{return re.status;}
     }

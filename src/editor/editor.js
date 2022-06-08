@@ -39,7 +39,7 @@ function Editor(props){
     const updateArticles = inArticles => {
         setArticles(inArticles);
         const returnChildIds = (parentId, depth) => {
-            const childArticles = inArticles.filter(a=>a.parent_id===parentId).sort((a,b)=>a.sort_nr>b.sort_nr);
+            const childArticles = inArticles.filter(a=>a.parent_id===parentId&&a.type<900).sort((a,b)=>a.sort_nr>b.sort_nr);
             let returnLst = [];
             childArticles.forEach(a=>{
                 returnLst.push(`${depth}-${a.id}`)
@@ -65,13 +65,12 @@ function Editor(props){
         fetchData();
         updateSections();
     }, []);
-    const createNewArticle = async (newArt=null) =>{
-        const newArticle = {
-            parent_id: 0,
-            sort_nr: articles.length>0?Math.max(...articles.filter(a=>a.parent_id===0).map(a=>a.sort_nr))+1:1,
-            name: "Neue Gruppe",
-            project_id: project.id,
-        };
+    const createNewArticle = async (newArt={}) =>{
+        let newArticle = newArt;
+        newArticle.project_id = project.id;
+        newArticle.parent_id = 0;
+        newArticle.name = newArticle.name?newArticle.name:"Neue Gruppe";
+        newArticle.sort_nr = newArticle.sort_nr?newArticle.sort_nr:articles.length>0?Math.max(...articles.filter(a=>a.parent_id===0).map(a=>a.sort_nr))+1:1;
         const newId=await arachne.article.save(newArticle);
         newArticle.id = newId;
         let newArticles = articles;

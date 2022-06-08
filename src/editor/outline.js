@@ -3,10 +3,25 @@ import { Modal, Card, Col, Container, Form, Row, FormControl, InputGroup, Dropdo
 import { arachne } from "./../arachne";
 import { parseHTML } from "./../elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faRotate } from "@fortawesome/free-solid-svg-icons";
+import { faRotate, faAngleDown } from "@fortawesome/free-solid-svg-icons";
 import { RessourcesButtons, TagBox } from "./zettel.js";
 
+const defaultArticleHeadFields = [
+    [900, "LEMMA"],
+    [901, "VEL"],
+    [902, "GRAMMATIK"],
+    [903, "ETYMOLOGIE"],
+    [904, "SCHREIBWEISE"],
+    [905, "FORM"],
+    [906, "STRUKTUR"],
+    [907, "GEBRAUCH"],
+    [908, "METRIK"],
+    [909, "VERWECHSELBAR"],
+];
+
 function OutlineBox(props){
+    const [displayHead, setDisplayHead] = useState(true);
+    const [displayBody, setDisplayBody] = useState(true);
     const [dragObjectId, setDragObjectId] = useState(null);
     const [articleHeadFields, setArticleHeadFields] = useState([]);
     const [articleHeadSelect, setArticleHeadSelect] = useState("");
@@ -17,18 +32,6 @@ function OutlineBox(props){
         height: "10px"
     }
     useEffect(()=>{
-        const defaultArticleHeadFields = [
-            [900, "LEMMA"],
-            [901, "VEL"],
-            [902, "GRAMMATIK"],
-            [903, "ETYMOLOGIE"],
-            [904, "SCHREIBWEISE"],
-            [905, "FORM"],
-            [906, "STRUKTUR"],
-            [907, "GEBRAUCH"],
-            [908, "METRIK"],
-            [909, "VERWECHSELBAR"],
-        ];
         const articleTypes = props.articles.map(a=>a.type);
         setArticleHeadFields(defaultArticleHeadFields.filter(d=>!articleTypes.includes(d[0])));
     }, [props.articles]);
@@ -45,50 +48,75 @@ function OutlineBox(props){
         </div>;
     };
     return <Container className="outlineBox" fluid>
-            <Row>
+            <Row className="mb-3">
                 <Col></Col>
-                <Col xs="8" style={{textAlign: "right", cursor: "pointer"}}>Artikelkopf</Col>
+                <Col xs="8" style={{userSelect: "none", textAlign: "right", cursor: "pointer", color: "var(--bs-gray-500)"}} onClick={()=>{setDisplayHead(!displayHead)}}>{displayHead?null:<><FontAwesomeIcon icon={faAngleDown} /> </>}Artikelkopf</Col>
                 <Col></Col>
             </Row>
-            {articleHeadFields.length>0?<Row>
-                <Col></Col>
-                <Col>
-                <InputGroup className="mb-3">
-                    <DropdownButton
-                    variant="outline-secondary"
-                    title={articleHeadSelect}
-                    id="input-group-dropdown-1"
-                    >
-                        {articleHeadFields.map(f=><Dropdown.Item onClick={()=>{setArticleHeadSelect(f[1]);setArticleHeadSelectId(f[0])}} key={f[0]} value={f[0]}>{f[1]}</Dropdown.Item>)}
-                    </DropdownButton>
-                    <FormControl onKeyUp={e=>{
-                        if(e.keyCode===13){
-                        console.log({type: articleHeadSelectId, name: e.target.value});
-                        e.target.value = "";
-                        }
-                    }} />
-                </InputGroup>
-                </Col>
-                <Col></Col>
+            {displayHead?<>
+                {props.articles.filter(a=>a.type>=900).sort((a,b)=>a.type>b.type).map(a=><Row key={a.id}>
+                    <Col></Col>
+                    <Col xs="8">
+                    <div style={{display: "flex", marginBottom: "20px"}}>
+                        <div style={{width: "200px", fontWeight: "bold"}}>{defaultArticleHeadFields.find(d=>d[0]===a.type)[1]}</div>
+                        <input value={a.name} onChange={e=>{props.changeArticle({id: a.id, name: e.target.value})}}
+                            onBlur={async(e)=>{await arachne.article.save({id: a.id, name: e.target.value})}} style={{width: "100%", outline: "none", border: "none", borderBottom: "1px solid var(--bs-gray-500)"}} type="text" />
+                    </div>
+
+
+                    {/*<InputGroup className="mb-3">
+                                        <InputGroup.Text style={{width: "165px"}}></InputGroup.Text>
+                                        <FormControl
+                                          
+                                          
+                                        />
+                                  </InputGroup>*/}
+                  </Col>
+                    <Col></Col>
+                </Row>)}
                 
-            </Row>:null}
+                {articleHeadFields.length>0?<Row>
+                    <Col></Col>
+                    <Col xs="8">
+                    <InputGroup className="mb-3">
+                        <DropdownButton
+                            style={{width: "165px"}} 
+                            variant="outline-secondary"
+                            title={articleHeadSelect}
+                            id="input-group-dropdown-1"
+                        >
+                            {articleHeadFields.map(f=><Dropdown.Item onClick={()=>{setArticleHeadSelect(f[1]);setArticleHeadSelectId(f[0])}} key={f[0]} value={f[0]}>{f[1]}</Dropdown.Item>)}
+                        </DropdownButton>
+                        <FormControl onKeyUp={e=>{
+                            if(e.keyCode===13){
+                                props.createNewArticle({type: articleHeadSelectId, name: e.target.value, sort_nr: -1});
+                                setArticleHeadFields(articleHeadFields.filter(d=>d[0]!==articleHeadSelectId));
+                                e.target.value = "";
+                            }
+                        }} />
+                    </InputGroup>
+                    </Col>
+                    <Col></Col>
+                    
+                </Row>:null}
+            </>:null}
             <Row>
                 <Col></Col>
-                <Col xs="8" style={{paddingBottom: "15px", marginBottom: "15px", borderBottom: "1px solid black"}}></Col>
+                <Col xs="8" style={{paddingBottom: "15px", marginBottom: "15px", borderBottom: "1px solid var(--bs-gray-500)"}}></Col>
                 <Col></Col>
             </Row>
             <Row>
                 <Col></Col>
-                <Col xs="8" style={{textAlign: "right", cursor: "pointer"}}>Stellen</Col>
+                <Col xs="8" style={{userSelect: "none", textAlign: "right", cursor: "pointer", color: "var(--bs-gray-500)"}} onClick={()=>{setDisplayBody(!displayBody)}}>{displayBody?null:<><FontAwesomeIcon icon={faAngleDown} /> </>}Stellen</Col>
                 <Col></Col>
             </Row>
-            <Row>
+            {displayBody?<Row>
                 <Col></Col>
                 <Col xs="8">
                     {props.articlesLst.map(a=>displayArticles(props.articles.find(b=>b.id===parseInt(a.split("-")[1])), a.split("-")[0]))}
                 </Col>
                 <Col></Col>
-            </Row>
+            </Row>:null}
         </Container>;
 }
 function ArticleBox(props){
@@ -371,4 +399,4 @@ function SectionDetailEdit(props) {
         {/*<Modal.Footer></Modal.Footer>*/}
     </Modal>;
 }
-export { OutlineBox }
+export { OutlineBox, defaultArticleHeadFields }
