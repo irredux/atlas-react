@@ -4,7 +4,8 @@ import { Accordion, Col, Row, Container, NavDropdown, Card, ListGroup, Spinner }
 import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSync, faAngleRight, faAngleLeft } from "@fortawesome/free-solid-svg-icons";
-import { Bar } from "react-chartjs-2";
+import 'chart.js/auto';
+import { Bar, Pie } from "react-chartjs-2";
 function arachneTbls(){
     return ["project", "author", "edition", "lemma", "opera_maiora", "opera_minora", "scan", "scan_lnk", "work", "zettel", "user", "seklit", "article", "zettel_lnk", "statistics", "scan_paths", "ocr_jobs", "comment", "scan_opera", "fulltext_search_view", "tags", "tag_lnks", "sections"];
 }
@@ -514,10 +515,119 @@ function IndexBoxDetail(props){
     </>:null);
 }
 
+/* ************************************************************************************* */
+
+function StatisticsChart(props){
+    let returnChart = null;
+    switch(props.name){
+        case "zettel_process":
+            returnChart=<div style={{margin: "auto", marginBottom: "80px", width: "450px", height: "450px"}}><h4>nach Bearbeitungsstand</h4><Pie options={{plugins: {legend:{position: "bottom"}}}} data={{
+                    labels: ["abgeschlossen", "nur Lemma", "unbearbeitet"],
+                    datasets: [
+                      {
+                        label: '# of Votes',
+                        data: props.data,
+                        backgroundColor: ['#114B79', '#347F9F', '#EAF2F3'],
+                        borderColor: ['#1B3B6F', '#065A82', '#E8F1F2'],
+                        borderWidth: 1,
+                      },
+                    ],
+                }} /></div>;
+            break;
+        case "zettel_type":
+            returnChart=<div style={{margin: "auto", marginBottom: "80px", width: "450px", height: "450px"}}><h4>nach Typen</h4><Pie options={{plugins: {legend:{position: "bottom"}}}} data={{
+                    labels: ["verzetteltes Material", "Exzerpt", "Index", "Literatur", "Index (unkl. Werk)", "Notiz", "kein Typ"],
+                    datasets: [
+                      {
+                        label: '# of Votes',
+                        data: props.data,
+                        backgroundColor: ['#114B79', '#347F9F', '#8FC9D9', '#D2EFF4', '#EAF2F3', '#EFEFEF', '#FFFFFF'],
+                        borderColor: ['#1B3B6F', '#065A82', '#61A4BC', '#BCEDF6', '#E8F1F2', '#EEEEEE', "#EFEFEF"],
+                        borderWidth: 1,
+                      },
+                    ],
+                }} /></div>;
+            break;
+        case "zettel_created_changed":
+            returnChart=<div style={{marginBottom: "80px", width: "100%", height: "400px"}}><h4>nach Jahren</h4><Bar options={{aspectRatio: false, plugins: {legend:{display: true, position: "bottom"}}}} data={{
+                labels: ["2020", "2021", "2022"],
+                datasets: [
+                    {
+                        label: 'verändert',
+                        data: props.data[1],
+                        backgroundColor: ['#114B79'],
+                        borderColor: ['#114B79'],
+                        borderWidth: 1,
+                        //fill: true,
+                        type: 'line',
+                    },
+                    {
+                        label: 'erstellt',
+                        data: props.data[0],
+                        backgroundColor: ['#347F9F'],
+                        borderColor: ['#347F9F'],
+                        borderWidth: 1,
+                    },
+                ],
+            }} /></div>;
+            break;
+        case "":
+            returnChart=<div style={{marginBottom: "80px", width: "100%", height: "400px"}}><h4>in diesem Jahr</h4><Bar options={{aspectRatio: false, plugins: {legend:{display: true, position: "bottom"}}}} data={{
+                labels: ["Jan.", "Feb.", "Mär.", "Apr.", "Mai", "Jun.", "Jul.", "Aug.", "Sep.", "Okt.", "Nov.", "Dez."].splice((new Date()).getMonth()+1),
+                datasets: [
+                    {
+                        label: 'verändert',
+                        data: props.data[1],
+                        backgroundColor: ['#114B79'],
+                        borderColor: ['#114B79'],
+                        borderWidth: 1,
+                        //fill: true,
+                        type: 'line',
+                    },
+                    {
+                        label: 'erstellt',
+                        data: props.data[0],
+                        backgroundColor: ['#347F9F'],
+                        borderColor: ['#347F9F'],
+                        borderWidth: 1,
+                    },
+                ],
+            }} /></div>;
+            break;
+        case "":
+            returnChart=null;
+            break;
+        case "":
+            returnChart=null;
+            break;
+        case "":
+            returnChart=null;
+            break;
+        default:
+            console.log(props.name);
+            //throw new Error("Statistic Name not found!");
+    }
+    /*
+            // zettel
+
+
+            // created in current year
+            let zettel_current_year_labels = ;
+            zettel_current_year_labels
+            const zettel_created_current_data = ;
+            zettelCharts.push();
+            
+            zettelBox = <div>{zettelCharts}</div>;
+        }
+
+    */
+    return returnChart;
+}
 export {
     arachneTbls,
     LemmaRow, LemmaHeader, lemmaSearchItems, LemmaAsideContent,
     zettelSearchItems, ZettelCard, zettelBatchOptions, BatchInputType, ZettelAddLemmaContent, ZettelSingleContent, newZettelObject, exportZettelObject, zettelPresetOptions, zettelSortOptions,
     MainMenuContent,
     fetchIndexBoxData, IndexBoxDetail,
+    StatisticsChart,
 }

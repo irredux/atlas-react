@@ -1,5 +1,5 @@
 import { Alert, Button, Row, Col, Offcanvas, Table, Form, Navbar, Container, Tabs, Tab } from "react-bootstrap";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import 'chart.js/auto';
 import { Bar, Pie } from "react-chartjs-2";
 import { faSun, faMoon } from "@fortawesome/free-solid-svg-icons";
@@ -8,7 +8,73 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { arachne } from "./../arachne.js";
 import { AutoComplete, SelectMenu, ToolKit, StatusButton, sleep, sqlDate } from "./../elements.js";
 
-class Statistics extends React.Component{
+let StatisticsChart;
+
+function Statistics(props){
+    const [statData, setStatData] = useState([]);
+    const [lastUpdated, setLastUpdated] = useState(null);
+    const [zettelBox, setZettelBox] = useState([]);
+    const [lemmaBox, setLemmaBox] = useState([]);
+    const [ressourceBox, setRessourceBox] = useState([]);
+    useEffect(()=>{
+        const fetchData=async()=>{
+            ({ StatisticsChart } = await import(`./../content/${props.PROJECT_NAME}.js`));
+            const dataIn = await arachne.statistics.getAll();
+            let newZettelBox = [];
+            let newLemmaBox = [];
+            let newRessourceBox = [];
+            dataIn.forEach(d=>{
+                if(d.name==="last_updated"){
+                    setLastUpdated(JSON.parse(d.data));
+                }else if(d.name.substring(0,6)==="zettel"){
+                    newZettelBox.push(<StatisticsChart key={d.id} name={d.name} data={JSON.parse(d.data)} />);
+                }else if(d.name.substring(0,5)==="lemma"){
+                    newLemmaBox.push(<StatisticsChart key={d.id} name={d.name} data={JSON.parse(d.data)} />);
+                }else if(d.name.substring(0,9)==="ressource"){
+                    newRessourceBox.push(<StatisticsChart key={d.id} name={d.name} data={JSON.parse(d.data)} />);
+                }else{
+                    throw new Error("data type not found!");
+                }
+            });
+            setZettelBox(newZettelBox);
+            setLemmaBox(newLemmaBox);
+            setRessourceBox(newRessourceBox);
+        };
+        fetchData();
+    }, []);
+    return <>
+        <Navbar fixed="bottom" bg="light">
+            <Container fluid>
+                <Navbar.Collapse className="justify-content-end">
+                    <Navbar.Text>
+                        {arachne.access("l_edit")&&<ToolKit menuItems={[
+                                ["Statistik aktualisieren", async ()=>{
+                                    if(window.confirm("Sollen die Statistik aktualisiert werden? Dieser Prozess dauert ca. 30 Sekunden.")){
+                                        const reStatus = await arachne.exec("statistics_update");
+                                        if(reStatus===200){
+                                            this.getNumbers();
+                                            return {status: true};
+                                        }else{
+                                            return {status: false, error: "Die Aktualisierung war nicht erfolgreich."};
+                                        }
+                                    }
+                                }]
+                            ]} />}
+                    </Navbar.Text>
+                </Navbar.Collapse>
+            </Container>
+        </Navbar>
+        <Container className="mainBody">
+            <Tabs defaultActiveKey="lemma" className="mb-3">
+                <Tab eventKey="lemma" title="Lemma">{lemmaBox}</Tab>
+                <Tab eventKey="zettel" title="Zettel">{zettelBox}</Tab>
+                <Tab eventKey="ressource" title="Werke und Ressourcen">{ressourceBox}</Tab>
+            </Tabs>
+            <div style={{float: "right", color: "var(--bs-gray-400"}}>{lastUpdated}</div>
+        </Container>
+    </>;
+}
+class StatisticsOLD extends React.Component{
     constructor(props){
         super(props);
         this.state = {
@@ -18,95 +84,7 @@ class Statistics extends React.Component{
         };
     }
     render(){
-        // zettel
         let zettelBox = null;
-        if(this.state.zettel_process){
-            let zettelCharts = [];
-
-            // process
-            const zettel_process_data = {
-                labels: ["abgeschlossen", "nur Lemma", "unbearbeitet"],
-                datasets: [
-                  {
-                    label: '# of Votes',
-                    data: this.state.zettel_process,
-                    backgroundColor: ['#114B79', '#347F9F', '#EAF2F3'],
-                    borderColor: ['#1B3B6F', '#065A82', '#E8F1F2'],
-                    borderWidth: 1,
-                  },
-                ],
-            };
-            
-            zettelCharts.push(<div key="1" style={{margin: "auto", marginBottom: "80px", width: "450px", height: "450px"}}><h4>nach Bearbeitungsstand</h4><Pie options={{plugins: {legend:{position: "bottom"}}}} data={zettel_process_data} /></div>);
-            
-            // zetteltype
-            const zettel_types_data = {
-                labels: ["verzetteltes Material", "Exzerpt", "Index", "Literatur", "Index (unkl. Werk)", "Notiz", "kein Typ"],
-                datasets: [
-                  {
-                    label: '# of Votes',
-                    data: this.state.zettel_types,
-                    backgroundColor: ['#114B79', '#347F9F', '#8FC9D9', '#D2EFF4', '#EAF2F3', '#EFEFEF', '#FFFFFF'],
-                    borderColor: ['#1B3B6F', '#065A82', '#61A4BC', '#BCEDF6', '#E8F1F2', '#EEEEEE', "#EFEFEF"],
-                    borderWidth: 1,
-                  },
-                ],
-            };
-            zettelCharts.push(<div key="2" style={{margin: "auto", marginBottom: "80px", width: "450px", height: "450px"}}><h4>nach Typen</h4><Pie options={{plugins: {legend:{position: "bottom"}}}} data={zettel_types_data} /></div>);
-
-            // created in years
-            const zettel_created_data = {
-                labels: ["2020", "2021", "2022"],
-                datasets: [
-                    {
-                        label: 'verändert',
-                        data: this.state.zettel_changed,
-                        backgroundColor: ['#114B79'],
-                        borderColor: ['#114B79'],
-                        borderWidth: 1,
-                        /*fill: true,*/
-                        type: 'line',
-                    },
-                    {
-                        label: 'erstellt',
-                        data: this.state.zettel_created,
-                        backgroundColor: ['#347F9F'],
-                        borderColor: ['#347F9F'],
-                        borderWidth: 1,
-                    },
-                ],
-            };
-            zettelCharts.push(<div key="3" style={{marginBottom: "80px", width: "100%", height: "400px"}}><h4>nach Jahren</h4><Bar options={{aspectRatio: false, plugins: {legend:{display: true, position: "bottom"}}}} data={zettel_created_data} /></div>);
-
-            // created in current year
-            let zettel_current_year_labels = ["Jan.", "Feb.", "Mär.", "Apr.", "Mai", "Jun.", "Jul.", "Aug.", "Sep.", "Okt.", "Nov.", "Dez."];
-            zettel_current_year_labels.splice((new Date()).getMonth()+1)
-            const zettel_created_current_data = {
-                labels: zettel_current_year_labels,
-                datasets: [
-                    {
-                        label: 'verändert',
-                        data: this.state.zettel_changed_current,
-                        backgroundColor: ['#114B79'],
-                        borderColor: ['#114B79'],
-                        borderWidth: 1,
-                        /*fill: true,*/
-                        type: 'line',
-                    },
-                    {
-                        label: 'erstellt',
-                        data: this.state.zettel_created_current,
-                        backgroundColor: ['#347F9F'],
-                        borderColor: ['#347F9F'],
-                        borderWidth: 1,
-                    },
-                ],
-            };
-            zettelCharts.push(<div key="4" style={{marginBottom: "80px", width: "100%", height: "400px"}}><h4>in diesem Jahr</h4><Bar options={{aspectRatio: false, plugins: {legend:{display: true, position: "bottom"}}}} data={zettel_created_current_data} /></div>);
-            
-            zettelBox = <div>{zettelCharts}</div>;
-        }
-
         // lemma
         let lemmaBox = null;
         if(this.state.lemma_letters){
@@ -201,7 +179,7 @@ class Statistics extends React.Component{
     }
     componentDidMount(){this.getNumbers()}
     async getNumbers(){
-        const numbers = JSON.parse(await arachne.statistics.getAll());
+        const numbers = await arachne.statistics.getAll();
         this.setState({
             last_updated: JSON.parse(numbers.find(i => i.name === "last_updated").data),
             zettel_process: JSON.parse(numbers.find(i => i.name === "zettel_process").data),

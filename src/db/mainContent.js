@@ -20,7 +20,7 @@ function MainBody(props){
     let main = {
         null: <ChangeLog />,
         "ressources": <Ressource />, // mlw
-        "stats": <Statistics />,
+        "stats": <Statistics PROJECT_NAME={props.PROJECT_NAME} />,
         "server": <Server />,
         "lemma": <Lemma PROJECT_NAME={props.PROJECT_NAME} loadMain={(e,res)=>{props.loadMain(e, res)}} />,
         "import": <Import loadMain={(e,res)=>{props.loadMain(e, res)}} />,
