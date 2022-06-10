@@ -89,6 +89,11 @@ function MainNavBar(props){
 
 const dbChangeLog = [
     {
+        title: "Beta 12.10",
+        date: "2022-06-10",
+        description: <><p>Die Suchfunktion (<FontAwesomeIcon icon={faSearch} />) unterstützt nun reguläre Ausdrücke: Wählen Sie "re" als Operator aus. Weitere Hinweise finden Sie <a href="https://mariadb.com/kb/en/regular-expressions-overview/" target="_blank">hier</a>.</p></>
+    },
+    {
         project: "dom",
         title: "dDOM Update",
         date: "2022-06-03",

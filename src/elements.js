@@ -379,6 +379,7 @@ class SearchInput extends React.Component{
                 <option value=">=">≥</option>
                 <option value="<">&lt;</option>
                 <option value="<=">≤</option>
+                <option value="REGEXP">re</option>
             </select>
             <input type="text" placeholder="..."  style={{width: "100px", marginRight: "22px", border:"none"}} onKeyUp={e=>{if(e.keyCode===13){this.props.clickButton()}}} value={this.state.v} onChange={e=>{this.setState({v: e.target.value})}} />
             <FontAwesomeIcon color="LightGray" icon={faMinusCircle} onClick={
