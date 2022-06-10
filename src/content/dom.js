@@ -377,11 +377,16 @@ function DOMOpera(props){
         }]
     ];
     const tblRow=(props)=>{
-        return <><td title={"ID: "+props.cEl.id} dangerouslySetInnerHTML={parseHTML(props.cEl.sigel)}></td><td dangerouslySetInnerHTML={parseHTML(props.cEl.werk)}></td><td className="minorTxt">
-                        {props.cEl.bibgrau&&<p dangerouslySetInnerHTML={parseHTML(props.cEl.bibgrau)}></p>}
-                        {props.cEl.bibvoll&&<p dangerouslySetInnerHTML={parseHTML(props.cEl.bibvoll)}></p>}
-                        {props.cEl.bibzusatz&&<p dangerouslySetInnerHTML={parseHTML(props.cEl.bibzusatz)}></p>}
-                </td></>;
+        return <>
+            <td title={"ID: "+props.cEl.id} dangerouslySetInnerHTML={parseHTML(props.cEl.sigel)}></td>
+            <td dangerouslySetInnerHTML={parseHTML(props.cEl.werk)}></td>
+            <td className="minorTxt">
+                {props.cEl.bibgrau&&<p dangerouslySetInnerHTML={parseHTML(props.cEl.bibgrau)}></p>}
+                {props.cEl.bibvoll&&<p dangerouslySetInnerHTML={parseHTML(props.cEl.bibvoll)}></p>}
+                {props.cEl.bibzusatz&&<p dangerouslySetInnerHTML={parseHTML(props.cEl.bibzusatz)}></p>}
+            </td>
+            <td style={{textAlign: "right"}}>{props.cEl.konkordanz_count}</td>
+        </>;
     };
     const asideContent = [ // caption; type: t(ext-input), (text)a(rea), (auto)c(omplete); col names as array
         {caption: "dol-ID", type: "text", col: "db_id"},
@@ -393,11 +398,11 @@ function DOMOpera(props){
     ];
     return <TableView
         tblName="opera"
-        searchOptions={[["sigel", "Sigel"], ["id", "ID"]]}
+        searchOptions={[["sigel", "Sigel"], ["id", "ID"], ["konkordanz_count", "Anz. Konk.-E."]]}
         sortOptions={[['["id"]', "ID"], ['["sigel"]', "Sigel"]]}
         menuItems={menuItems}
         tblRow={tblRow}
-        tblHeader={<><th>Sigel</th><th>Werktitel</th><th>Bibliographie</th></>}
+        tblHeader={<><th>Sigel</th><th>Werktitel</th><th>Bibliographie</th><th>Anz. Konkordanz-Einträge</th></>}
         asideContent={asideContent}
     />;
 }
