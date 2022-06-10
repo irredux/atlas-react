@@ -85,47 +85,13 @@ class StatisticsOLD extends React.Component{
     }
     render(){
         let zettelBox = null;
-        // lemma
         let lemmaBox = null;
-        if(this.state.lemma_letters){
-            let lemmaCharts = [];
-            // nach Buchstaben
-            const lemma_letters_data = {
-                labels: ["A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "X", "Y", "Z"],
-                datasets: [
-                  {
-                    label: '',
-                    data: this.state.lemma_letters,
-                    backgroundColor: ['#114B79', '#347F9F', '#8FC9D9', '#D2EFF4', '#EAF2F3'],
-                    borderColor: ['#1B3B6F', '#065A82', '#61A4BC', '#BCEDF6', '#E8F1F2'],
-                    borderWidth: 1,
-                  },
-                ],
-            };
-            lemmaCharts.push(<div key="1" style={{margin: "auto", marginBottom: "80px", width: "450px", height: "450px"}}><h4>nach Buchstaben</h4><Pie options={{plugins: {legend:{display: false, position: "bottom"}}}} data={lemma_letters_data} /></div>);
-
-            // Filtern der Lemma nach Typ (in MLW)
-            const lemma_mlw_data = {
-                labels: ["relevant", "nicht relevant"],
-                datasets: [
-                  {
-                    label: '',
-                    data: this.state.lemma_mlw,
-                    backgroundColor: ['#114B79', '#EAF2F3'],
-                    borderColor: ['#1B3B6F', '#E8F1F2'],
-                    borderWidth: 1,
-                  },
-                ],
-            };
-            lemmaCharts.push(<div key="2" style={{margin: "auto", marginBottom: "80px", width: "450px", height: "450px"}}><h4>nach Relevanz fürs Wörterbuch</h4><Pie options={{plugins: {legend:{display: true, position: "bottom"}}}} data={lemma_mlw_data} /></div>);
-
-            lemmaBox = <div style={{display: "flex", flexWrap: "wrap"}}>{lemmaCharts}</div>;
-        }
         
         // ressources
         let ressourceBox = null;
         if(this.state.ressource_work){
             let ressourceCharts = [];
+
             // Werke mit/ohne Ressourcen - Werk mit/ohne Edition: Nach Ressource-Typ sortieren.
 
             // Volltexte pro Scans

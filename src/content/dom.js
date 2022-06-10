@@ -391,18 +391,18 @@ function DOMOpera(props){
     const asideContent = [ // caption; type: t(ext-input), (text)a(rea), (auto)c(omplete); col names as array
         {caption: "dol-ID", type: "text", col: "db_id"},
         {caption: "Sigel", type: "text", col: "sigel"},
-        {caption: "Werk", type: "text", col: "werk"},
+        {caption: "Quelle", type: "text", col: "werk"},
         {caption: "Bib-Grau", type: "text", col: "bibgrau"},
         {caption: "Bib-Zusatz", type: "text", col: "bibzusatz"},
         {caption: "Bib-Voll", type: "text", col: "bibvoll"},
     ];
     return <TableView
         tblName="opera"
-        searchOptions={[["sigel", "Sigel"], ["id", "ID"], ["konkordanz_count", "Anz. Konk.-E."]]}
+        searchOptions={[["sigel", "Sigel"], ["id", "ID"], ["konkordanz_count", "verknpft. Konk."]]}
         sortOptions={[['["id"]', "ID"], ['["sigel"]', "Sigel"]]}
         menuItems={menuItems}
         tblRow={tblRow}
-        tblHeader={<><th>Sigel</th><th>Werktitel</th><th>Bibliographie</th><th>Anz. Konkordanz-Einträge</th></>}
+        tblHeader={<><th>Sigel</th><th>Titel der Quelle</th><th>Bibliographie</th><th>verknpft. Konkordanz-Einträge</th></>}
         asideContent={asideContent}
     />;
 }
@@ -421,7 +421,7 @@ function Konkordanz(props){
     };
     const asideContent = [ // caption; type: t(ext-input), (text)a(rea), (auto)c(omplete); col names as array
         {caption: "Zettel-Sigel", type: "text", col: "zettel_sigel"},
-        {caption: "Verknüpftes Werk", type: "auto", col: ["sigel", "opera_id"], search: {tbl: "opera", sCol: "sigel", rCol: "sigel"}},
+        {caption: "verknpft. Quelle", type: "auto", col: ["sigel", "opera_id"], search: {tbl: "opera", sCol: "sigel", rCol: "sigel"}},
         {caption: "Kommentar", type: "area", col: "comment"},
     ];
     return <TableView
@@ -449,8 +449,8 @@ function Etudaus(props){
     };
     const asideContent = [ // caption; type: t(ext-input), (text)a(rea), (auto)c(omplete); col names as array
         {caption: "Sigel", type: "text", col: "sigel"},
-        {caption: "verknpft. Werk", type: "auto", col: ["opera", "opera_id"], search: {tbl: "opera", sCol: "sigel", rCol: "sigel"}},
-        {caption: "Werk", type: "area", col: "werk"},
+        {caption: "verknpft. Quelle", type: "auto", col: ["opera", "opera_id"], search: {tbl: "opera", sCol: "sigel", rCol: "sigel"}},
+        {caption: "Titel der Quelle", type: "area", col: "werk"},
     ];
     return <TableView
         tblName="etudaus"
@@ -486,7 +486,7 @@ function DOMRessource(props){
     ];
     return <TableView
         tblName="edition"
-        searchOptions={[["editor", "EditorIn"], ["year", "Jahr"]]}
+        searchOptions={[["id", "ID"], ["editor", "EditorIn"], ["year", "Jahr"]]}
         sortOptions={[['["id"]', "ID"]]}
         menuItems={menuItems}
         tblRow={tblRow}

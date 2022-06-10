@@ -571,9 +571,9 @@ function StatisticsChart(props){
                 ],
             }} /></div>;
             break;
-        case "":
+        case "zettel_created_changed_current":
             returnChart=<div style={{marginBottom: "80px", width: "100%", height: "400px"}}><h4>in diesem Jahr</h4><Bar options={{aspectRatio: false, plugins: {legend:{display: true, position: "bottom"}}}} data={{
-                labels: ["Jan.", "Feb.", "Mär.", "Apr.", "Mai", "Jun.", "Jul.", "Aug.", "Sep.", "Okt.", "Nov.", "Dez."].splice((new Date()).getMonth()+1),
+                labels: ["Jan.", "Feb.", "Mär.", "Apr.", "Mai", "Jun.", "Jul.", "Aug.", "Sep.", "Okt.", "Nov.", "Dez."].slice(0,(new Date()).getMonth()+1),
                 datasets: [
                     {
                         label: 'verändert',
@@ -594,33 +594,106 @@ function StatisticsChart(props){
                 ],
             }} /></div>;
             break;
-        case "":
-            returnChart=null;
+        case "zettel_letter":
+            returnChart=<div style={{marginBottom: "80px", width: "100%", height: "400px"}}><h4>nach Buchstaben</h4><Bar options={{
+                aspectRatio: false,
+                plugins: {legend:{display: true, position: "bottom"}},
+                scales: {x: {stacked: true}, y: {stacked: true}}
+            }}
+            data={{
+                labels: ["A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "W", "X", "Y", "Z"],
+                datasets: [
+                    {
+                        label: 'Anzahl verzetteltes Material',
+                        data: props.data[0],
+                        backgroundColor: ['#347F9F'],
+                        borderColor: ['#347F9F'],
+                        borderWidth: 1,
+                    },
+                    {
+                        label: 'Anzahl Exzerpt-Zettel',
+                        data: props.data[1],
+                        backgroundColor: ['#8FC9D9'],
+                        borderColor: ['#8FC9D9'],
+                        borderWidth: 1,
+                    },
+                    {
+                        label: 'Anzahl Index-Zettel',
+                        data: props.data[2],
+                        backgroundColor: ['#D2EFF4'],
+                        borderColor: ['#D2EFF4'],
+                        borderWidth: 1,
+                    },
+                    {
+                        label: 'Anzahl restlicher Zettel',
+                        data: props.data[3],
+                        backgroundColor: ['#EAF2F3'],
+                        borderColor: ['#EAF2F3'],
+                        borderWidth: 1,
+                    },
+                ],
+            }} /></div>;
             break;
-        case "":
-            returnChart=null;
+        case "lemma_letter":
+            returnChart=<div style={{marginBottom: "80px", margin: "auto", width: "70%", height: "600px"}}><h4>nach Buchstaben</h4><Bar options={{plugins: {legend:{display: false, position: "bottom"}}}} data={{
+                labels: ["A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "X", "Y", "Z"],
+                datasets: [
+                  {
+                    label: '',
+                    data: props.data,
+                    backgroundColor: ['#114B79', '#347F9F', '#8FC9D9', '#D2EFF4', '#EAF2F3'],
+                    borderColor: ['#1B3B6F', '#065A82', '#61A4BC', '#BCEDF6', '#E8F1F2'],
+                    borderWidth: 1,
+                  },
+                ],
+            }} /></div>;
             break;
-        case "":
-            returnChart=null;
+        case "lemma_mlw":
+            returnChart=<div style={{margin: "auto", marginBottom: "80px", width: "450px", height: "450px"}}><h4>nach Relevanz fürs Wörterbuch</h4><Pie options={{plugins: {legend:{display: true, position: "bottom"}}}} data={{
+                labels: ["relevant", "nicht relevant"],
+                datasets: [
+                  {
+                    label: '',
+                    data: props.data,
+                    backgroundColor: ['#114B79', '#EAF2F3'],
+                    borderColor: ['#1B3B6F', '#E8F1F2'],
+                    borderWidth: 1,
+                  },
+                ],
+            }} /></div>;
+            break;
+        case "ressource_work":
+            returnChart=<div style={{margin: "auto", marginBottom: "80px", width: "450px", height: "450px"}}><h4>Werke nach Volltext und pdfs</h4><Pie options={{plugins: {legend:{position: "bottom"}}}} data={{
+                labels: ["mit Volltext und pdf", "nur mit pdf", "ohne pdf und Volltext", "nicht in Benutzung"],
+                datasets: [
+                  {
+                    label: '',
+                    data: props.data,
+                    backgroundColor: ['#114B79', '#347F9F', '#EAF2F3', '#FFFFFF'],
+                    borderColor: ['#1B3B6F', '#065A82', '#E8F1F2', "#EFEFEF"],
+                    borderWidth: 1,
+                  },
+                ],
+            }} /></div>;
+            break;
+        case "ressource_scans":
+            returnChart=<div style={{margin: "auto", marginBottom: "80px", width: "450px", height: "450px"}}><h4>Scan-Seiten und Volltexte</h4><Pie options={{plugins: {legend:{position: "bottom"}}}} data={{
+                labels: ["geprüfter Volltext", "automatischer Volltext", "ohne Volltext", "kein lat. Text"],
+                datasets: [
+                  {
+                    label: '',
+                    data: props.data,
+                    backgroundColor: ['#114B79', '#347F9F', '#EAF2F3', '#FFFFFF'],
+                    borderColor: ['#1B3B6F', '#065A82', '#E8F1F2', "#EFEFEF"],
+                    borderWidth: 1,
+                  },
+                ],
+            }} /></div>;
             break;
         default:
             console.log(props.name);
             //throw new Error("Statistic Name not found!");
     }
-    /*
-            // zettel
-
-
-            // created in current year
-            let zettel_current_year_labels = ;
-            zettel_current_year_labels
-            const zettel_created_current_data = ;
-            zettelCharts.push();
-            
-            zettelBox = <div>{zettelCharts}</div>;
-        }
-
-    */
     return returnChart;
 }
 export {
