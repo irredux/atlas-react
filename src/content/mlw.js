@@ -1,8 +1,10 @@
 import { parseHTML, parseHTMLPreview, SelectMenu, StatusButton, AutoComplete } from "./../elements.js";
 import { arachne } from "./../arachne.js";
-import { Col, Row, Container, NavDropdown } from "react-bootstrap";
+import { Accordion, Col, Row, Container, NavDropdown, Card, ListGroup, Spinner } from "react-bootstrap";
 import { useState, useEffect } from "react";
-
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSync, faAngleRight, faAngleLeft } from "@fortawesome/free-solid-svg-icons";
+import { Bar } from "react-chartjs-2";
 function arachneTbls(){
     return ["project", "author", "edition", "lemma", "opera_maiora", "opera_minora", "scan", "scan_lnk", "work", "zettel", "user", "seklit", "article", "zettel_lnk", "statistics", "scan_paths", "ocr_jobs", "comment", "scan_opera", "fulltext_search_view", "tags", "tag_lnks", "sections"];
 }
@@ -391,11 +393,131 @@ const fetchIndexBoxData=async()=>{
     wl=wl.map(w=>{return {id: w.id, lemma_display: w.lemma_display, lemma: w.lemma.toLowerCase()}})
     return wl;
 }
+function Zettel(props){
+    const [verso, setVerso] = useState("");
+    const [editions, setEditons] = useState([]);
+    useEffect(()=>{
+        const fetchData=async()=>{
+            if(props.z.work_id>0){
+                const newEditions = await arachne.edition.get({work_id: props.z.work_id}, {select: ["id", "label", "url"]});
+                let editionsLst = [];
+                for(const e of newEditions){
+                    editionsLst.push(<ListGroup.Item key={e.id}><a href={e.url===""?`/site/argos/${e.id}`:e.url} target="_blank" rel="noreferrer">{e.label}</a></ListGroup.Item>);
+                }
+                setEditons(editionsLst)
+            }
+        };
+        fetchData();
+    }, []);
+    return <Card style={{width: "30rem"}} className="mb-3">
+        <FontAwesomeIcon style={{position: "absolute", top: "12px", right: "10px"}} onClick={()=>{if(verso===""){setVerso("v")}else{setVerso("")}}} icon={faSync} />
+        <Card.Header style={{height: "41px"}} dangerouslySetInnerHTML={parseHTML(props.z.opus)}></Card.Header>
+        <Card.Img variant="bottom" src={`${arachne.url}${props.z.img_path}${verso}.jpg`} />
+        <Card.Body>
+            <Card.Text><ListGroup horizontal>{editions}</ListGroup></Card.Text>
+        </Card.Body>
+    </Card>;
+}
+function IndexBoxDetail(props){
+    const [lemma, setLemma] = useState(null);
+    const [vZettels, setVZettels] = useState(null);
+    const [eZettels, setEZettels] = useState(null);
+    const [iZettels, setIZettels] = useState(null);
+    const [rZettels, setRZettels] = useState(null);
+    const [timeLineData, setTimeLineData] = useState([]);
+    useEffect(()=>{
+        const fetchData=async()=>{
+            setLemma(null);
+            setVZettels(null);
+            setEZettels(null);
+            setIZettels(null);
+            setRZettels(null);
+            const newLemma = await arachne.lemma.get({id: props.lemma_id});
+            setLemma(newLemma[0]);
+            const nVZettel = await arachne.zettel.get({lemma_id: props.lemma_id, type: 1}, {order: ["date_sort","date_type"], select: ["id", "opus", "img_path", "work_id", "date_sort", "date_own"]});
+            setVZettels(nVZettel);
+            const nEZettel = await arachne.zettel.get({lemma_id: props.lemma_id, type: 2}, {order: ["date_sort","date_type"], select: ["id", "opus", "img_path", "work_id", "date_sort", "date_own"]});
+            setEZettels(nEZettel);
+            const nIZettel = await arachne.zettel.search([{c: "lemma_id", o: "=", v: props.lemma_id}, {c: "type", o: ">=", v: "3"}, {c: "type", o: "<=", v: "6"}, {c: "type", o: "!=", v: "4"}], {order: ["date_sort","date_type"], select: ["id", "opus", "img_path", "work_id", "date_sort", "date_own"]})
+            setIZettels(nIZettel);
+            setTimeLineData(nVZettel.concat(nEZettel.concat(nIZettel)))
+            setRZettels(await arachne.zettel.search([{c: "lemma_id", o: "=", v: props.lemma_id}, {c: "type", o: ">=", v: "4"}, {c: "type", o: "!=", v: "6"}], {order: ["date_sort","date_type"], select: ["id", "opus", "img_path", "work_id"]}));
+        };
+        fetchData();
+    }, [props.lemma_id])
+    return (lemma?<>
+        <h1 dangerouslySetInnerHTML={parseHTML(lemma.lemma_display)}></h1>
+        <Container>
+            {lemma.dicts&&<Row>
+                <Col xs={2}>Wörterbücher:</Col>
+                <Col dangerouslySetInnerHTML={parseHTML(lemma.dicts)}></Col>
+            </Row>}
+            {lemma.comment&&<Row className="mb-4">
+                <Col xs={2}>Kommentar:</Col>
+                <Col dangerouslySetInnerHTML={parseHTML(lemma.comment)}></Col>
+            </Row>}
+            <Row>
+                <Col>
+                    <Accordion defaultActiveKey="">
+                    <Accordion.Item eventKey="s">
+                        <Accordion.Header>Statistik</Accordion.Header>
+                        <Accordion.Body>
+                            <div style={{width: "70%", margin: "auto"}}>
+                                <Bar options={{aspectRatio: false, plugins: {legend:{display: true, position: "bottom"}}}} data={{
+                                    labels: ["6. Jh.","7. Jh.","8. Jh.","9. Jh.","10. Jh.","11. Jh.","12. Jh.","13. Jh.",],
+                                    datasets: [
+                                        {
+                                            label: 'Anzahl Zettel',
+                                            data: [
+                                                timeLineData.filter(t=>t.date_sort<600).length,
+                                                timeLineData.filter(t=>t.date_sort>599&&t.date_sort<700).length,
+                                                timeLineData.filter(t=>t.date_sort>699&&t.date_sort<800).length,
+                                                timeLineData.filter(t=>t.date_sort>799&&t.date_sort<900).length,
+                                                timeLineData.filter(t=>t.date_sort>899&&t.date_sort<1000).length,
+                                                timeLineData.filter(t=>t.date_sort>999&&t.date_sort<1100).length,
+                                                timeLineData.filter(t=>t.date_sort>1099&&t.date_sort<1200).length,
+                                                timeLineData.filter(t=>t.date_sort>1199).length,
+                                            ],
+                                            backgroundColor: ['#347F9F'],
+                                            borderColor: ['#347F9F'],
+                                            borderWidth: 1,
+                                        },
+                                    ],
+                                }} />
+                            </div>
+                        </Accordion.Body>
+                    </Accordion.Item>
+                    <Accordion.Item eventKey="v">
+                        <Accordion.Header>verzetteltes Material&nbsp;{vZettels?<span>({vZettels.length})</span>:<Spinner size="sm" animation="border" />}</Accordion.Header>
+                        <Accordion.Body>
+                            <Container className="d-flex flex-wrap justify-content-center">{vZettels?vZettels.map(z=>{return <Zettel key={z.id} z={z} />;}):null}</Container></Accordion.Body>
+                    </Accordion.Item>
+                    <Accordion.Item eventKey="e">
+                        <Accordion.Header>Exzerpt-Zettel&nbsp;{eZettels?<span>({eZettels.length})</span>:<Spinner size="sm" animation="border" />}</Accordion.Header>
+                        <Accordion.Body>
+                            <Container className="d-flex flex-wrap justify-content-center">{eZettels?eZettels.map(z=>{return <Zettel key={z.id} z={z} />;}):null}</Container></Accordion.Body>
+                    </Accordion.Item>
+                    <Accordion.Item eventKey="i">
+                        <Accordion.Header>Index-Zettel&nbsp;{iZettels?<span>({iZettels.length})</span>:<Spinner size="sm" animation="border" />}</Accordion.Header>
+                        <Accordion.Body>
+                            <Container className="d-flex flex-wrap justify-content-center">{iZettels?iZettels.map(z=>{return <Zettel key={z.id} z={z} />;}):null}</Container></Accordion.Body>
+                    </Accordion.Item>
+                    <Accordion.Item eventKey="r">
+                        <Accordion.Header>restliche Zettel&nbsp;{rZettels?<span>({rZettels.length})</span>:<Spinner size="sm" animation="border" />}</Accordion.Header>
+                        <Accordion.Body>
+                            <Container className="d-flex flex-wrap justify-content-center">{rZettels?rZettels.map(z=>{return <Zettel key={z.id} z={z} />;}):null}</Container></Accordion.Body>
+                    </Accordion.Item>
+                </Accordion>
+                </Col>
+            </Row>
+        </Container>
+    </>:null);
+}
 
 export {
     arachneTbls,
     LemmaRow, LemmaHeader, lemmaSearchItems, LemmaAsideContent,
     zettelSearchItems, ZettelCard, zettelBatchOptions, BatchInputType, ZettelAddLemmaContent, ZettelSingleContent, newZettelObject, exportZettelObject, zettelPresetOptions, zettelSortOptions,
     MainMenuContent,
-    fetchIndexBoxData,
+    fetchIndexBoxData, IndexBoxDetail,
 }

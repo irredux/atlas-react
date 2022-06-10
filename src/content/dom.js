@@ -12,16 +12,15 @@ function arachneTbls(){
 function LemmaHeader(){
 	return <tr><th width="30%">Lemma</th><th width="20%">Farbe</th><th>Kommentar</th><th>dom en ligne</th></tr>;
 }
-			
+const colors = {
+    "gelb": "#E9AB17",
+    "grün": "green",
+    "blau": "#0000A0",
+    "rot": "#C11B17",
+    "lila": "#4B0082",
+    "türkis": "#3f888f"
+};
 function LemmaRow(props){
-	const colors = {
-        "gelb": "#E9AB17",
-        "grün": "green",
-        "blau": "#0000A0",
-        "rot": "#C11B17",
-        "lila": "#4B0082",
-        "türkis": "#3f888f"
-    };
     return <tr id={props.lemma.id} onDoubleClick={e=>{props.showDetail(parseInt(e.target.closest("tr").id))}}>
 		<td title={"ID: "+props.lemma.id}>
 			<a dangerouslySetInnerHTML={parseHTML(props.lemma.lemma_display)} onClick={e=>{
@@ -490,10 +489,42 @@ function DOMRessource(props){
         asideContent={asideContent}
     />;
 }
+
+/* ************************************************************************************* */
+
+const fetchIndexBoxData=async()=>{
+    let wl = await arachne.lemma.getAll({select: ["id", "lemma_display", "lemma_simple", "nr", "farbe"], order: ["lemma_simple"]})
+    wl=wl.map(w=>{
+        const lemma = `<span style="color: ${colors[w.farbe]}">${w.lemma_display}</span>`;
+        return {id: w.id, lemma_display: lemma, lemma: w.lemma_simple?w.lemma_simple.toLowerCase():""}
+    });
+    return wl;
+}
+function IndexBoxDetail(props){
+    const [lemma, setLemma] = useState(null);
+    const [zettel, setZettel] = useState(null);
+    useEffect(()=>{
+        const fetchData=async()=>{
+            const newLemma = await arachne.lemma.get({id: props.lemma_id});
+            setLemma(newLemma[0]);
+            const newZettel = await arachne.zettel.get({lemma_id: props.lemma_id});
+            setZettel(newZettel);
+        };
+        setLemma(null);
+        setZettel(null);
+        fetchData();
+    }, [props.lemma_id]);
+    return (lemma?<>
+            <h1><span dangerouslySetInnerHTML={parseHTML(lemma.lemma_display)}></span><small style={{fontSize: "40%", marginLeft: "10px"}}>(ID {lemma.id})</small></h1>
+            <div>{lemma.URL?<a href={"https://dom-en-ligne.de/"+lemma.URL} target="_blank">zum Artikel</a>:<span>Kein Artikel verfügbar.</span>}</div>
+            <div>{zettel!==null?zettel.length===0?<span>Keine Zettel mit diesem Lemma verknüpft!</span>:zettel.map(z=><div key={z.id}><div><img style={{width: arachne.options.z_width}} src={"https://dienste.badw.de:9998"+z.img_path+".jpg"} /></div><div>{z.opera} ({z.id})</div></div>):<span>Zettel werden geladen...</span>}</div>
+        </>:<div>Daten werden geladen...</div>);
+}
 export {
     arachneTbls,
     LemmaRow, LemmaHeader, lemmaSearchItems, LemmaAsideContent,
     zettelSearchItems, ZettelCard, zettelBatchOptions, BatchInputType, ZettelAddLemmaContent, ZettelSingleContent, newZettelObject, exportZettelObject, zettelPresetOptions, zettelSortOptions,
     MainMenuContent,
-    DOMOpera, Konkordanz, Etudaus, DOMRessource
+    DOMOpera, Konkordanz, Etudaus, DOMRessource,
+    fetchIndexBoxData, IndexBoxDetail,
 }

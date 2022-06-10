@@ -25,7 +25,7 @@ function MainBody(props){
         "lemma": <Lemma PROJECT_NAME={props.PROJECT_NAME} loadMain={(e,res)=>{props.loadMain(e, res)}} />,
         "import": <Import loadMain={(e,res)=>{props.loadMain(e, res)}} />,
         "zettel": <Zettel PROJECT_NAME={props.PROJECT_NAME}  />,
-        "indexbox": <IndexBox />,
+        "indexbox": <IndexBox PROJECT_NAME={props.PROJECT_NAME} />,
         "account": <Account />,
         "seklit": <SekLit />, // mlw
         "maiora": <Opera listName="opera_maiora" />, // mlw
@@ -76,7 +76,7 @@ function MainNavBar(props){
                         <NavDropdown.Item onClick={e => {props.loadMain(e, "account")}}>Konto</NavDropdown.Item>
                         <NavDropdown.Item onClick={e => {props.loadMain(e, "server")}}>Server</NavDropdown.Item>
                         {arachne.project_name!="dom"&&<NavDropdown.Item onClick={e => {props.loadMain(e, "import")}}>Import</NavDropdown.Item>}
-                        {arachne.project_name!="dom"&&<NavDropdown.Item onClick={e => {props.loadMain(e, "stats")}}>Statistik</NavDropdown.Item>}
+                        <NavDropdown.Item onClick={e => {props.loadMain(e, "stats")}}>Statistik</NavDropdown.Item>
                     </NavDropdown>
                     <Nav.Link>
                     <FontAwesomeIcon icon={faSignOutAlt} onClick={e => {props.loadMain(e, "logout")}} title="abmelden" />

@@ -201,7 +201,7 @@ class Statistics extends React.Component{
     }
     componentDidMount(){this.getNumbers()}
     async getNumbers(){
-        const numbers = await arachne.statistics.getAll();
+        const numbers = JSON.parse(await arachne.statistics.getAll());
         this.setState({
             last_updated: JSON.parse(numbers.find(i => i.name === "last_updated").data),
             zettel_process: JSON.parse(numbers.find(i => i.name === "zettel_process").data),
