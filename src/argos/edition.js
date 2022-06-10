@@ -121,7 +121,7 @@ function Edition(props){
     }, [pages]);
     useEffect(()=>{
         if(fullTxt&&query.length>0){
-            console.log(query);
+            console.log("query:", query);
             const fLst = pages.filter(r=>r.full_text&&r.full_text.search(query)>-1);
             setQueryResults(fLst);
             setQueryResultIndex(0);
