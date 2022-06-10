@@ -122,7 +122,7 @@ function Edition(props){
     useEffect(()=>{
         if(fullTxt&&query.length>0){
             console.log("query:", query);
-            const fLst = pages.filter(r=>r.full_text&&r.full_text.search(query)>-1);
+            const fLst = pages.filter(r=>r.full_text&&r.full_text.indexOf(query)>-1);
             setQueryResults(fLst);
             setQueryResultIndex(0);
             if(mode===0){setMode(1)}
@@ -133,7 +133,6 @@ function Edition(props){
     },[fullTxt, query]);
     useEffect(()=>{if(componentIsLoaded&&queryResults.length>0){scrollPageIntoView(queryResults[queryResultIndex].id)}}, [queryResultIndex, queryResults]);
     const scrollPageIntoView = async (id)=>{
-        console.log(id)
         await sleep(100);
         const element = document.getElementById(`p_${id}`);
         if(element){
