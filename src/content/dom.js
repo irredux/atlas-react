@@ -2,6 +2,8 @@ import { parseHTML, StatusButton, SelectMenu, AutoComplete, TableView } from "./
 import { arachne } from "./../arachne.js";
 import { useState, useEffect } from "react";
 import { Col, Row, Container, NavDropdown } from "react-bootstrap";
+import 'chart.js/auto';
+import { Bar, Pie } from "react-chartjs-2";
 
 function arachneTbls(){
     return ["lemma", "work", "zettel", "user", "konkordanz", "opera", "comment", "etudaus", "ocr_jobs", "edition", "statistics"];
@@ -525,6 +527,233 @@ function IndexBoxDetail(props){
             <div>{zettel!==null?zettel.length===0?<span>Keine Zettel mit diesem Lemma verknüpft!</span>:zettel.map(z=><div key={z.id}><div><img style={{width: arachne.options.z_width}} src={"https://dienste.badw.de:9998"+z.img_path+".jpg"} /></div><div>{z.opera} ({z.id})</div></div>):<span>Zettel werden geladen...</span>}</div>
         </>:<div>Daten werden geladen...</div>);
 }
+
+/* ************************************************************************************* */
+
+function StatisticsChart(props){
+    let returnChart = null;
+    switch(props.name){
+        case "lemma_letter":
+            returnChart=<div style={{marginBottom: "80px", margin: "auto", width: "70%", height: "600px"}}><h4>nach Buchstaben</h4><Bar options={{plugins: {legend:{display: false, position: "bottom"}}, scales: {x: {stacked: true}, y: {stacked: true}}}} data={{
+                labels: ["A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "X", "Y", "Z"],
+                datasets: [
+                  {
+                    label: 'blau',
+                    data: props.data[0],
+                    backgroundColor: colors.blau,
+                    borderColor: colors.blau,
+                    borderWidth: 1,
+                  },
+                  {
+                    label: 'lila',
+                    data: props.data[1],
+                    backgroundColor: colors.lila,
+                    borderColor: colors.lila,
+                    borderWidth: 1,
+                  },
+                  {
+                    label: 'türkis',
+                    data: props.data[2],
+                    backgroundColor: colors["türkis"],
+                    borderColor: colors["türkis"],
+                    borderWidth: 1,
+                  },
+                  {
+                    label: 'rot',
+                    data: props.data[3],
+                    backgroundColor: colors.rot,
+                    borderColor: colors.rot,
+                    borderWidth: 1,
+                  },
+                  {
+                    label: 'grün',
+                    data: props.data[4],
+                    backgroundColor: colors["grün"],
+                    borderColor: colors["grün"],
+                    borderWidth: 1,
+                  },
+                  {
+                    label: 'gelb',
+                    data: props.data[5],
+                    backgroundColor: colors.gelb,
+                    borderColor: colors.gelb,
+                    borderWidth: 1,
+                  },
+                ],
+            }} /></div>;
+            break;
+        case "lemma_farbe":
+            returnChart=<div style={{margin: "auto", marginBottom: "80px", width: "450px", height: "450px"}}><h4>nach Farbe</h4><Pie options={{plugins: {legend:{display: true, position: "bottom"}}}} data={{
+                labels: ["blau", "gelb", "grün", "lila", "rot", "türkis", "keine"],
+                datasets: [
+                  {
+                    label: '',
+                    data: props.data,
+                    backgroundColor: [colors.blau, colors.gelb, colors["grün"], colors.lila, colors.rot, colors["türkis"], '#EAF2F3'],
+                    borderColor: [colors.blau, colors.gelb, colors["grün"], colors.lila, colors.rot, colors["türkis"], '#EAF2F3'],
+                    borderWidth: 1,
+                  },
+                ],
+            }} /></div>;
+            break;
+        case "zettel_process":
+            returnChart=<div style={{margin: "auto", marginBottom: "80px", width: "450px", height: "450px"}}><h4>nach Bearbeitungsstand</h4><Pie options={{plugins: {legend:{position: "bottom"}}}} data={{
+                    labels: ["abgeschlossen", "nur Lemma", "unbearbeitet"],
+                    datasets: [
+                      {
+                        label: '# of Votes',
+                        data: props.data,
+                        backgroundColor: ['#114B79', '#347F9F', '#EAF2F3'],
+                        borderColor: ['#1B3B6F', '#065A82', '#E8F1F2'],
+                        borderWidth: 1,
+                      },
+                    ],
+                }} /></div>;
+            break;
+        case "zettel_type":
+            returnChart=<div style={{margin: "auto", marginBottom: "80px", width: "450px", height: "450px"}}><h4>nach Farbe</h4><Pie options={{plugins: {legend:{position: "bottom"}}}} data={{
+                    labels: ["blau", "gelb", "grün", "lila", "rot", "türkis", "keine"],
+                    datasets: [
+                      {
+                        label: '# of Votes',
+                        data: props.data,
+                        backgroundColor: [colors.blau, colors.gelb, colors["grün"], colors.lila, colors.rot, colors["türkis"], '#EAF2F3'],
+                        borderColor: [colors.blau, colors.gelb, colors["grün"], colors.lila, colors.rot, colors["türkis"], '#EAF2F3'],
+                        borderWidth: 1,
+                      },
+                    ],
+                }} /></div>;
+            break;
+        case "zettel_created_changed":
+            returnChart=<div style={{marginBottom: "80px", width: "100%", height: "400px"}}><h4>nach Jahren</h4><Bar options={{aspectRatio: false, plugins: {legend:{display: true, position: "bottom"}}}} data={{
+                labels: ["2021", "2022"],
+                datasets: [
+                    {
+                        label: 'verändert',
+                        data: props.data[1],
+                        backgroundColor: ['#114B79'],
+                        borderColor: ['#114B79'],
+                        borderWidth: 1,
+                        //fill: true,
+                        type: 'line',
+                    },
+                    {
+                        label: 'erstellt',
+                        data: props.data[0],
+                        backgroundColor: ['#347F9F'],
+                        borderColor: ['#347F9F'],
+                        borderWidth: 1,
+                    },
+                ],
+            }} /></div>;
+            break;
+        case "zettel_created_changed_current":
+            returnChart=<div style={{marginBottom: "80px", width: "100%", height: "400px"}}><h4>in diesem Jahr</h4><Bar options={{aspectRatio: false, plugins: {legend:{display: true, position: "bottom"}}}} data={{
+                labels: ["Jan.", "Feb.", "Mär.", "Apr.", "Mai", "Jun.", "Jul.", "Aug.", "Sep.", "Okt.", "Nov.", "Dez."].slice(0,(new Date()).getMonth()+1),
+                datasets: [
+                    {
+                        label: 'verändert',
+                        data: props.data[1],
+                        backgroundColor: ['#114B79'],
+                        borderColor: ['#114B79'],
+                        borderWidth: 1,
+                        //fill: true,
+                        type: 'line',
+                    },
+                    {
+                        label: 'erstellt',
+                        data: props.data[0],
+                        backgroundColor: ['#347F9F'],
+                        borderColor: ['#347F9F'],
+                        borderWidth: 1,
+                    },
+                ],
+            }} /></div>;
+            break;
+        case "zettel_letter":
+            returnChart=<div style={{marginBottom: "80px", margin: "auto", width: "70%", height: "600px"}}><h4>nach Buchstaben</h4><Bar options={{plugins: {legend:{display: false, position: "bottom"}}, scales: {x: {stacked: true}, y: {stacked: true}}}} data={{
+                labels: ["A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "X", "Y", "Z"],
+                datasets: [
+                  {
+                    label: 'blau',
+                    data: props.data[0],
+                    backgroundColor: colors.blau,
+                    borderColor: colors.blau,
+                    borderWidth: 1,
+                  },
+                  {
+                    label: 'lila',
+                    data: props.data[1],
+                    backgroundColor: colors.lila,
+                    borderColor: colors.lila,
+                    borderWidth: 1,
+                  },
+                  {
+                    label: 'türkis',
+                    data: props.data[2],
+                    backgroundColor: colors["türkis"],
+                    borderColor: colors["türkis"],
+                    borderWidth: 1,
+                  },
+                  {
+                    label: 'rot',
+                    data: props.data[3],
+                    backgroundColor: colors.rot,
+                    borderColor: colors.rot,
+                    borderWidth: 1,
+                  },
+                  {
+                    label: 'grün',
+                    data: props.data[4],
+                    backgroundColor: colors["grün"],
+                    borderColor: colors["grün"],
+                    borderWidth: 1,
+                  },
+                  {
+                    label: 'gelb',
+                    data: props.data[5],
+                    backgroundColor: colors.gelb,
+                    borderColor: colors.gelb,
+                    borderWidth: 1,
+                  },
+                ],
+            }} /></div>;
+            break;
+        case "ressource_work":
+            returnChart=<div style={{margin: "auto", marginBottom: "80px", width: "450px", height: "450px"}}><h4>Werke nach Volltext und pdfs</h4><Pie options={{plugins: {legend:{position: "bottom"}}}} data={{
+                labels: ["mit Volltext und pdf", "nur mit pdf", "ohne pdf und Volltext", "nicht in Benutzung"],
+                datasets: [
+                  {
+                    label: '',
+                    data: props.data,
+                    backgroundColor: ['#114B79', '#347F9F', '#EAF2F3', '#FFFFFF'],
+                    borderColor: ['#1B3B6F', '#065A82', '#E8F1F2', "#EFEFEF"],
+                    borderWidth: 1,
+                  },
+                ],
+            }} /></div>;
+            break;
+        case "ressource_scans":
+            returnChart=<div style={{margin: "auto", marginBottom: "80px", width: "450px", height: "450px"}}><h4>Scan-Seiten und Volltexte</h4><Pie options={{plugins: {legend:{position: "bottom"}}}} data={{
+                labels: ["geprüfter Volltext", "automatischer Volltext", "ohne Volltext", "kein lat. Text"],
+                datasets: [
+                  {
+                    label: '',
+                    data: props.data,
+                    backgroundColor: ['#114B79', '#347F9F', '#EAF2F3', '#FFFFFF'],
+                    borderColor: ['#1B3B6F', '#065A82', '#E8F1F2', "#EFEFEF"],
+                    borderWidth: 1,
+                  },
+                ],
+            }} /></div>;
+            break;
+        default:
+            console.log(props.name);
+            //throw new Error("Statistic Name not found!");
+    }
+    return returnChart;
+}
+
 export {
     arachneTbls,
     LemmaRow, LemmaHeader, lemmaSearchItems, LemmaAsideContent,
@@ -532,4 +761,5 @@ export {
     MainMenuContent,
     DOMOpera, Konkordanz, Etudaus, DOMRessource,
     fetchIndexBoxData, IndexBoxDetail,
+    StatisticsChart,
 }
