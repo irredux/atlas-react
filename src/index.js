@@ -72,11 +72,13 @@ function App(){
     const sendLogin = async (email, password) => {
         if(email!==""&&password!==""){
             let re = await arachne.login(email, password, arachneTbls());
-            if(re){
+            if(re===200){
                 setMode("main");
                 return {status: 1};
+            } else if(re===401) {
+                return {status: -1, error: "Die Login-Daten sind ungültig."};
             } else {
-                return {status: -1, error: "Die Login-Daten waren falsch."};
+                return {status: -1, error: "Der Server ist nicht erreichbar."};
             }
         }else{return {status: -1, error: "Geben Sie eine gültige Email-Adresse und Passwort ein!"};}
     };
@@ -103,7 +105,7 @@ function App(){
     let mainScreen = null;
     switch(mode){
         case "login":
-            mainScreen = <LoginScreen setMode={mode=>{setMode(mode)}} login={(e, p)=>{sendLogin(e, p)}} />;
+            mainScreen = <LoginScreen setMode={mode=>{setMode(mode)}} login={async(e, p)=>{return await sendLogin(e, p)}} />;
             break;
         case "main":
             mainScreen = <div style={{marginTop: "70px", marginBottom: "100px"}}>

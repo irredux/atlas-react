@@ -29,7 +29,7 @@ function LoginScreen(props){
                 <Col><small>Noch kein Konto? Klicken Sie <a className="text-primary" onClick={()=>{props.setMode("create")}}>hier</a>.</small></Col>
 
                 <Col className="col-sm-5 d-flex justify-content-end">
-                    <StatusButton variant="primary" type="submit" value="anmelden" onClick={async ()=>{
+                    <StatusButton variant="primary" type="submit" value="anmelden" onClick={async()=>{
                         const re = await props.login(email, password);
                         return re;
                         }} />

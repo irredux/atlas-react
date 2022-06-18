@@ -133,12 +133,12 @@ class Arachne {
                 "Content-Type": "application/json"
             },
             "body": JSON.stringify({user: user, password: password})
-        }).catch(e=>{return {status: 500}});
+        });
         if(re.status === 201){
             this.key = await re.text();
-            return this.open(tbls);
-        }
-        return false;
+            if(this.open(tbls)){return 200}
+            else{return 404}
+        }else{return 401}
     }
     async open(tbls=null){
         const reUser = await this.getUser();
