@@ -134,7 +134,7 @@ class Arachne {
             },
             "body": JSON.stringify({user: user, password: password})
         }).catch(e=>{return {status: 500}});
-        if(re.status === 200){
+        if(re.status === 201){
             this.key = await re.text();
             return this.open(tbls);
         }
