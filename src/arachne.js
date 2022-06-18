@@ -136,7 +136,7 @@ class Arachne {
         });
         if(re.status === 201){
             this.key = await re.text();
-            if(this.open(tbls)){return 200}
+            if(await this.open(tbls)){return 200}
             else{return 404}
         }else{return 401}
     }

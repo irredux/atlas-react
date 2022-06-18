@@ -169,7 +169,7 @@ function ZettelCard(props){
         else{classList+="zettel_img in_use"}
         box =
         <div className="zettel" id={zettel.id} style={style}>
-            <img alt="" style={{objectFit: "fill", borderRadius: "7px"}} className={classList} src={zettel.img_path+".jpg"}></img>
+            <img alt="" style={{objectFit: "fill", borderRadius: "7px"}} className={classList} src={"/mlw"+zettel.img_path+".jpg"}></img>
             {props.showDetail?<div className="zettel_msg" dangerouslySetInnerHTML={parseHTML(zettel.date_own_display?zettel.date_own_display:zettel.date_display)}></div>:null}
             {props.showDetail?
             <div className="zettel_menu">
@@ -292,7 +292,6 @@ function ZettelSingleContent(props){
         setTxt(props.item.txt);
     },[props.item.id]);
     useEffect(()=>{
-        console.log(!isNaN(dateOwn)&&dateOwn!==" "&&dateOwn!==""&&dateOwn!==null);
         if(!isNaN(dateOwn)&&dateOwn!==" "&&dateOwn!==""&&dateOwn!==null){setDateOwnError(false)}
         else{setDateOwnError(true)}
     },[dateOwn]);
@@ -413,7 +412,7 @@ function Zettel(props){
     return <Card style={{width: "30rem"}} className="mb-3">
         <FontAwesomeIcon style={{position: "absolute", top: "12px", right: "10px"}} onClick={()=>{if(verso===""){setVerso("v")}else{setVerso("")}}} icon={faSync} />
         <Card.Header style={{height: "41px"}} dangerouslySetInnerHTML={parseHTML(props.z.opus)}></Card.Header>
-        <Card.Img variant="bottom" src={`${arachne.url}${props.z.img_path}${verso}.jpg`} />
+        <Card.Img variant="bottom" src={`${arachne.url}/mlw${props.z.img_path}${verso}.jpg`} />
         <Card.Body>
             <Card.Text><ListGroup horizontal>{editions}</ListGroup></Card.Text>
         </Card.Body>

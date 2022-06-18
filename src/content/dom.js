@@ -183,7 +183,7 @@ function ZettelCard(props){
         else{classList+="zettel_img in_use"}
         box =
         <div className="zettel" id={zettel.id} style={style}>
-            <img alt="" style={{objectFit: "fill", borderRadius: "7px"}} className={classList} src={zettel.img_path+".jpg"}></img>
+            <img alt="" style={{objectFit: "fill", borderRadius: "7px"}} className={classList} src={"/dom"+zettel.img_path+".jpg"}></img>
             {props.showDetail?
             <div className="zettel_menu">
                 <span style={{float: "left", overflow: "hidden", maxHeight: "50px", maxWidth: "250px"}} dangerouslySetInnerHTML={parseHTML(zettel.lemma_display)}></span>
@@ -524,7 +524,7 @@ function IndexBoxDetail(props){
     return (lemma?<>
             <h1><span dangerouslySetInnerHTML={parseHTML(lemma.lemma_display)}></span><small style={{fontSize: "40%", marginLeft: "10px"}}>(ID {lemma.id})</small></h1>
             <div>{lemma.URL?<a href={"https://dom-en-ligne.de/"+lemma.URL} target="_blank">zum Artikel</a>:<span>Kein Artikel verfügbar.</span>}</div>
-            <div>{zettel!==null?zettel.length===0?<span>Keine Zettel mit diesem Lemma verknüpft!</span>:zettel.map(z=><div key={z.id}><div><img style={{width: arachne.options.z_width}} src={"https://dienste.badw.de:9998"+z.img_path+".jpg"} /></div><div>{z.opera} ({z.id})</div></div>):<span>Zettel werden geladen...</span>}</div>
+            <div>{zettel!==null?zettel.length===0?<span>Keine Zettel mit diesem Lemma verknüpft!</span>:zettel.map(z=><div key={z.id}><div><img style={{width: arachne.options.z_width}} src={"https://dienste.badw.de:9999/dom"+z.img_path+".jpg"} /></div><div>{z.opera} ({z.id})</div></div>):<span>Zettel werden geladen...</span>}</div>
         </>:<div>Daten werden geladen...</div>);
 }
 

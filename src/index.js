@@ -16,7 +16,8 @@ function App(){
     const [resId, setResId] = useState(null);
     const urlQueries = useMemo(()=>{return new URLSearchParams(window.location.search)},[]);
     const APP_NAME = useMemo(()=>{return ["db", "argos", "editor", "echo"].includes(urlQueries.get("app"))?urlQueries.get("app"):"db"},[urlQueries]);
-    const PROJECT_NAME = useMemo(()=>{return ["mlw", "dom"].includes(urlQueries.get("project"))?urlQueries.get("project"):"mlw"},[urlQueries]);
+    const PROJECT_NAME = useMemo(()=>{return ["mlw", "dom", "tll"].includes(urlQueries.get("project"))?urlQueries.get("project"):"mlw"},[urlQueries]);
+    arachne.project_name = PROJECT_NAME;
     let windowTitle = "";
     switch(PROJECT_NAME){
         case "mlw":
