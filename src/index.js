@@ -26,6 +26,8 @@ function App(){
         case "dom":
             windowTitle = "dDOM";
             break;
+        css "tll":
+            windowTitle = "dTLL";
         default:
             windowTitle = "???";
     }
