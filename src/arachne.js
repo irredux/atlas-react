@@ -149,7 +149,7 @@ class Arachne {
         }
         else {return false;}
 
-        if(tbls == null){tbls = await this.tables()}
+        if(tbls == null){throw new Error("no tablenames given. Cannot setup connection to server.")}
         for(const tbl of tbls){this[tbl] = new ArachneTable(tbl, this.url, this.key)}
         return true;
     }
