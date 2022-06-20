@@ -7,7 +7,7 @@ import { faSync, faAngleRight, faAngleLeft } from "@fortawesome/free-solid-svg-i
 import 'chart.js/auto';
 import { Bar, Pie } from "react-chartjs-2";
 function arachneTbls(){
-    return ["project", "author", "edition", "lemma", "opera_maiora", "opera_minora", "scan", "scan_lnk", "work", "zettel", "user", "seklit", "article", "zettel_lnk", "statistics", "scan_paths", "ocr_jobs", "comment", "scan_opera", "fulltext_search_view", "tags", "tag_lnks", "sections"];
+    return ["project", "author", "edition", "lemma", "tll_index", "scan", "scan_lnk", "work", "zettel", "user", "seklit", "article", "zettel_lnk", "statistics", "scan_paths", "ocr_jobs", "comment", "scan_opera", "fulltext_search_view", "tags", "tag_lnks", "sections"];
 }
 
 /* ************************************************************************************* */
@@ -380,9 +380,7 @@ function zettelSortOptions(){return [['["id"]', "ID"], ['["lemma","lemma_nr","da
 
 function MainMenuContent(props){
     return <>
-        <NavDropdown.Item onClick={e => {props.loadMain(e, "maiora")}}><i>opera maiora</i>-Liste</NavDropdown.Item>
-        <NavDropdown.Item onClick={e => {props.loadMain(e, "minora")}}><i>opera minora</i>-Liste</NavDropdown.Item>
-        <NavDropdown.Item onClick={e => {props.loadMain(e, "seklit")}}>Sekundärliteratur</NavDropdown.Item>
+        <NavDropdown.Item onClick={e => {props.loadMain(e, "index")}}>Index</NavDropdown.Item>
         <NavDropdown.Item onClick={e => {props.loadMain(e, "ressources")}}>Ressourcen</NavDropdown.Item>
     </>;
 }

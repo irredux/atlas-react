@@ -34,6 +34,8 @@ function MainBody(props){
         "quellenverzeichnis": <DOMOpera />, // dom
         "etudaus": <Etudaus />, // dom
         "domressource": <DOMRessource />, // dom
+        "index": <Opera listName="tll_index" />, // TLL
+        //"domressource": <TLLRessource />, // TLL
         }
     if(props===null||props.res===null||Object.keys(main).includes(props?props.res:null)){return main[props?props.res:null]}
     else{return <div className="text-danger" style={{textAlign: "center", marginTop: "100px"}}>Unbekannter Menü-Punkt '{props.res}'.</div>}
@@ -88,6 +90,12 @@ function MainNavBar(props){
 }
 
 const dbChangeLog = [
+    {
+        project: "tll",
+        title: "Testversion",
+        date: "2022-06-20",
+        description: <><p>Eine erste Testversion ist online! Die Lemmaliste wurde von der <a target="_blank" href="https://publikationen.badw.de/de/thesaurus/">TLL Open Access Lemmasuche</a> übernommen, der Index vom <a target="_blank" href="https://thesaurus.badw.de/tll-digital/index/a.html#pJ4">TLL Open Access Index</a>.</p></>
+    },
     {
         title: "Beta 12.10",
         date: "2022-06-10",
