@@ -46,7 +46,7 @@ class Lemma extends React.Component{
                             {arachne.access("l_edit")&&<ToolKit menuItems={[
                                     ["neues Wort", async ()=>{
                                         if(window.confirm("Soll ein neues Wort erstellt werden?")){
-                                            const newId = await arachne.lemma.save({lemma_display:"Neues Wort", lemma:"Neues Wort"});
+                                            const newId = await arachne.lemma.save({lemma_display:"Neues Wort", lemma:"NeuesWort"});
                                             this.setState({newItemCreated: [{id: 0, c: "id", o: "=", v:newId}]});
                                         }
                                     }]

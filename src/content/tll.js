@@ -13,33 +13,30 @@ function arachneTbls(){
 /* ************************************************************************************* */
 
 function LemmaHeader(){
-    return <tr><th width="30%">Wortansatz</th><th width="20%">Wörterbücher</th><th>Kommentar</th></tr>;
+    return <tr><th width="30%">Wortansatz</th><th width="20%">TLL</th></tr>;
 }
 function LemmaRow(props){
     return <tr id={props.lemma.id} onDoubleClick={e=>{props.showDetail(parseInt(e.target.closest("tr").id))}}>
         <td title={"ID: "+props.lemma.id}>
             <a dangerouslySetInnerHTML={parseHTML(props.lemma.lemma_display)} onClick={e=>{
-                localStorage.setItem("mlw_searchBox_zettel", `[[{"id":0,"c":"lemma_id","o":"=","v":${props.lemma.id}}],1,["id"]]`);
+                localStorage.setItem("tll_searchBox_zettel", `[[{"id":0,"c":"lemma_id","o":"=","v":${props.lemma.id}}],1,["id"]]`);
                 props.loadMain(e);
             }}>
             </a>
         </td>
-        <td dangerouslySetInnerHTML={parseHTML(props.lemma.dicts)}></td>
-        <td dangerouslySetInnerHTML={parseHTML(props.lemma.comment)}></td>
+        <td><a href={`https://publikationen.badw.de/de/thesaurus/${props.lemma.link_img}`} target="_blank">{props.lemma.link_name}</a></td>
     </tr>;
 }
 
 function lemmaSearchItems(){
     return [
         ["lemma", "Wort"],
-        ["lemma_ac", "Wort-Anzeige"],
+        ["lemma_display", "Wort-Anzeige"],
         ["id", "ID"],
-        ["dicts", "Wörterbücher"],
-        ["comment", "Kommentar"],
-        ["lemma_nr", "Zahlzeichen"],
-        ["MLW", "MLW"],
-        ["Stern", "Stern"],
-        ["Fragezeichen", "Fragezeichen"],
+        ["hom_nr", "Homonym-Nr"],
+        ["sub", "Sublemma"],
+        ["addenda", "Addenda"],
+        ["search", "alt. Schreibewise"],
     ];
 }
 
@@ -47,21 +44,23 @@ function LemmaAsideContent(props){
     const [lemma, setLemma] = useState(props.item.lemma);
     const [lemma_display, setLemma_display] = useState(props.item.lemma_display);
     const [lemma_nr, setLemma_Nr] = useState(props.item.lemma_nr);
-    const [MLW, setMLW] = useState(props.item.MLW);
-    const [Fragezeichen, setFragezeichen] = useState(props.item.Fragezeichen);
-    const [Stern, setStern] = useState(props.item.Stern);
+    const [sub, setSub] = useState(props.item.sub);
+    const [addenda, setAddenda] = useState(props.item.addenda);
+    const [search, setSearch] = useState(props.item.search);
+    const [link_name, setLink_name] = useState(props.item.link_name);
+    const [link_img, setLink_img] = useState(props.item.link_img);
     const [comment, setComment] = useState(props.item.comment);
-    const [dicts, setDicts] = useState(props.item.dicts);
 
     useEffect(()=>{
         setLemma(props.item.lemma);
         setLemma_display(props.item.lemma_display);
         setLemma_Nr(props.item.lemma_nr);
-        setMLW(props.item.MLW);
-        setFragezeichen(props.item.Fragezeichen);
-        setStern(props.item.Stern);
+        setSub(props.item.sub);
+        setAddenda(props.item.addenda);
+        setSearch(props.item.search);
+        setLink_name(props.item.link_name);
+        setLink_img(props.item.link_img);
         setComment(props.item.comment);
-        setDicts(props.item.dicts);
     }, [props.id]);
     return <Container>
         <Row className="mb-2">
@@ -74,36 +73,37 @@ function LemmaAsideContent(props){
         </Row>
         <Row className="mb-2">
             <Col>Zahlzeichen:</Col>
-            <Col><SelectMenu options={[[0, ""], [1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6]]} onChange={event=>{setLemma_Nr(event.target.value)}} value={lemma_nr} /></Col>
+            <Col><SelectMenu options={[[0, ""], [1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7]]} onChange={event=>{setLemma_Nr(event.target.value)}} value={lemma_nr} /></Col>
         </Row>
         <Row className="mb-2">
-            <Col>im Wörterbuch:</Col>
-            <Col><SelectMenu options={[[0, "Nein"], [1, "Ja"]]} onChange={event=>{setMLW(event.target.value)}} value={MLW} /></Col>
+            <Col>Sublemma:</Col>
+            <Col><SelectMenu options={[[0, "Nein"], [1, "Ja"]]} onChange={event=>{setSub(event.target.value)}} value={sub} /></Col>
         </Row>
         <Row className="mb-2">
-            <Col>Stern:</Col>
-            <Col><SelectMenu options={[[0, "Nein"], [1, "Ja"]]} onChange={event=>{setStern(event.target.value)}} value={Stern} /></Col>
-        </Row>
-        <Row className="mb-5">
-            <Col>Fragezeichen:</Col>
-            <Col><SelectMenu options={[[0, "Nein"], [1, "Ja"]]} onChange={event=>{setFragezeichen(event.target.value)}} value={Fragezeichen} /></Col>
+            <Col>Addenda:</Col>
+            <Col><SelectMenu options={[[0, "Nein"], [1, "Ja"]]} onChange={event=>{setAddenda(event.target.value)}} value={addenda} /></Col>
         </Row>
         <Row className="mb-2">
-            <Col>Wörterbücher:</Col>
-            <Col><textarea style={{width: "210px", height: "50px"}} value={dicts?dicts.replace(/&lt;/g, "<").replace(/&gt;/g, ">"):""} onChange={event=>{setDicts(event.target.value)}}></textarea></Col>
+            <Col>alt. Schreib-weise:</Col>
+            <Col><input type="text" value={search} onChange={event=>{setSearch(event.target.value)}} /></Col>
+        </Row>
+        <Row className="mb-2">
+            <Col>pdf-Linkname:</Col>
+            <Col><input type="text" value={link_name} onChange={event=>{setLink_name(event.target.value)}} /></Col>
+        </Row>
+        <Row className="mb-2">
+            <Col>pdf-Bildname:</Col>
+            <Col><input type="text" value={link_img} onChange={event=>{setLink_img(event.target.value)}} /></Col>
         </Row>
         <Row className="mb-4">
             <Col>Kommentar:</Col>
             <Col><textarea style={{width: "210px", height: "150px"}} value={comment?comment.replace(/&lt;/g, "<").replace(/&gt;/g, ">"):""} onChange={event=>{setComment(event.target.value)}}></textarea></Col>
         </Row>
-        <Row className="mb-4">
-            <Col><small><a href="https://gitlab.lrz.de/haeberlin/dmlw/-/wikis/10-WikiHow:-Umlemmatisierung" target="_blank" rel="noreferrer">Hier</a> finden Sie Informationen zum Bearbeiten der Wörter.</small></Col>
-        </Row>
         <Row>
             <Col>
             <StatusButton value="speichern" onClick={async ()=>{
         if(lemma===""||lemma.indexOf(" ")>-1||lemma.indexOf("*")>-1||lemma.indexOf("[")>-1){
-            return {status: false, error: "Bitte ein gültiges Wort eintragen!"};
+            return {status: false, error: "Bitte tragen Sie ein gültiges Wort ein!"};
         } else if(lemma_display===""){
             return {status: false, error: "Bitte tragen Sie eine gültige Wort-Anzeige ein!"};
         } else {
@@ -111,12 +111,13 @@ function LemmaAsideContent(props){
                 id: props.id,
                 lemma: lemma,
                 lemma_display: lemma_display,
-                MLW: MLW,
-                Fragezeichen: Fragezeichen,
-                Stern: Stern,
+                hom_nr: lemma_nr,
+                sub: sub,
+                addenda: addenda,
+                search: search,
+                link_name: link_name,
+                link_img, link_img,
                 comment: comment,
-                dicts: dicts,
-                lemma_nr: lemma_nr,
             };
             const newId = await arachne.lemma.save(newLemmaValue);
             props.onUpdate(props.id);
