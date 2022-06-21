@@ -549,7 +549,7 @@ class Opera extends React.Component{
                     }}
                 />
             </Container>
-            {this.state.item?<OperaAside item={this.state.item} onUpdate={()=>{this.setState({item: null})}} onClose={()=>{this.setState({item: null})}} onReload={async ()=>{this.setState({item: null});await this.getLst()}} />:null}
+            {arachne.access("o_edit")&&this.state.item?<OperaAside item={this.state.item} onUpdate={()=>{this.setState({item: null})}} onClose={()=>{this.setState({item: null})}} onReload={async ()=>{this.setState({item: null});await this.getLst()}} />:null}
         </>;
     }
     componentDidMount(){this.getLst()}

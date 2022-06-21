@@ -69,7 +69,7 @@ class Lemma extends React.Component{
                     }}
                 />
             </Container>
-            {(this.state.item)?<LemmaAside item={this.state.item} onUpdate={id=>{this.reloadEntry(id)}} onReload={()=>{this.loadPage(this.state.currentPage)}} onClose={()=>{this.setState({item: null})}} />:""}
+            {(arachne.access("l_edit")&&this.state.item)?<LemmaAside item={this.state.item} onUpdate={id=>{this.reloadEntry(id)}} onReload={()=>{this.loadPage(this.state.currentPage)}} onClose={()=>{this.setState({item: null})}} />:""}
         </>;
     }
     async reloadEntry(id){

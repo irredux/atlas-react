@@ -85,7 +85,7 @@ class Zettel extends React.Component{
                 />
                 {this.state.count==0?<SearchHint />:null}
             </Container>
-            {(this.state.selectionDetail.ids.length>0)?<ZettelAside onReload={()=>{this.loadPage(this.state.currentPage)}} onClose={()=>{this.setState({selectionDetail: {ids: []}})}} selection={this.state.selectionDetail} item={this.state.itemDetail} onUpdate={ids=>{this.reloadZettel(ids)}} showDetail={this.state.showDetail} openNextItem={()=>{this.openNextItem()}} toggleShowDetail={()=>{this.setState({showDetail: !this.state.showDetail})}} />:""}
+            {(arachne.access("z_edit")&&this.state.selectionDetail.ids.length>0)?<ZettelAside onReload={()=>{this.loadPage(this.state.currentPage)}} onClose={()=>{this.setState({selectionDetail: {ids: []}})}} selection={this.state.selectionDetail} item={this.state.itemDetail} onUpdate={ids=>{this.reloadZettel(ids)}} showDetail={this.state.showDetail} openNextItem={()=>{this.openNextItem()}} toggleShowDetail={()=>{this.setState({showDetail: !this.state.showDetail})}} />:""}
         </>;
     }
     async openNextItem(){// save current element

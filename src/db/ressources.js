@@ -65,7 +65,7 @@ class SekLit extends React.Component{
                     }}
                 />
             </Container>
-            {(this.state.item)?<SekLitAside item={this.state.item} onUpdate={id=>{this.reloadEntry(id)}} onReload={()=>{this.loadPage(this.state.currentPage)}} onClose={()=>{this.setState({item: null})}} />:""}
+            {(arachne.access("e_edit")&&this.state.item)?<SekLitAside item={this.state.item} onUpdate={id=>{this.reloadEntry(id)}} onReload={()=>{this.loadPage(this.state.currentPage)}} onClose={()=>{this.setState({item: null})}} />:""}
         </>;
     }
     async reloadEntry(id){
@@ -313,7 +313,7 @@ class Ressource extends React.Component{
                     }}
                 />
             </Container>
-            {(this.state.item)?<RessourceAside item={this.state.item} onUpdate={id=>{this.reloadEntry(id)}} onReload={()=>{this.loadPage(this.state.currentPage)}} onClose={()=>{this.setState({item: null})}} />:""}
+            {(arachne.access("e_edit")&&this.state.item)?<RessourceAside item={this.state.item} onUpdate={id=>{this.reloadEntry(id)}} onReload={()=>{this.loadPage(this.state.currentPage)}} onClose={()=>{this.setState({item: null})}} />:""}
         </>;
     }
     async reloadEntry(id){
