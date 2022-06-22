@@ -83,11 +83,11 @@ function Edition(props){
             }
         }],
         //[queryResultIndex, setQueryResultIndex]
-        ["CTRL+1", ()=>{setMode(0)}],
-        ["CTRL+2", ()=>{setMode(1)}],
-        ["CTRL+3", ()=>{setMode(2)}],
-        ["CTRL+,", ()=>{setZoom(zoom-5)}],
-        ["CTRL+.", ()=>{setZoom(zoom+5)}],
+        ["ACTION+1", ()=>{setMode(0)}],
+        ["ACTION+2", ()=>{setMode(1)}],
+        ["ACTION+3", ()=>{setMode(2)}],
+        ["ACTION+,", ()=>{setZoom(zoom-5)}],
+        ["ACTION+.", ()=>{setZoom(zoom+5)}],
     ];
     useShortcuts(shortCutLst, false);
     useEffect(()=>{ // onload (?)

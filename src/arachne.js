@@ -82,15 +82,14 @@ class ArachneTable {
             },
             body: JSON.stringify(newValues)
         });
-        if(response.status===201 && method==="POST"){
-            if(Array.isArray(newValues)){return await rId}
-            else {return parseInt(await response.text())}
-        } else if(response.status===200 && method==="PATCH"){
-            return rId;
-        } else if(Array.isArray(newValues)){
-            return true;
-        } else {
-            console.log("response status:", response.status)
+        if((response.status===201 && method==="POST")||(response.status===200 && method==="PATCH")||(response.status===200&&Array.isArray(newValues))){
+            if(Array.isArray(newValues)){
+                return response.json();
+            }else{
+                return parseInt(await response.text());
+            }
+        }else{
+            //console.log("response status:", response.status, "method:", method)
             let errorEvent = new CustomEvent("arachneError", {detail: {method: "save", status: response.status}});
                 window.dispatchEvent(errorEvent);
             //throw new Error(`ARACHNE: entry not saved. Status: ${response.status}`);

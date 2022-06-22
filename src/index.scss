@@ -178,7 +178,9 @@ table.operaBox > tbody > tr > td{
     width: 30%;
     font-size: 95%;
 }
-
+.operaBox_tll_index > div > table > tbody > tr:hover{
+    background-color: lightgray;
+}
 
 /* ****************   ZETTEL   **************** */
 .searchFields>select{box-shadow: none;}

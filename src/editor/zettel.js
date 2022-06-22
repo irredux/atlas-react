@@ -267,16 +267,6 @@ function FilterBox(props){
             <FilterBoxInput inputMode={inputMode} setInputMode={v=>{setInputMode(v)}} tags={props.filterTags} addTag={newTag=>{addTag(newTag)}} removeTag={t=>{removeTag(t)}} project={props.project} />
     </div>;
 }
-function TagBox(props){
-    const [inputMode, setInputMode] = useState(true);
-    return <div className="mt-2" id={"tagBox_"+props.s.id} style={{border: inputMode?"1px solid #ced4da":"1px solid var(--bs-yellow)", backgroundColor: inputMode?null:"#ffecb1",padding: "2px 5px", display: "flex", alignItems: "flex-start", flexWrap: "wrap", minHeight: "110px", borderRadius: "0.25rem", fontSize: "100%"}} onClick={()=>{
-        let tb = document.getElementById("tagBox_"+props.s.id);
-        tb.children[tb.children.length-2].focus()
-        }}>
-        {props.isVisible&&props.tags.map(t=><Tag key={t.id} t={t} sectionId={props.s.id} loadTags={async ()=>{await props.loadTags()}} />)}
-        <TagBoxInput inputMode={inputMode} setInputMode={v=>{setInputMode(!inputMode)}} project={props.project} tags={props.tags} loadTags={async ()=>{await props.loadTags()}} sectionId={props.s.id} centerSection={()=>{props.centerSection()}} />
-    </div>;
-}
 function FilterBoxInput(props){
     const [inputValue, setInputValue] = useState("");
     const [acTags, setACTags] = useState([]);
@@ -298,7 +288,7 @@ function FilterBoxInput(props){
         if(acTags.length>0||inputValue!==""){loadACTags()}
     }, [props.tags,inputValue,props.inputMode]);
     const onKeyDown = e=>{
-        if(e.keyCode===9&&acTags.length===1){
+        if(e.keyCode===13&&acTags.length===1){
             e.preventDefault();
             createNewTag(acTags[0].name);
         }else if(e.keyCode===27){ // esc
@@ -360,6 +350,25 @@ function FilterBoxInput(props){
     </div>}
     </div>;
 }
+function FilterTag(props){
+    return <div style={{cursor: "default", backgroundColor: props.t.exclude?"rgb(248,248,248)":props.t.color, fontWeight: "bold", color: props.t.exclude?props.t.color:"rgba(255,255,255, 0.8)", border: `1px solid ${props.t.color}`, margin: "1px 2px", padding: "3px 15px 3px 18px", borderRadius: "18px"}}>
+        {props.t.name}
+        <FontAwesomeIcon onClick={async e=>{
+            e.stopPropagation();
+            props.removeTag(props.t);
+            }} style={{cursor: "pointer", margin: "4px 0 0 9px"}} icon={faMinusCircle} />
+    </div>;
+}
+function TagBox(props){
+    const [inputMode, setInputMode] = useState(true);
+    return <div className="mt-2" id={"tagBox_"+props.s.id} style={{border: inputMode?"1px solid #ced4da":"1px solid var(--bs-yellow)", backgroundColor: inputMode?null:"#ffecb1",padding: "2px 5px", display: "flex", alignItems: "flex-start", flexWrap: "wrap", minHeight: "110px", borderRadius: "0.25rem", fontSize: "100%"}} onClick={()=>{
+        let tb = document.getElementById("tagBox_"+props.s.id);
+        tb.children[tb.children.length-2].focus()
+        }}>
+        {props.isVisible&&props.tags.map(t=><Tag key={t.id} t={t} sectionId={props.s.id} loadTags={async ()=>{await props.loadTags()}} />)}
+        <TagBoxInput inputMode={inputMode} setInputMode={v=>{setInputMode(!inputMode)}} project={props.project} tags={props.tags} loadTags={async ()=>{await props.loadTags()}} sectionId={props.s.id} centerSection={()=>{props.centerSection()}} />
+    </div>;
+}
 function TagBoxInput(props){
     const [inputValue, setInputValue] = useState("");
     const [acTags, setACTags] = useState([]);
@@ -381,7 +390,7 @@ function TagBoxInput(props){
         if(acTags.length>0||inputValue!==""){loadACTags()}
     }, [props.tags,inputValue,props.inputMode]);
     const onKeyDown = e=>{
-        if(e.keyCode===9&&acTags.length===1){
+        if(e.keyCode===13&&acTags.length===1){
             e.preventDefault();
             createNewTag(acTags[0].name);
         }else if(e.keyCode===27){ // esc
@@ -410,10 +419,10 @@ function TagBoxInput(props){
         if(props.inputMode){ // save new tag
             if(!props.tags.find(t=>t.name.toLowerCase()===newTag.toLowerCase())){
                 const inTags = acTags.find(t=>t.name.toLowerCase()===newTag.toLowerCase());
-                if(inTags){
+                if(inTags){ // create new tag_lnk
                     await arachne.tag_lnks.save({tag_id: inTags.id, section_id: props.sectionId, project_id: props.project.id});
                     await props.loadTags();
-                }else{
+                }else{ // create new
                     const newTagId = await arachne.tags.save({
                         name: newTag,
                         color: colorPicker(),
@@ -444,15 +453,6 @@ function TagBoxInput(props){
     {acTags.length>0&&<div className="autocomplete-items" style={{borderColor: props.inputMode?null:"var(--bs-yellow)"}}>
         {acTags.map((t,i)=><div key={t.id} style={{backgroundColor: props.inputMode?null:"#ffecb1", borderColor: props.inputMode?null:"var(--bs-yellow)"}} onMouseDown={async ()=>{await createNewTag(t.name, true)}} className={i===currentFocus?"autocomplete-active":""}>{t.name}</div>)}
     </div>}
-    </div>;
-}
-function FilterTag(props){
-    return <div style={{cursor: "default", backgroundColor: props.t.exclude?"rgb(248,248,248)":props.t.color, fontWeight: "bold", color: props.t.exclude?props.t.color:"rgba(255,255,255, 0.8)", border: `1px solid ${props.t.color}`, margin: "1px 2px", padding: "3px 15px 3px 18px", borderRadius: "18px"}}>
-        {props.t.name}
-        <FontAwesomeIcon onClick={async e=>{
-            e.stopPropagation();
-            props.removeTag(props.t);
-            }} style={{cursor: "pointer", margin: "4px 0 0 9px"}} icon={faMinusCircle} />
     </div>;
 }
 function Tag(props){
@@ -571,9 +571,11 @@ function ImportZettel(props){
                 let tagObj = {};
                 const currentTags = await arachne.tags.get({project_id: props.project.id});
                 currentTags.forEach(t=>{tagObj[t.name]=t.id});
+                let zettel_save_lst = []
+                let tag_lnks_save_lst = []
                 for(const z of zettelLst){
                     const cmnts = await arachne.comment.get({zettel_id: z.id}, {select: ["comment", "user"]});
-                    const newSecId = await arachne.sections.save({
+                    zettel_save_lst.push({
                         zettel_id: z.id,
                         project_id: props.project.id,
                         ref: z.ac_web,
@@ -585,7 +587,7 @@ function ImportZettel(props){
                         shared_id: props.project.shared_id,
                         work_id: z.work_id,
                     });
-                    let typeTag = null;
+                    let typeTag = "unbekannter Zetteltyp";
                     if(z.type===1){typeTag="verzettelt"}
                     else if(z.type===2){typeTag="Exzerpt"}
                     else if(z.type===3){typeTag="Index"}
@@ -602,15 +604,22 @@ function ImportZettel(props){
                             });
                             tagObj[typeTag] = newTagId;
                         }
-                        await arachne.tag_lnks.save({
+                        tag_lnks_save_lst.push({
                             tag_id: tagObj[typeTag],
-                            section_id: newSecId,
+                            //section_id: newSecId,
                             user_id: props.project.user_id,
                             shared_id: props.project.shared_id,
                             project_id: props.project.id,
                         });
                     }
                 }
+                const newSecIds = await arachne.sections.save(zettel_save_lst);
+                console.log(newSecIds.length, tag_lnks_save_lst.length);
+                tag_lnks_save_lst = tag_lnks_save_lst.map((t,i)=>{
+                    t.section_id = newSecIds[i];
+                    return t;
+                });
+                await arachne.tag_lnks.save(tag_lnks_save_lst);
                 setStatus(null);
                 props.onReplay(true);
             }} disabled={(mode==="lemma"&&lemmaZettelCount>0)||(mode==="zettel"&&zettelZettelCount>0)?false:true}>Zettel laden{status}</Button>

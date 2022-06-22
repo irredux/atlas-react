@@ -20,14 +20,14 @@ function Editor(props){
     const [showMenuLeft, setShowMenuLeft] = useState(false);
     const [showImport, setShowImport] = useState(false);
     const scSetup = [
-        ["CTRL+ESC", ()=>{props.loadMain(null, null)}],
-        ["CTRL+f", ()=>{setShowMenuLeft(!showMenuLeft)}],
-        ["CTRL+i", ()=>{setShowImport(!showImport)}],
-        ["CTRL+r", ()=>{setFilterLst([]);updateSections()}],
-        ["CTRL+1", ()=>{setMode("zettel")}],
-        ["CTRL+2", ()=>{setMode("outline")}],
-        ["CTRL+3", ()=>{setMode("export")}],
-        ["CTRL+n", ()=>{createNewArticle()}]
+        ["ACTION+ESC", ()=>{props.loadMain(null, null)}],
+        ["ACTION+f", ()=>{setShowMenuLeft(!showMenuLeft)}],
+        ["ACTION+i", ()=>{setShowImport(!showImport)}],
+        ["ACTION+r", ()=>{setFilterLst([]);updateSections()}],
+        ["ACTION+1", ()=>{setMode("zettel")}],
+        ["ACTION+2", ()=>{setMode("outline")}],
+        ["ACTION+3", ()=>{setMode("export")}],
+        ["ACTION+n", ()=>{createNewArticle()}]
     ];
     useShortcuts(scSetup, false);
     const ToolKitItems = [

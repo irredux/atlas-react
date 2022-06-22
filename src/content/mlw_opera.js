@@ -265,7 +265,7 @@ class OperaBox extends React.Component{
                 </tr>
             </tbody>
         </table>;
-        if(this.props.listName!="opera_maiora"){
+        if(this.props.listName==="opera_minora"){
             placeholderTable = <table className="operaBox" style={{width:"100%"}}>
             <tbody>
                 <tr>
@@ -390,6 +390,34 @@ class OperaBox extends React.Component{
                 </tr>
             </tbody>
         </table>;
+        } else if(this.props.listName==="tll_index"){
+            placeholderTable = <table className="operaBox" style={{width:"100%"}}>
+            <tbody>
+                <tr>
+                    <td className="c1_tll"><Placeholder sm={10} /></td>
+                    <td className="c2_tll"><Placeholder sm={10} /></td>
+                    <td className="c3_tll"></td>
+                    <td className="c4_tll"><Placeholder sm={10} /></td>
+                    <td className="c5_tll"></td>
+                </tr>
+                <tr>
+                    <td className="c1_tll">&nbsp;&nbsp;&nbsp;<Placeholder sm={10} /></td>
+                    <td className="c2_tll">&nbsp;&nbsp;&nbsp;<Placeholder sm={10} /></td>
+                    <td className="c3_tll"></td>
+                    <td className="c4_tll">&nbsp;&nbsp;&nbsp;<Placeholder sm={10} /><br />&nbsp;&nbsp;&nbsp;
+                    <Placeholder sm={8} /></td>
+                    <td className="c5_tll">&nbsp;&nbsp;&nbsp;<Placeholder sm={9} /><br />&nbsp;&nbsp;&nbsp;<Placeholder sm={3} /></td>
+                </tr>
+                <tr>
+                    <td className="c1_tll">&nbsp;&nbsp;&nbsp;<Placeholder sm={10} /></td>
+                    <td className="c2_tll">&nbsp;&nbsp;&nbsp;<Placeholder sm={10} /></td>
+                    <td className="c3_tll"></td>
+                    <td className="c4_tll">&nbsp;&nbsp;&nbsp;<Placeholder sm={10} /><br />&nbsp;&nbsp;&nbsp;
+                    <Placeholder sm={8} /></td>
+                    <td className="c5_tll"></td>
+                </tr>
+            </tbody>
+        </table>;
         }
         let toolKitMenu = [
             ["opera-Listen aktualisieren", async ()=>{  
@@ -449,7 +477,7 @@ class OperaBox extends React.Component{
                             {placeholderTable}
                         </Placeholder>
                     </div>
-                :<div>{tblLst}</div>}
+                :<div className={"operaBox_"+this.props.listName}>{tblLst}</div>}
             </div>
         </>;
     }
