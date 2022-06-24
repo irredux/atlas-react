@@ -1,4 +1,4 @@
-import { parseHTML, parseHTMLPreview, SelectMenu, StatusButton, AutoComplete } from "./../elements.js";
+import { parseHTML, parseHTMLPreview, SelectMenu, StatusButton, AutoComplete, TableView } from "./../elements.js";
 import { arachne } from "./../arachne.js";
 import { Accordion, Col, Row, Container, NavDropdown, Card, ListGroup, Spinner } from "react-bootstrap";
 import { useState, useEffect } from "react";
