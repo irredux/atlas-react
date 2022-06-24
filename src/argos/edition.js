@@ -198,15 +198,16 @@ function SideScans(props){
         </ListGroup></Col></Row>
         <Row className="mb-3"><Col align="right">Auswahl: {pages.length}</Col></Row>
         <Row><Col><StatusButton onClick={async ()=>{
-                // delete old links
-                if(props.pages.length>0){ await arachne.scan_lnk.delete(props.pages.map(p=>{return p.id})) }
-                // create new links
-                if(pages.length>0){
-                    let newLnks = pages.sort();
-                    newLnks = newLnks.map(i=>{return {edition_id: props.ressource.id, scan_id: i}});
-                    await arachne.scan_lnk.save(newLnks);
-                }                        
-                return {status: 1};
+            // delete old links
+            const oldLnks = await arachne.scan_lnk.get({edition_id: props.ressource.id}, {select: ["id"]});
+            if(oldLnks.length>0){await arachne.scan_lnk.delete(oldLnks.map(l=>l.id))};
+            // create new links
+            if(pages.length>0){
+                let newLnks = pages.sort();
+                newLnks = newLnks.map(i=>{return {edition_id: props.ressource.id, scan_id: i}});
+                await arachne.scan_lnk.save(newLnks);
+            }
+            return {status: 1};
         }} value="speichern" /></Col></Row>
         
     </Container>;

@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Button, ButtonGroup, Dropdown, Table, Badge, Card, Col, Form, Container, Navbar, Nav, Row, Modal, Accordion, Stack, Spinner, Offcanvas, Tabs, Tab } from "react-bootstrap";
 import { arachne } from "./../arachne.js";
-import { AutoComplete, SearchInput, ToolKit, useIntersectionObserver, Message, useShortcuts } from "./../elements.js"
+import { AutoComplete, SearchInput, ToolKit, useIntersectionObserver, Message, useShortcuts, sleep } from "./../elements.js"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlusCircle, faMinusCircle, faTimesCircle, faRotate, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { ZettelBox } from "./zettel.js";
@@ -19,6 +19,7 @@ function Editor(props){
     const [limitFilterResults,setLimitFilterResults] = useState(false);
     const [showMenuLeft, setShowMenuLeft] = useState(false);
     const [showImport, setShowImport] = useState(false);
+    const [changeZettelWork, setChangeZettelWork] = useState({})
     const scSetup = [
         ["ACTION+ESC", ()=>{props.loadMain(null, null)}],
         ["ACTION+f", ()=>{setShowMenuLeft(!showMenuLeft)}],
@@ -34,7 +35,8 @@ function Editor(props){
         ["Zettel importieren", ()=>{setShowImport(true)}],
         ["Seitenleiste ein-/ausblenden", ()=>{setShowMenuLeft(true)}],
         ["Filter neu laden", ()=>{setFilterLst([]);updateSections()}],
-        ["Neuer Artikel erstellen", ()=>{createNewArticle()}]
+        ["Neuer Artikel erstellen", ()=>{createNewArticle()}],
+        ["Neue Stelle erstellen", ()=>{setChangeZettelWork({value: "", id: 0, section_id: 0})}],
     ];
     const updateArticles = inArticles => {
         setArticles(inArticles);
@@ -134,7 +136,7 @@ function Editor(props){
     let modeBox = null;
     switch(mode){
         case "zettel":
-            modeBox = <ZettelBox setLimitFilterResults={v=>{setLimitFilterResults(v)}} showImport={showImport} showMenuLeft={showMenuLeft} filterTags={filterTags} setFilterTags={newTags=>{setFilterTags(newTags)}} setShowMenuLeft={()=>{setShowMenuLeft(false)}} setShowImport={v=>{setShowImport(v)}} project={project} filterLst={filterLst} updateSections={()=>{updateSections()}} />;
+            modeBox = <ZettelBox changeZettelWork={changeZettelWork} setChangeZettelWork={setChangeZettelWork} setLimitFilterResults={v=>{setLimitFilterResults(v)}} showImport={showImport} showMenuLeft={showMenuLeft} filterTags={filterTags} setFilterTags={newTags=>{setFilterTags(newTags)}} setShowMenuLeft={()=>{setShowMenuLeft(false)}} setShowImport={v=>{setShowImport(v)}} project={project} filterLst={filterLst} updateSections={(force=false)=>{if(force){setFilterLst([])};updateSections()}} />;
             break;
         case "outline":
             modeBox = <OutlineBox createNewArticle={createNewArticle} changeArticle={changeArticle} project={project} dropArticle={(a,b,c)=>{dropArticle(a,b,c)}} articlesLst={articlesLst} articles={articles} collapsedArticlesLst={collapsedArticlesLst} toogleCollapse={a=>{toogleCollapse(a)}} />;
@@ -146,6 +148,36 @@ function Editor(props){
         modeBox = <div>Modus '{mode}' nicht gefunden.</div>;
     }
     return <>
+    <Message show={Object.keys(changeZettelWork).length>0?true:false} title="verknpft. Werk auswählen" msg="Mit welchem Werk soll die Stelle verknüpft werden?" AutoComplete={{value: changeZettelWork.value, id: changeZettelWork.id, tbl: "work", searchCol: "ac_web", returnCol: "ac_web"}} onReplay={async e=>{
+            if(e){
+                let nValues = {work_id: e.id}  
+
+                if(changeZettelWork.section_id>0){
+                    nValues.id = changeZettelWork.section_id;
+                    const cSection = await arachne.sections.get({id: changeZettelWork.section_id}, {select: ["ref"]});
+                    if(cSection[0]["ref"]!=e.value&&window.confirm("Soll auch der Zitiertitel geändert werden?")){
+                        nValues.ref = e.value+";";
+                    }
+                }else{
+                    const cWork = await arachne.work.get({id: e.id}, {select: ["date_sort"]})
+                    nValues.ref = e.value+";";
+                    nValues.project_id = project.id;                  
+                    nValues.user_id = project.user_id;
+                    nValues.shared_id = project.shared_id;
+                    nValues.date_sort = cWork[0]["date_sort"];
+                }             
+                const rId = await arachne.sections.save(nValues);
+                if(changeZettelWork.section_id===0){
+                    sleep(300).then(()=>{
+                        const el = document.getElementById(`s_${rId}`);
+                        if(el){el.scrollIntoView({behavior: "auto", block: "center"})}
+                    });
+                    
+                }
+                updateSections(true);
+            }
+            setChangeZettelWork({});
+        }} />
     <Navbar bg="dark" variant="dark" fixed="top" style={{top: "0px"}}>
         <Container fluid style={{height: "40px"}}>
             <Navbar.Brand style={{cursor: "pointer"}} onClick={e=>{props.loadMain(e, null)}}>Editor</Navbar.Brand>

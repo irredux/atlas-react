@@ -225,32 +225,41 @@ function CommentBox(props){
 function Message(props){
     const [inputTxt, setInputTxt] = useState(props.input)
     const [selectValue, setSelectValue] = useState(props.dropDown&&props.dropDown.length>0?props.dropDown[0][0]:null);
+    const [acValue, setACValue] = useState(props.AutoComplete?props.AutoComplete.value:null);
+    const [acId, setACId] = useState(props.AutoComplete?props.AutoComplete.id:null);
     const [status, setStatus] = useState()
     useEffect(()=>{setInputTxt(props.input)}, [props.input])
     useEffect(()=>{setSelectValue(props.dropDown&&props.dropDown.length>0?props.dropDown[0][0]:null)}, [props.dropDown])
     useEffect(()=>{setStatus(null)}, [props.show])
+    let inputType = null;
+    if(props.input){
+        inputType=<Form.Control size="sm" type="text" placeholder="..." value={inputTxt} onChange={e=>(setInputTxt(e.target.value))} />
+    }else if(props.AutoComplete){
+        inputType=<AutoComplete  value={acValue?acValue:props.AutoComplete.value} tbl={props.AutoComplete.tbl} searchCol={props.AutoComplete.searchCol} returnCol={props.AutoComplete.returnCol} onChange={(value, id)=>{setACValue(value);setACId(id)}} />;
+    }
     return <Modal show={props.show} onHide={()=>{props.onReplay(false)}} backdrop="static">
-    <Modal.Header closeButton>
-        <Modal.Title>{props.title}</Modal.Title>
-    </Modal.Header>
+        <Modal.Header closeButton>
+            <Modal.Title>{props.title}</Modal.Title>
+        </Modal.Header>
 
-    <Modal.Body>
-        <p>{props.msg}</p>
-        {props.input!=null?<Form.Control size="sm" type="text" placeholder="..." value={inputTxt} onChange={e=>(setInputTxt(e.target.value))} />:null}
-        {props.dropDown?<Form.Select size="sm" onChange={e=>{setSelectValue(e.target.value)}}>{props.dropDown.map(d=><option key={d[0]} value={d[0]}>{d[1]}</option>)}</Form.Select>:null}
-    </Modal.Body>
+        <Modal.Body>
+            <p>{props.msg}</p>
+            {inputType}
+            {props.dropDown?<Form.Select size="sm" onChange={e=>{setSelectValue(e.target.value)}}>{props.dropDown.map(d=><option key={d[0]} value={d[0]}>{d[1]}</option>)}</Form.Select>:null}
+        </Modal.Body>
 
-    <Modal.Footer>
-        <Button variant="secondary" onClick={()=>{props.onReplay(false)}}>Abbrechen</Button>
-        <Button variant="primary" onClick={()=>{
-            setStatus(<Spinner style={{marginLeft: "10px"}} animation="border" size="sm" />)
-            let replay = true;
-            if(props.input!=null){replay=inputTxt}
-            else if(props.dropDown!=null){replay=selectValue};
-            props.onReplay(replay);
-            }}>OK{status}</Button>
-    </Modal.Footer>
-</Modal>;
+        <Modal.Footer>
+            <Button variant="secondary" onClick={()=>{props.onReplay(false)}}>Abbrechen</Button>
+            <Button variant="primary" onClick={()=>{
+                setStatus(<Spinner style={{marginLeft: "10px"}} animation="border" size="sm" />)
+                let replay = true;
+                if(props.input!=null){replay=inputTxt}
+                else if(props.dropDown!=null){replay=selectValue}
+                else if(props.AutoComplete){replay={value: acValue, id: acId}}
+                props.onReplay(replay);
+                }} disabled={AutoComplete&&!acId>0?true:false}>OK{status}</Button>
+        </Modal.Footer>
+    </Modal>;
 }
 function sqlDate(s){ // s = sql date string
     return new Date(

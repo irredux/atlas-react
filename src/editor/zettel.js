@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGear, faPlusCircle, faMinusCircle, faTimesCircle, faRotate, faPenToSquare, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 
 import { arachne } from "./../arachne.js";
-import { AutoComplete, SearchInput, ToolKit, useIntersectionObserver, Message, useShortcuts } from "./../elements.js"
+import { AutoComplete, SearchInput, ToolKit, useIntersectionObserver, Message, useShortcuts, sleep } from "./../elements.js"
 
 function ZettelBox(props){
     const [currentZettel, setCurrentZettel] = useState("?")
@@ -36,7 +36,7 @@ function ZettelBox(props){
         <Row>
             <Col id="cardBox">
                 <Stack gap={5}>
-                    {props.filterLst.map(sId=><SectionCard updateSections={props.updateSections} wideScreen={wideScreen} setRessourceView={url=>{setRessourceView(url)}} project={props.project} sId={sId} key={sId} />)}
+                    {props.filterLst.map(sId=><SectionCard setChangeZettelWork={props.setChangeZettelWork} updateSections={props.updateSections} wideScreen={wideScreen} setRessourceView={url=>{setRessourceView(url)}} project={props.project} sId={sId} key={sId} />)}
                 </Stack>
             </Col>
             {splitView?<Col>
@@ -46,8 +46,8 @@ function ZettelBox(props){
         </Row>
     </Container>
     {<MenuLeft setLimitFilterResults={v=>{props.setLimitFilterResults(v)}} project={props.project} filterTags={props.filterTags} setFilterTags={newTags=>{props.setFilterTags(newTags)}} tagLst={props.tagLst} show={props.showMenuLeft} onHide={()=>{props.setShowMenuLeft(false)}} updateSections={()=>{props.updateSections()}} />}
-    <div style={{fontSize: "95%", position: "fixed", display: "flex", justifyContent:"space-between", bottom: "0px", left: 0, right: 0, backgroundColor: "#ced4da", padding: "5px 20px"}}>
-        <div style={{display: "flex", justifyContent:"space-around", gap: "10px"}}>{props.filterTags&&props.filterTags.length>0?props.filterTags.map(t=><div style={{cursor: "default", backgroundColor: t.color, fontWeight: "bold", color: "rgba(255,255,255, 0.8)", margin: "1px 2px", padding: "1px 10px 1px 13px", borderRadius: "18px"}}>{t.name}</div>):<div style={{color: "gray"}}><small><i>kein Filter</i></small></div>}</div>
+    <div style={{fontSize: "95%", position: "fixed", display: "flex", justifyContent:"space-between", bottom: "0px", left: 0, right: 0, backgroundColor: "#f8f9fa", padding: "5px 20px"}}>
+        <div style={{display: "flex", justifyContent:"space-around", gap: "10px"}}>{props.filterTags&&props.filterTags.length>0?props.filterTags.map(t=><div style={{cursor: "default", backgroundColor: t.exclude?"rgb(248,248,248)":t.color, fontWeight: "bold", color: t.exclude?t.color:"rgba(255,255,255, 0.8)", border: `1px solid ${t.color}`, margin: "1px 2px", padding: "1px 10px 1px 13px", borderRadius: "18px"}}>{t.name}</div>):<div style={{color: "gray"}}><small><i>kein Filter</i></small></div>}</div>
         <div><input style={{background: "none", border: "none", outline: "none", width: "60px", textAlign: "right"}} id="editor_zettel_current_active" value={currentZettel} onChange={e=>{setCurrentZettel(e.target.value)}} onKeyUp={e=>{
             if(e.keyCode===13){
                 const els = document.getElementsByClassName("editor_zettel_card");
@@ -89,7 +89,7 @@ function MenuLeft(props){
       <Offcanvas.Title></Offcanvas.Title>
     </Offcanvas.Header>
     <Offcanvas.Body>
-        <Message show={renameId>0?true:false} title="Projekt umbenennen" msg="Geben Sie einen neuen Namen für das Schlagwort ein:" input={renameName} onReplay={async e=>{
+        <Message show={renameId>0?true:false} title="Schlagwort umbenennen" msg="Geben Sie einen neuen Namen für das Schlagwort ein:" input={renameName} onReplay={async e=>{
             const tagNames = tags.map(t=>t.name.toLowerCase());
             if(e!=-1&&e!=""){
                 if(tagNames.includes(e.toLowerCase())){
@@ -228,15 +228,26 @@ function SectionCard(props){
             </Row>
             <div style={{display: "flex", justifyContent: "flex-end", gap: "15px", margin: "0 0.4rem 0 0.4rem", position: "absolute",  bottom: "10px", left: "10px", right: "10px"}}>
             <RessourcesButtons setRessourceView={url=>{props.setRessourceView(url)}} ressources={ressources} />
-            <DropdownButton tabIndex="-1" variant="outline-dark" id="dropdown-basic-button" title={<FontAwesomeIcon icon={faGear} />}>
-              <Dropdown.Item onClick={()=>{openZettelDB()}}>Zettel bearbeiten</Dropdown.Item>
-              <Dropdown.Item onClick={()=>{setVerso(!verso)}}>Zettel drehen</Dropdown.Item>
-              <Dropdown.Divider />
-              <Dropdown.Item>verknpft. Werk ändern</Dropdown.Item>
-              <Dropdown.Item onClick={()=>{setShowComment(true)}}>Kommentar hinzufügen</Dropdown.Item>
-              <Dropdown.Divider />
-              <Dropdown.Item>Stelle kopieren</Dropdown.Item>
-              <Dropdown.Item onClick={async ()=>{if(window.confirm("Soll die Stelle aus dem Projekt entfernt werden? Alle Änderungen gehen verloren.")){await arachne.sections.delete(props.sId);props.updateSections()}}} className="text-danger">Stelle löschen</Dropdown.Item>
+            <DropdownButton tabIndex="-1" variant="outline-secondary" id="dropdown-basic-button" title={<FontAwesomeIcon icon={faGear} />}>
+                <Dropdown.Item onClick={()=>{openZettelDB()}}>Zettel bearbeiten</Dropdown.Item>
+                <Dropdown.Item onClick={()=>{setVerso(!verso)}}>Zettel drehen</Dropdown.Item>
+                <Dropdown.Divider />
+                <Dropdown.Item onClick={async()=>{
+                    const acWork = await arachne.work.get({id: section.work_id}, {select: ["ac_web"]})
+                    props.setChangeZettelWork({value: acWork[0].ac_web, id:section.work_id, section_id: props.sId});
+            }}>verknpft. Werk ändern</Dropdown.Item>
+                <Dropdown.Item onClick={()=>{setShowComment(true)}}>Kommentar hinzufügen</Dropdown.Item>
+                <Dropdown.Divider />
+                <Dropdown.Item onClick={async()=>{
+                    let vals = await arachne.sections.get({id: props.sId});
+                    delete vals.id;
+                    const newId = await arachne.sections.save(vals);
+                    props.updateSections(true);
+                    await sleep(300);
+                    const el = document.getElementById(`s_${newId}`);
+                    if(el){el.scrollIntoView({behavior: "auto", block: "center"})}
+            }}>Stelle kopieren</Dropdown.Item>
+                <Dropdown.Item onClick={async ()=>{if(window.confirm("Soll die Stelle aus dem Projekt entfernt werden? Alle Änderungen gehen verloren.")){await arachne.sections.delete(props.sId);props.updateSections()}}} className="text-danger">Stelle löschen</Dropdown.Item>
             </DropdownButton>
             </div>
         </Card.Body>
@@ -262,7 +273,7 @@ function RessourcesButtons(props){
     }
     useEffect(()=>{
         if(props.ressources.length===0){setButton(null)}
-        else if(props.ressources.length===1){setButton(<Button tabIndex="-1" size="sm" variant="outline-secondary" onClick={()=>{openRessource(props.ressources[0].url===null||props.ressources[0].url===""?"/site/argos/"+props.ressources[0].id:props.ressources[0].url)}}>{props.ressources[0].label}</Button>)}
+        else if(props.ressources.length===1){setButton(<Button tabIndex="-1" size="sm" variant="outline-dark" onClick={()=>{openRessource(props.ressources[0].url===null||props.ressources[0].url===""?"/site/argos/"+props.ressources[0].id:props.ressources[0].url)}}>{props.ressources[0].label}</Button>)}
         else{
             setSelected(props.ressources[0]);
         }
@@ -270,8 +281,8 @@ function RessourcesButtons(props){
     useEffect(()=>{
         if(selected!=null){
             setButton(<Dropdown as={ButtonGroup}>
-                <Button size="sm" variant="outline-secondary" style={{width: "100%"}} onClick={()=>{openRessource(selected.url===null||selected.url===""?"/site/argos/"+selected.id:selected.url)}}>{selected.label}</Button>
-                <Dropdown.Toggle split size="sm" variant="secondary" id="dropdown-split-basic" />
+                <Button size="sm" variant="outline-dark" style={{width: "100%"}} onClick={()=>{openRessource(selected.url===null||selected.url===""?"/site/argos/"+selected.id:selected.url)}}>{selected.label}</Button>
+                <Dropdown.Toggle split size="sm" variant="dark" id="dropdown-split-basic" />
                 <Dropdown.Menu>
                     {props.ressources.map(r=><Dropdown.Item key={r.id} onClick={()=>{setSelected(r)}}>{r.label}</Dropdown.Item>)}
                 </Dropdown.Menu>
