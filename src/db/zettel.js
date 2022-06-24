@@ -281,6 +281,13 @@ function ZettelAsideSingle(props){
                         </Row>
                     </Accordion.Body>
                 </Accordion.Item>
+                <Accordion.Item eventKey={4}>
+                    <Accordion.Header>Fliesstext</Accordion.Header>
+                    <Accordion.Body>
+                        <p>{props.item.ocr_text_corr}</p>
+                        <p>{props.item.scan_id}</p>
+                    </Accordion.Body>
+                </Accordion.Item>
                 {ressourceLst.length>0&&<Accordion.Item eventKey={1}>
                     <Accordion.Header>Ressourcen</Accordion.Header>
                     <Accordion.Body>

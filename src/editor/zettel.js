@@ -1,12 +1,13 @@
 import { useEffect, useState, useRef } from "react";
-import { Button, ButtonGroup, Dropdown, Table, Badge, Card, Col, Form, Container, Navbar, Nav, Row, Modal, Accordion, Stack, Spinner, Offcanvas, Tabs, Tab } from "react-bootstrap";
+import { Button, ButtonGroup, Dropdown, DropdownButton, Table, Badge, Card, Col, Form, Container, Navbar, Nav, Row, Modal, Accordion, Stack, Spinner, Offcanvas, Tabs, Tab } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlusCircle, faMinusCircle, faTimesCircle, faRotate, faPenToSquare, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faGear, faPlusCircle, faMinusCircle, faTimesCircle, faRotate, faPenToSquare, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 
 import { arachne } from "./../arachne.js";
 import { AutoComplete, SearchInput, ToolKit, useIntersectionObserver, Message, useShortcuts } from "./../elements.js"
 
 function ZettelBox(props){
+    const [currentZettel, setCurrentZettel] = useState("?")
     const [wideScreen, setWideScreen] = useState(true);
     const [splitView, setSplitView] = useState(false);
     const [splitViewURL, setSplitViewURL] = useState("");
@@ -35,7 +36,7 @@ function ZettelBox(props){
         <Row>
             <Col id="cardBox">
                 <Stack gap={5}>
-                    {props.filterLst.map(sId=><SectionCard wideScreen={wideScreen} setRessourceView={url=>{setRessourceView(url)}} project={props.project} sId={sId} key={sId} />)}
+                    {props.filterLst.map(sId=><SectionCard updateSections={props.updateSections} wideScreen={wideScreen} setRessourceView={url=>{setRessourceView(url)}} project={props.project} sId={sId} key={sId} />)}
                 </Stack>
             </Col>
             {splitView?<Col>
@@ -45,6 +46,15 @@ function ZettelBox(props){
         </Row>
     </Container>
     {<MenuLeft setLimitFilterResults={v=>{props.setLimitFilterResults(v)}} project={props.project} filterTags={props.filterTags} setFilterTags={newTags=>{props.setFilterTags(newTags)}} tagLst={props.tagLst} show={props.showMenuLeft} onHide={()=>{props.setShowMenuLeft(false)}} updateSections={()=>{props.updateSections()}} />}
+    <div style={{fontSize: "95%", position: "fixed", display: "flex", justifyContent:"space-between", bottom: "0px", left: 0, right: 0, backgroundColor: "#ced4da", padding: "5px 20px"}}>
+        <div style={{display: "flex", justifyContent:"space-around", gap: "10px"}}>{props.filterTags&&props.filterTags.length>0?props.filterTags.map(t=><div style={{cursor: "default", backgroundColor: t.color, fontWeight: "bold", color: "rgba(255,255,255, 0.8)", margin: "1px 2px", padding: "1px 10px 1px 13px", borderRadius: "18px"}}>{t.name}</div>):<div style={{color: "gray"}}><small><i>kein Filter</i></small></div>}</div>
+        <div><input style={{background: "none", border: "none", outline: "none", width: "60px", textAlign: "right"}} id="editor_zettel_current_active" value={currentZettel} onChange={e=>{setCurrentZettel(e.target.value)}} onKeyUp={e=>{
+            if(e.keyCode===13){
+                const els = document.getElementsByClassName("editor_zettel_card");
+                if(els[parseInt(currentZettel)-1]){els[parseInt(currentZettel)-1].scrollIntoView({behavior: "auto", block: "center"})}
+            }
+        }} /> / {props.filterLst.length}</div>
+    </div>
     </>;
 }
 function MenuLeft(props){
@@ -188,15 +198,47 @@ function SectionCard(props){
         localStorage.setItem(arachne.project_name+"_searchBox_zettel",`[[{"id":0,"c":"id","o":"=","v":"${section.zettel_id}"}],1,["id"]]`);
         window.open("/?site=zettel");
     }//style={{ width: '80%', maxWidth: "600px", margin: "auto" }}>
-    return <Card ref={refImg} className={props.wideScreen?"largeScreen":null} id={"s_"+props.sId} style={{ width: "80%", margin: "auto" }}>
+    return <Card ref={refImg} className={props.wideScreen?"largeScreen editor_zettel_card":"editor_zettel_card"} id={"s_"+props.sId} style={{ width: "80%", margin: "auto" }} onFocus={e=>{
+        const el = document.getElementById("editor_zettel_current_active");
+        if(el){
+            const allCards = document.getElementsByClassName("editor_zettel_card");
+            for(let i = 0; i<allCards.length;i++){
+                if(allCards[i].id==="s_"+props.sId){
+                    el.value = i+1;
+                    break;
+                }
+            }
+        }
+        }}>
         {img?<Card.Img style={{aspectRatio: "10/7"}} variant="top" src={img} />:null}
-        <Card.Body>
-            <div style={{position: "absolute", top:"5px", left: "10px", right: props.wideScreen?"430px":"10px", opacity: "0.5"}}>{img?<a onClick={()=>{setVerso(!verso)}} title="Zettel drehen"><FontAwesomeIcon icon={faRotate} /><br /></a>:null}{section.zettel_id>0?<a onClick={()=>{openZettelDB()}} title="Zettel bearbeiten"><FontAwesomeIcon icon={faPenToSquare} /></a>:null}</div>
-            <Row className="mb-2"><Col><Form.Control placeholder="Zitiertitel..." onFocus={()=>{centerSection()}} size="sm" type="text" value={reference?reference:""} onChange={e=>{setReference(e.target.value)}} onBlur={async e=>{await arachne.sections.save({id: props.sId, ref: e.target.value})}} /></Col><Col style={{textAlign: "right"}} xs={4}><RessourcesButtons setRessourceView={url=>{props.setRessourceView(url)}} ressources={ressources} /></Col></Row>
-        
-            <Form.Control placeholder="Text der Stelle..." onFocus={()=>{centerSection()}} as="textarea" rows={3} style={{fontSize: "95%"}} value={text?text:""} onChange={e=>{setText(e.target.value)}} onBlur={async e=>{await arachne.sections.save({id: props.sId, text: e.target.value})}} />
-            {showComment?<div><Form.Control className="mt-2" placeholder="Schreiben Sie einen Kommentar..." onFocus={()=>{centerSection()}} as="textarea" rows={3} style={{fontSize: "95%"}} value={comment?comment:""} onChange={e=>{setComment(e.target.value)}} onBlur={async e=>{await arachne.sections.save({id: props.sId, comment: e.target.value})}} /></div>:<div style={{textAlign: "right"}}><a style={{fontSize: "90%"}} className="link-secondary" onClick={()=>{setShowComment(true)}}>Kommentar hinzufügen</a></div>}
+        <Card.Body className="editor_zettel_CardBox">
+            <Row className="mb-3" style={{marginBottom: "47px"}}><Col><Form.Control placeholder="Zitiertitel..." onFocus={()=>{centerSection()}} size="sm" type="text" value={reference?reference:""} onChange={e=>{setReference(e.target.value)}} onBlur={async e=>{await arachne.sections.save({id: props.sId, ref: e.target.value})}} /></Col></Row>
+            <Row className="mb-3">
+                <Col>
+                    <Form.Control placeholder="Text der Stelle..." onFocus={()=>{centerSection()}} as="textarea" rows={3} style={{minHeight: "120px",fontSize: "95%"}} value={text?text:""} onChange={e=>{setText(e.target.value)}} onBlur={async e=>{await arachne.sections.save({id: props.sId, text: e.target.value})}} />
+                    </Col>
+            </Row>
+            {showComment?<Row className="mb-3">
+                <Col><Form.Control className="mt-2" placeholder="Schreiben Sie einen Kommentar..." onFocus={()=>{centerSection()}} as="textarea" rows={3} style={{fontSize: "95%"}} value={comment?comment:""} onChange={e=>{setComment(e.target.value)}} onBlur={async e=>{await arachne.sections.save({id: props.sId, comment: e.target.value})}} /></Col>
+            </Row>:null}
+            <Row style={{marginBottom: "47px"}}>
+                <Col>
             <TagBox isVisible={isVisible} loadTags={async ()=>{await loadTags()}} tags={tags} project={props.project} s={section} unusedTags={unusedTags} centerSection={()=>{centerSection()}} />
+            </Col>
+            </Row>
+            <div style={{display: "flex", justifyContent: "flex-end", gap: "15px", margin: "0 0.4rem 0 0.4rem", position: "absolute",  bottom: "10px", left: "10px", right: "10px"}}>
+            <RessourcesButtons setRessourceView={url=>{props.setRessourceView(url)}} ressources={ressources} />
+            <DropdownButton tabIndex="-1" variant="outline-dark" id="dropdown-basic-button" title={<FontAwesomeIcon icon={faGear} />}>
+              <Dropdown.Item onClick={()=>{openZettelDB()}}>Zettel bearbeiten</Dropdown.Item>
+              <Dropdown.Item onClick={()=>{setVerso(!verso)}}>Zettel drehen</Dropdown.Item>
+              <Dropdown.Divider />
+              <Dropdown.Item>verknpft. Werk ändern</Dropdown.Item>
+              <Dropdown.Item onClick={()=>{setShowComment(true)}}>Kommentar hinzufügen</Dropdown.Item>
+              <Dropdown.Divider />
+              <Dropdown.Item>Stelle kopieren</Dropdown.Item>
+              <Dropdown.Item onClick={async ()=>{if(window.confirm("Soll die Stelle aus dem Projekt entfernt werden? Alle Änderungen gehen verloren.")){await arachne.sections.delete(props.sId);props.updateSections()}}} className="text-danger">Stelle löschen</Dropdown.Item>
+            </DropdownButton>
+            </div>
         </Card.Body>
     </Card>;
 }
@@ -220,7 +262,7 @@ function RessourcesButtons(props){
     }
     useEffect(()=>{
         if(props.ressources.length===0){setButton(null)}
-        else if(props.ressources.length===1){setButton(<Button tabIndex="-1" size="sm" variant="outline-secondary" style={{width: "100%"}} onClick={()=>{openRessource(props.ressources[0].url===null||props.ressources[0].url===""?"/site/argos/"+props.ressources[0].id:props.ressources[0].url)}}>{props.ressources[0].label}</Button>)}
+        else if(props.ressources.length===1){setButton(<Button tabIndex="-1" size="sm" variant="outline-secondary" onClick={()=>{openRessource(props.ressources[0].url===null||props.ressources[0].url===""?"/site/argos/"+props.ressources[0].id:props.ressources[0].url)}}>{props.ressources[0].label}</Button>)}
         else{
             setSelected(props.ressources[0]);
         }
@@ -361,9 +403,9 @@ function FilterTag(props){
 }
 function TagBox(props){
     const [inputMode, setInputMode] = useState(true);
-    return <div className="mt-2" id={"tagBox_"+props.s.id} style={{border: inputMode?"1px solid #ced4da":"1px solid var(--bs-yellow)", backgroundColor: inputMode?null:"#ffecb1",padding: "2px 5px", display: "flex", alignItems: "flex-start", flexWrap: "wrap", minHeight: "110px", borderRadius: "0.25rem", fontSize: "100%"}} onClick={()=>{
-        let tb = document.getElementById("tagBox_"+props.s.id);
-        tb.children[tb.children.length-2].focus()
+    return <div className="mt-2" id={"tagBox_"+props.s.id} style={{border: inputMode?"1px solid #ced4da":"1px solid var(--bs-yellow)", backgroundColor: inputMode?null:"#ffecb1",padding: "2px 5px", display: "flex", alignItems: "flex-start", flexWrap: "wrap", minHeight: "110px", borderRadius: "0.25rem", fontSize: "100%"}} onClick={e=>{
+        const inputEl = e.target.querySelector("input")
+        if(inputEl){inputEl.focus()};
         }}>
         {props.isVisible&&props.tags.map(t=><Tag key={t.id} t={t} sectionId={props.s.id} loadTags={async ()=>{await props.loadTags()}} />)}
         <TagBoxInput inputMode={inputMode} setInputMode={v=>{setInputMode(!inputMode)}} project={props.project} tags={props.tags} loadTags={async ()=>{await props.loadTags()}} sectionId={props.s.id} centerSection={()=>{props.centerSection()}} />
@@ -373,21 +415,21 @@ function TagBoxInput(props){
     const [inputValue, setInputValue] = useState("");
     const [acTags, setACTags] = useState([]);
     const [currentFocus, setCurrentFocus] = useState(-1);
-    const loadACTags = async ()=>{
+    const loadACTags = async (iValue)=>{
         if(props.inputMode){
             const currentTags = props.tags.map(t=>t.name);
             const newACTags = await arachne.tags.get({project_id: props.project.id});
             let currentACTags = newACTags.filter(t=>!currentTags.includes(t.name));
-            if(inputValue===""){setACTags(currentACTags)}
-            else{setACTags(currentACTags.filter(t=>t.name.toLowerCase().indexOf(inputValue.toLowerCase())>-1))}
+            if(iValue===""){setACTags(currentACTags)}
+            else{setACTags(currentACTags.filter(t=>t.name.toLowerCase().indexOf(iValue.toLowerCase())>-1))}
         }else{
-            if(inputValue===""){setACTags(props.tags)}
-            else{setACTags(props.tags.filter(t=>t.name.toLowerCase().indexOf(inputValue.toLowerCase())>-1))}
+            if(iValue===""){setACTags(props.tags)}
+            else{setACTags(props.tags.filter(t=>t.name.toLowerCase().indexOf(iValue.toLowerCase())>-1))}
         }
         setCurrentFocus(-1);
     };
     useEffect(()=>{
-        if(acTags.length>0||inputValue!==""){loadACTags()}
+        if(acTags.length>0||inputValue!==""){loadACTags(inputValue)}
     }, [props.tags,inputValue,props.inputMode]);
     const onKeyDown = e=>{
         if(e.keyCode===13&&acTags.length===1){
@@ -446,10 +488,10 @@ function TagBoxInput(props){
         }
         setInputValue("");
         if(exitInput){setACTags([])}
-        else{loadACTags()}
+        else{loadACTags("")}
     };
     return <div style={{width:"300px", position: "relative", display: "inline-block"}}>
-        <input value={inputValue} onChange={e=>{setInputValue(e.target.value)}} onFocus={()=>{loadACTags();props.centerSection()}} onBlur={()=>{setInputValue("");setACTags([]);if(!props.inputMode){props.setInputMode()}}} type="text" style={{background: "none", outline: "none", border: "none", margin: "1px 2px", padding: "4px 10px"}} onKeyDown={e=>{onKeyDown(e)}} />
+        <input value={inputValue} onChange={e=>{setInputValue(e.target.value)}} onFocus={()=>{loadACTags("");props.centerSection()}} onBlur={()=>{setInputValue("");setACTags([]);if(!props.inputMode){props.setInputMode()}}} type="text" style={{background: "none", outline: "none", border: "none", margin: "1px 2px", padding: "4px 10px"}} onKeyDown={e=>{onKeyDown(e)}} />
     {acTags.length>0&&<div className="autocomplete-items" style={{borderColor: props.inputMode?null:"var(--bs-yellow)"}}>
         {acTags.map((t,i)=><div key={t.id} style={{backgroundColor: props.inputMode?null:"#ffecb1", borderColor: props.inputMode?null:"var(--bs-yellow)"}} onMouseDown={async ()=>{await createNewTag(t.name, true)}} className={i===currentFocus?"autocomplete-active":""}>{t.name}</div>)}
     </div>}
@@ -476,6 +518,7 @@ function ImportZettel(props){
     const [zettelZettelCount, setZettelZettelCount] = useState(0);
     const [searchFields, setSearchFields] = useState([]);
     const [nextID, setNextID] = useState(1);
+    const [importZettelText, setImportZettelText] = useState(false);
     useEffect(()=>{
         const fetchData = async () => {
             if(lemmaId){
@@ -561,10 +604,17 @@ function ImportZettel(props){
             </Container>
         </Modal.Body>
         <Modal.Footer>
+            <Form.Check
+                style={{position: "absolute", left: "30px"}}
+                type="switch"
+                id="custom-switch"
+                label="Zettel-Text importieren (experimentell)"
+                onChange={e=>{setImportZettelText(e.target.checked)}}
+            />
             <Button variant="secondary" onClick={()=>{props.onReplay(false)}}>Abbrechen</Button>
             <Button variant="primary" onClick={async ()=>{
                 setStatus(<Spinner style={{marginLeft: "10px"}} animation="border" size="sm" />);
-                const select = ["id", "ac_web", "img_path", "date_sort", "txt", "type", "work_id"];
+                const select = ["id", "ac_web", "img_path", "date_sort", "txt", "type", "work_id", "ocr_text_corr", "ocr_text"];
                 let zettelLst = [];
                 if(mode==="lemma"){zettelLst=await arachne.zettel.get({lemma_id: lemmaId}, {select: select})}
                 else{zettelLst=await arachne.zettel.search(SF, {select:select})}
@@ -579,7 +629,7 @@ function ImportZettel(props){
                         zettel_id: z.id,
                         project_id: props.project.id,
                         ref: z.ac_web,
-                        text: z.txt,
+                        text: z.txt?z.txt:(z.ocr_text_corr&&importZettelText)?z.ocr_text_corr:(z.ocr_text&&importZettelText)?z.ocr_text:null,
                         comment: cmnts.length>0?cmnts.map(c=>`${c.user}:\n${c.comment}\n`).join("\n\n"):null,
                         date_sort: z.date_sort,
                         img: z.img_path,
@@ -614,7 +664,6 @@ function ImportZettel(props){
                     }
                 }
                 const newSecIds = await arachne.sections.save(zettel_save_lst);
-                console.log(newSecIds.length, tag_lnks_save_lst.length);
                 tag_lnks_save_lst = tag_lnks_save_lst.map((t,i)=>{
                     t.section_id = newSecIds[i];
                     return t;
