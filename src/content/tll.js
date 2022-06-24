@@ -9,9 +9,7 @@ import { Bar, Pie } from "react-chartjs-2";
 function arachneTbls(){
     return ["project", "author", "edition", "lemma", "tll_index", "scan", "scan_lnk", "work", "zettel", "user", "seklit", "article", "zettel_lnk", "statistics", "scan_paths", "ocr_jobs", "comment", "scan_opera", "fulltext_search_view", "tags", "tag_lnks", "sections"];
 }
-
 /* ************************************************************************************* */
-
 function LemmaHeader(){
     return <tr><th width="30%">Wortansatz</th><th width="20%">TLL</th></tr>;
 }
@@ -27,7 +25,6 @@ function LemmaRow(props){
         <td><a href={`https://publikationen.badw.de/de/thesaurus/${props.lemma.link_img}`} target="_blank">{props.lemma.link_name}</a></td>
     </tr>;
 }
-
 function lemmaSearchItems(){
     return [
         ["lemma", "Wort"],
@@ -39,7 +36,6 @@ function lemmaSearchItems(){
         ["search", "alt. Schreibewise"],
     ];
 }
-
 function LemmaAsideContent(props){
     const [lemma, setLemma] = useState(props.item.lemma);
     const [lemma_display, setLemma_display] = useState(props.item.lemma_display);
@@ -142,9 +138,7 @@ function LemmaAsideContent(props){
         </Row>
     </Container>;
 }
-
 /* ************************************************************************************* */
-
 function zettelSearchItems(){
     return [
         ["lemma", "Wort"],
@@ -375,18 +369,14 @@ function zettelPresetOptions(){return [
     ['[{"id": 2, "c": "date_type", "o": "=", "v": 9},{"id": 3, "c": "date_own", "o": "!=", "v": "NULL"},{"id": 4, "c": "type", "o": "!=", "v": 3},{"id": 5, "c": "type", "o": "!=", "v": 6},{"id": 6, "c": "type", "o": "!=", "v": 7}]', "Datumszuweisung"],
 ]}
 function zettelSortOptions(){return [['["id"]', "ID"], ['["lemma","lemma_nr","date_sort","date_type"]', "Datum"], ['["ocr_length"]', "Textlänge"]]}
-
 /* ************************************************************************************* */
-
 function MainMenuContent(props){
     return <>
         <NavDropdown.Item onClick={e => {props.loadMain(e, "index")}}>Index</NavDropdown.Item>
-        <NavDropdown.Item onClick={e => {props.loadMain(e, "ressources")}}>Ressourcen</NavDropdown.Item>
+        <NavDropdown.Item onClick={e => {props.loadMain(e, "tllressource")}}>Ressourcen</NavDropdown.Item>
     </>;
 }
-
 /* ************************************************************************************* */
-
 const fetchIndexBoxData=async()=>{
     let wl = await arachne.lemma.getAll({select: ["id", "lemma", "lemma_display"], order: ["lemma"]})
     wl=wl.map(w=>{return {id: w.id, lemma_display: w.lemma_display, lemma: w.lemma.toLowerCase()}})
@@ -512,7 +502,38 @@ function IndexBoxDetail(props){
         </Container>
     </>:null);
 }
-
+/* ************************************************************************************* */
+function TLLRessource(props){
+    const menuItems = [
+        ["neuer Eintrag", async(that)=>{
+            if(window.confirm("Soll ein neuer Eintrag erstellt werden?")){
+                const newId = await arachne.edition.save({editor: "EditorIn", year: 2022});
+                that.setState({newItemCreated: [{id: 0, c: "id", o: "=", v:newId}]});
+            }
+        }]
+    ];
+    const tblRow=(props)=>{
+        return <><td title={"ID: "+props.cEl.id}>{props.cEl.editor} {props.cEl.year}</td><td></td></>;
+    };
+    const asideContent = [ // caption; type: t(ext-input), (text)a(rea), (auto)c(omplete); col names as array
+        {caption: "EditorIn", type: "text", col: "editor"},
+        {caption: "Jahr", type: "text", col: "year"},
+        {caption: <i>opus</i>, type: "auto", col: ["sigel", "opera_id"], search: {tbl: "opera", sCol: "sigel", rCol: "sigel"}},
+        {caption: <span>URL <small>(extern)</small></span>, type: "text", col: "url"},
+        {caption: <span>Pfad <small>(auf dem Server)</small></span>, type: "text", col: "path"},
+        {caption: "Kommentar", type: "area", col: "comment"},
+        {caption: "Seiten-verhältnis", type: "text", col: "aspect_ratio"},
+    ];
+    return <TableView
+        tblName="edition"
+        searchOptions={[["id", "ID"], ["editor", "EditorIn"], ["year", "Jahr"]]}
+        sortOptions={[['["id"]', "ID"]]}
+        menuItems={menuItems}
+        tblRow={tblRow}
+        tblHeader={<><th>Kürzel</th><th><i>opus</i></th></>}
+        asideContent={asideContent}
+    />;
+}
 /* ************************************************************************************* */
 
 function StatisticsChart(props){
@@ -700,5 +721,6 @@ export {
     zettelSearchItems, ZettelCard, zettelBatchOptions, BatchInputType, ZettelAddLemmaContent, ZettelSingleContent, newZettelObject, exportZettelObject, zettelPresetOptions, zettelSortOptions,
     MainMenuContent,
     fetchIndexBoxData, IndexBoxDetail,
+    TLLRessource,
     StatisticsChart,
 }

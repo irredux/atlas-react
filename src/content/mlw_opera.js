@@ -551,7 +551,6 @@ function OperaSearchBox(props){
     </Navbar.Text>}
 </>;
 }
-
 class Opera extends React.Component{
     constructor(props){
         super(props);

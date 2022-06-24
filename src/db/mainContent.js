@@ -35,7 +35,7 @@ function MainBody(props){
         "etudaus": <Etudaus />, // dom
         "domressource": <DOMRessource />, // dom
         "index": <Opera listName="tll_index" />, // TLL
-        //"domressource": <TLLRessource />, // TLL
+        "tllressource": <TLLRessource />, // TLL
         }
     if(props===null||props.res===null||Object.keys(main).includes(props?props.res:null)){return main[props?props.res:null]}
     else{return <div className="text-danger" style={{textAlign: "center", marginTop: "100px"}}>Unbekannter Menü-Punkt '{props.res}'.</div>}

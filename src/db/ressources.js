@@ -248,8 +248,6 @@ class SekLitAside extends React.Component{
         }
     }
 }
-
-
 class Ressource extends React.Component{
     constructor(props){
         super(props);
