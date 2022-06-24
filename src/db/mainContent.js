@@ -7,6 +7,7 @@ import { ChangeLog } from "./../changelog.js";
 import { Lemma } from "./lemma.js";
 import { Opera } from "./../content/mlw_opera.js";
 import { DOMOpera, Konkordanz, Etudaus, DOMRessource } from "./../content/dom.js";
+import { TLLRessource } from "./../content/tll.js";
 import { Ressource, SekLit } from "./ressources.js";
 import { Account } from "./../settings.js";
 import { Import, Server, Statistics } from "./server.js"
