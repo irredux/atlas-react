@@ -257,7 +257,7 @@ function Message(props){
                 else if(props.dropDown!=null){replay=selectValue}
                 else if(props.AutoComplete){replay={value: acValue, id: acId}}
                 props.onReplay(replay);
-                }} disabled={AutoComplete&&!acId>0?true:false}>OK{status}</Button>
+                }} disabled={props.AutoComplete&&!acId>0?true:false}>OK{status}</Button>
         </Modal.Footer>
     </Modal>;
 }

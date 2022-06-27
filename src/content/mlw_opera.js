@@ -528,7 +528,7 @@ function OperaSearchBox(props){
                 if(e.target.value===""){//reset search
                     setHits([]);
                 } else if(e.target.value!=query){// new search
-                    const nHits = await arachne[props.listName].search([{c: "search", o: "=", v: `*${e.target.value}*`}], {select: ["id"]});
+                    const nHits = await arachne[props.listName].search([{c: "search", o: "=", v: `${e.target.value}*`}], {select: ["id"]});
                     if(nHits.length>0){
                         setQuery(e.target.value);
                         setHitIndex(0);
@@ -635,13 +635,16 @@ class Opera extends React.Component{
             ]});
             } else if(listName==="tll_index"){
                 let leftPad = null;
-                if(o.author_id>0){leftPad = "2rem"}
+                const abbr = o.author_id===null?<aut>{o.abbr}</aut>:o.abbr
+                if(o.example){leftPad = "4rem"}
+                else if(o.author_id>0){leftPad = "2rem"}
                 trLst.push({o: o, data: [
-                   <td key="0" className="c1_tll" style={{paddingLeft: leftPad}} dangerouslySetInnerHTML={parseHTML(o.date_display)}></td>,
-                   <td key="1" className="c2_tll" style={{paddingLeft: leftPad}} dangerouslySetInnerHTML={parseHTML(o.abbr)}></td>,
-                   <td key="2" className="c3_tll" style={{paddingLeft: leftPad}} dangerouslySetInnerHTML={parseHTML(o.ref)}></td>,
-                   <td key="3" className="c4_tll" style={{paddingLeft: leftPad}} dangerouslySetInnerHTML={parseHTML(o.full)}></td>,
-                   <td key="4" className="c5_tll" style={{paddingLeft: leftPad}} dangerouslySetInnerHTML={parseHTML(o.bibliography)}></td>,
+                   <td key="0" className="c0_tll" dangerouslySetInnerHTML={parseHTML(o.ord)}></td>,
+                   <td key="1" className="c1_tll" style={{paddingLeft: leftPad}} dangerouslySetInnerHTML={parseHTML(o.date_display)}></td>,
+                   <td key="2" className="c2_tll" style={{paddingLeft: leftPad}}>{abbr}</td>,
+                   <td key="3" className="c3_tll" style={{paddingLeft: leftPad}} dangerouslySetInnerHTML={parseHTML(o.ref)}></td>,
+                   <td key="4" className="c4_tll" style={{paddingLeft: leftPad}} dangerouslySetInnerHTML={parseHTML(o.full)}></td>,
+                   <td key="5" className="c5_tll" style={{paddingLeft: leftPad}} dangerouslySetInnerHTML={parseHTML(o.bibliography)}></td>,
                 ]});
             } else {
                 throw new Error("listname unknown!")

@@ -153,33 +153,42 @@ table.operaBox > tbody > tr > td{
     font-size: 80%;
 }
 
-
+.c0_tll{
+    width: 10px;
+    border: none;
+    font-size: 75%;
+    color: gray;
+}
 .c1_tll{
-    width: 12%;
+    width: 11%;
     border-right: double;
     font-size: 85%;
 }
 .c2_tll{
     border-right: double;
-    width: 12%;
+    width: 11%;
     font-size: 95%;
 }
 .c3_tll{
     border-right: 1px solid;
-    width: 11%;
+    width: 10%;
     font-size: 95%;
 }
 .c4_tll{
     border-right: 1px solid;
-    width: 35%;
+    width: 34%;
     font-size: 95%;
 }
 .c5_tll{
-    width: 30%;
+    width: 29%;
     font-size: 95%;
 }
 .operaBox_tll_index > div > table > tbody > tr:hover{
     background-color: lightgray;
+}
+.tll_notUsed{
+    text-decoration: line-through;
+    color: red;
 }
 
 /* ****************   ZETTEL   **************** */
