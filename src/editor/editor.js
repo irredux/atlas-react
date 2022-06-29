@@ -16,29 +16,38 @@ function Editor(props){
     const [collapsedArticlesLst, setCollapsedArticlesLst] = useState([])
     const [filterLst, setFilterLst] = useState([]);
     const [filterTags, setFilterTags] = useState([]);
+    const [toolKitItems, setToolKitItems] = useState([]);
     const [limitFilterResults,setLimitFilterResults] = useState(false);
-    const [showMenuLeft, setShowMenuLeft] = useState(false);
+    //const [showMenuLeft, setShowMenuLeft] = useState(false);
+    const [sectionsMenuActiveTabKey, setSectionsMenuActiveTabKey] = useState(null);
     const [showImport, setShowImport] = useState(false);
     const [changeZettelWork, setChangeZettelWork] = useState({})
     const scSetup = [
         ["ACTION+ESC", ()=>{props.loadMain(null, null)}],
-        ["ACTION+f", ()=>{setShowMenuLeft(!showMenuLeft)}],
-        ["ACTION+i", ()=>{setShowImport(!showImport)}],
-        ["ACTION+r", ()=>{setFilterLst([]);updateSections()}],
+        ["ACTION+f", ()=>{if(mode==="zettel"){setSectionsMenuActiveTabKey("filter")}}],
+        ["ACTION+t", ()=>{if(mode==="zettel"){setSectionsMenuActiveTabKey("tags")}}],
+        ["ACTION+i", ()=>{if(mode==="zettel"){setShowImport(!showImport)}}],
+        ["ACTION+r", ()=>{if(mode==="zettel"){setFilterLst([]);updateSections()}}],
         ["ACTION+1", ()=>{setMode("zettel")}],
         ["ACTION+2", ()=>{setMode("outline")}],
         ["ACTION+3", ()=>{setMode("export")}],
-        ["ACTION+n", ()=>{createNewArticle()}]
+        ["ACTION+n", ()=>{if(mode==="zettel"){setChangeZettelWork({value: "", id: 0, section_id: 0})}else if(mode==="outline"){createNewArticle()}}]
     ];
     useShortcuts(scSetup, false);
-    const ToolKitItems = [
-        ["Zettel importieren", ()=>{setShowImport(true)}],
-        ["Seitenleiste ein-/ausblenden", ()=>{setShowMenuLeft(true)}],
-        ["Filter neu laden", ()=>{setFilterLst([]);updateSections()}],
-        ["Neuer Artikel erstellen", ()=>{createNewArticle()}],
-        ["Neue Stelle erstellen", ()=>{setChangeZettelWork({value: "", id: 0, section_id: 0})}],
-    ];
+    useEffect(()=>{
+        if(mode==="zettel"){setToolKitItems([
+            [`Zettel importieren (${arachne.options.action_key.toUpperCase()}+I)`, ()=>{setShowImport(true)}],
+            [`Seitenleiste einblenden (${arachne.options.action_key.toUpperCase()}+F/T)`, ()=>{setSectionsMenuActiveTabKey("filter")}],
+            [`Filter neu laden (${arachne.options.action_key.toUpperCase()}+R)`, ()=>{setFilterLst([]);updateSections()}],
+            [`Neue Stelle erstellen (${arachne.options.action_key.toUpperCase()}+N)`, ()=>{setChangeZettelWork({value: "", id: 0, section_id: 0})}],
+        ])}
+        else if(mode==="outline"){setToolKitItems([
+            [`Neuer Artikel erstellen (${arachne.options.action_key.toUpperCase()}+N)`, ()=>{createNewArticle()}],
+        ])}
+        else{setToolKitItems([])}
+    },[mode])
     const updateArticles = inArticles => {
+        console.log(inArticles)
         setArticles(inArticles);
         const returnChildIds = (parentId, depth) => {
             const childArticles = inArticles.filter(a=>a.parent_id===parentId&&a.type<900).sort((a,b)=>a.sort_nr>b.sort_nr);
@@ -52,6 +61,7 @@ function Editor(props){
             });
             return returnLst;
         };
+        console.log(returnChildIds(0,0))
         setArticlesLst(returnChildIds(0,0));
     };
     useEffect(()=>{
@@ -67,15 +77,23 @@ function Editor(props){
         fetchData();
         updateSections();
     }, []);
+    const deleteArticle = async(id)=>{
+        if(window.confirm("Soll die Gruppe wirklich gelöscht werden? Alle Untergruppen werden ebenfalls gelöscht.")){
+            // delete article
+            // delete sub-articles
+            // delete all connected sections            
+        }
+    }
     const createNewArticle = async (newArt={}) =>{
         let newArticle = newArt;
+        newArticle.type = 0;
         newArticle.project_id = project.id;
         newArticle.parent_id = 0;
         newArticle.name = newArticle.name?newArticle.name:"Neue Gruppe";
         newArticle.sort_nr = newArticle.sort_nr?newArticle.sort_nr:articles.length>0?Math.max(...articles.filter(a=>a.parent_id===0).map(a=>a.sort_nr))+1:1;
         const newId=await arachne.article.save(newArticle);
         newArticle.id = newId;
-        let newArticles = articles;
+        let newArticles = articles.map(i=>i); // necessary?
         newArticles.push(newArticle);
         updateArticles(newArticles);
     };
@@ -132,11 +150,10 @@ function Editor(props){
             setFilterLst(foundSections.map(s=>s.id));
         }
     };
-
     let modeBox = null;
     switch(mode){
         case "zettel":
-            modeBox = <ZettelBox changeZettelWork={changeZettelWork} setChangeZettelWork={setChangeZettelWork} setLimitFilterResults={v=>{setLimitFilterResults(v)}} showImport={showImport} showMenuLeft={showMenuLeft} filterTags={filterTags} setFilterTags={newTags=>{setFilterTags(newTags)}} setShowMenuLeft={()=>{setShowMenuLeft(false)}} setShowImport={v=>{setShowImport(v)}} project={project} filterLst={filterLst} updateSections={(force=false)=>{if(force){setFilterLst([])};updateSections()}} />;
+            modeBox = <ZettelBox changeZettelWork={changeZettelWork} setChangeZettelWork={setChangeZettelWork} setLimitFilterResults={v=>{setLimitFilterResults(v)}} showImport={showImport} sectionsMenuActiveTabKey={sectionsMenuActiveTabKey} filterTags={filterTags} setFilterTags={newTags=>{setFilterTags(newTags)}} setSectionsMenuActiveTabKey={m=>{setSectionsMenuActiveTabKey(m)}} setShowImport={v=>{setShowImport(v)}} project={project} filterLst={filterLst} updateSections={(force=false)=>{if(force){setFilterLst([])};updateSections()}} />;
             break;
         case "outline":
             modeBox = <OutlineBox createNewArticle={createNewArticle} changeArticle={changeArticle} project={project} dropArticle={(a,b,c)=>{dropArticle(a,b,c)}} articlesLst={articlesLst} articles={articles} collapsedArticlesLst={collapsedArticlesLst} toogleCollapse={a=>{toogleCollapse(a)}} />;
@@ -184,14 +201,14 @@ function Editor(props){
             <Navbar.Toggle />
             <Navbar.Collapse className="justify-content-end">
                 <Nav style={{fontSize: "110%"}}>
-                    <Nav.Link className="text-white" style={{textDecoration: mode==="zettel"?"underline":null}} onClick={()=>{setMode("zettel")}}>Zettel</Nav.Link>
+                    <Nav.Link className="text-white" style={{textDecoration: mode==="zettel"?"underline":null}} onClick={()=>{setMode("zettel")}}>Stellen</Nav.Link>
                     <Navbar.Text style={{width: "80px", borderBottom: "3px solid white", height: "25px"}}></Navbar.Text>
                     <Nav.Link className="text-white" style={{textDecoration: mode==="outline"?"underline":null}} onClick={()=>{setMode("outline")}}>Gliederung</Nav.Link>
                     <Navbar.Text style={{width: "80px", borderBottom: "3px solid white", height: "25px"}}></Navbar.Text>
                     <Nav.Link className="text-white" style={{textDecoration: mode==="export"?"underline":null}} onClick={()=>{setMode("export")}}>Export</Nav.Link>
                 </Nav>
                 <Nav>
-                    <Navbar.Text><ToolKit menuItems={ToolKitItems} direction={"down"} /></Navbar.Text>
+                    <Navbar.Text><ToolKit menuItems={toolKitItems} direction={"down"} /></Navbar.Text>
                 </Nav>
             </Navbar.Collapse>
         </Container>

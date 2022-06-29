@@ -142,7 +142,9 @@ function ArticleBox(props){
         onKeyDown={e=>{
             if(e.target.className==="articleBox"){
                 if(e.keyCode!==9){e.preventDefault()}
-                if(e.keyCode===13){
+                if(e.keyCode===8||e.keyCode===46){ // delete
+                    
+                }else if(e.keyCode===13){
                     dblClickCallback(e);
                 }else if(e.keyCode===37&&e.shiftKey){ // left+shift
                     if(props.a.parent_id>0){

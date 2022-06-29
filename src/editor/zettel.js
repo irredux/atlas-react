@@ -45,7 +45,7 @@ function ZettelBox(props){
             </Col>:null}
         </Row>
     </Container>
-    {<MenuLeft setLimitFilterResults={v=>{props.setLimitFilterResults(v)}} project={props.project} filterTags={props.filterTags} setFilterTags={newTags=>{props.setFilterTags(newTags)}} tagLst={props.tagLst} show={props.showMenuLeft} onHide={()=>{props.setShowMenuLeft(false)}} updateSections={()=>{props.updateSections()}} />}
+    {<MenuLeft setLimitFilterResults={v=>{props.setLimitFilterResults(v)}} setActiveTabKey={props.setSectionsMenuActiveTabKey} activeTabKey={props.sectionsMenuActiveTabKey} project={props.project} filterTags={props.filterTags} setFilterTags={newTags=>{props.setFilterTags(newTags)}} tagLst={props.tagLst} show={props.sectionsMenuActiveTabKey!=null} onHide={()=>{props.setSectionsMenuActiveTabKey(null)}} updateSections={()=>{props.updateSections()}} />}
     <div style={{fontSize: "95%", position: "fixed", display: "flex", justifyContent:"space-between", bottom: "0px", left: 0, right: 0, backgroundColor: "#f8f9fa", padding: "5px 20px"}}>
         <div style={{display: "flex", justifyContent:"space-around", gap: "10px"}}>{props.filterTags&&props.filterTags.length>0?props.filterTags.map(t=><div style={{cursor: "default", backgroundColor: t.exclude?"rgb(248,248,248)":t.color, fontWeight: "bold", color: t.exclude?t.color:"rgba(255,255,255, 0.8)", border: `1px solid ${t.color}`, margin: "1px 2px", padding: "1px 10px 1px 13px", borderRadius: "18px"}}>{t.name}</div>):<div style={{color: "gray"}}><small><i>kein Filter</i></small></div>}</div>
         <div><input style={{background: "none", border: "none", outline: "none", width: "60px", textAlign: "right"}} id="editor_zettel_current_active" value={currentZettel} onChange={e=>{setCurrentZettel(e.target.value)}} onKeyUp={e=>{
@@ -58,7 +58,6 @@ function ZettelBox(props){
     </>;
 }
 function MenuLeft(props){
-    const [activeTabKey, setActiveTabKey] = useState("filter");
     const [tags, setTags] = useState([]);
     const [renameId, setRenameId] = useState(0);
     const [renameName, setRenameName] = useState("");
@@ -101,7 +100,7 @@ function MenuLeft(props){
             };
             setRenameId(0);
         }} />
-        <Tabs defaultActiveKey="filter" className="mb-3" activeKey={activeTabKey} onSelect={k=>{setActiveTabKey(k)}}>
+        <Tabs defaultActiveKey="filter" className="mb-3" activeKey={props.activeTabKey} onSelect={k=>{props.setActiveTabKey(k)}}>
             <Tab eventKey="filter" title="Filter">
                 <Container>
                     <Row className="mb-3"><Col><FilterBox filterTags={props.filterTags} setFilterTags={newTags=>{props.setFilterTags(newTags)}} project={props.project} /></Col></Row>
@@ -121,7 +120,7 @@ function MenuLeft(props){
                                 title="Choose your color"
                                 onChange={async e=>{await arachne.tags.save({id: t.id, color: e.target.value});await loadTags()}}
                             /></td>
-                            <td><b style={{marginLeft: "10px", color: t.color, cursor: "pointer"}} onClick={()=>{props.setFilterTags([t]);setActiveTabKey("filter")}}>{t.name}</b></td>
+                            <td><b style={{marginLeft: "10px", color: t.color, cursor: "pointer"}} onClick={()=>{props.setFilterTags([t]);props.setActiveTabKey("filter")}}>{t.name}</b></td>
                             <td>{t.sections}</td>
                             <td><FontAwesomeIcon icon={faPenToSquare} style={{cursor: "pointer", color: "var(--bs-primary)"}} onClick={()=>{setRenameName(t.name);setRenameId(t.id)}} /></td>
                             <td><FontAwesomeIcon icon={faTrashCan} style={{cursor: "pointer", color: "var(--bs-primary)"}} onClick={()=>{deleteTag(t)}} /></td>
@@ -344,7 +343,8 @@ function FilterBoxInput(props){
         if(e.keyCode===13&&acTags.length===1){
             e.preventDefault();
             createNewTag(acTags[0].name);
-        }else if(e.keyCode===27){ // esc
+        }else if(e.keyCode===27&&acTags.length>0){ // esc
+            e.preventDefault();
             setACTags([]);
         }else if(e.keyCode===190&&e.target.value===""){ // .
             e.preventDefault();
