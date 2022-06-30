@@ -540,7 +540,7 @@ function NavBarBottom(props){
             </Navbar.Collapse>
             <Navbar.Collapse className="justify-content-end">
                 <Navbar.Text>
-                    {props.mode===0&&<Form.Range style={{position: "relative", top: "7px", marginRight: "10px", width:"400px"}} min="45" max="95" value={props.zoom} onChange={e=>{props.setZoom(parseInt(e.target.value))}} className="slider" />}
+                    {props.mode===0&&<Form.Range style={{position: "relative", top: "7px", marginRight: "10px", width:"400px"}} min="45" max="120" value={props.zoom} onChange={e=>{props.setZoom(parseInt(e.target.value))}} className="slider" />}
                     {items.length>0?<ToolKit menuItems={items} />:null}
                 </Navbar.Text>
             </Navbar.Collapse>
