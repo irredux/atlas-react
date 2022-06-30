@@ -47,7 +47,6 @@ function Editor(props){
         else{setToolKitItems([])}
     },[mode])
     const updateArticles = inArticles => {
-        console.log(inArticles)
         setArticles(inArticles);
         const returnChildIds = (parentId, depth) => {
             const childArticles = inArticles.filter(a=>a.parent_id===parentId&&a.type<900).sort((a,b)=>a.sort_nr>b.sort_nr);
@@ -61,7 +60,6 @@ function Editor(props){
             });
             return returnLst;
         };
-        console.log(returnChildIds(0,0))
         setArticlesLst(returnChildIds(0,0));
     };
     useEffect(()=>{
@@ -79,9 +77,23 @@ function Editor(props){
     }, []);
     const deleteArticle = async(id)=>{
         if(window.confirm("Soll die Gruppe wirklich gelöscht werden? Alle Untergruppen werden ebenfalls gelöscht.")){
-            // delete article
-            // delete sub-articles
-            // delete all connected sections            
+            const getChildIds = id=>{
+                let returnIds = [id];
+                const childIds = articles.filter(a=>a.parent_id===id).map(a=>a.id);
+                childIds.forEach(a=>{returnIds=returnIds.concat(getChildIds(a))})
+                return returnIds;
+            }
+            const artIdLst = getChildIds(id);
+
+            let sectionLst = [];
+            for(const artId of artIdLst){ // can we use an user-side list here?
+                const newSectionsId = await arachne.sections.get({article_id:artId}, {select: ["id"]});
+                newSectionsId.forEach(s=>sectionLst.push({id: s.id, article_id: null}));
+            }
+            //console.log(sectionLst);
+            await arachne.article.delete(artIdLst);
+            await arachne.sections.save(sectionLst);
+            updateArticles(articles.filter(a=>!artIdLst.includes(a.id)));
         }
     }
     const createNewArticle = async (newArt={}) =>{
@@ -127,7 +139,7 @@ function Editor(props){
         await arachne.article.save(save_new_lst.concat(save_old_lst.filter(a=>save_new_lst.findIndex(b=>a.id===b.id)===-1)));
         updateArticles(newArticles);
     };
-    const toogleCollapse = aId => {
+    const toggleCollapse = aId => {
         if(collapsedArticlesLst.includes(aId)){setCollapsedArticlesLst(collapsedArticlesLst.filter(a=>a!==aId))}
         else{setCollapsedArticlesLst(collapsedArticlesLst.concat([aId]))}
     };
@@ -156,7 +168,7 @@ function Editor(props){
             modeBox = <ZettelBox changeZettelWork={changeZettelWork} setChangeZettelWork={setChangeZettelWork} setLimitFilterResults={v=>{setLimitFilterResults(v)}} showImport={showImport} sectionsMenuActiveTabKey={sectionsMenuActiveTabKey} filterTags={filterTags} setFilterTags={newTags=>{setFilterTags(newTags)}} setSectionsMenuActiveTabKey={m=>{setSectionsMenuActiveTabKey(m)}} setShowImport={v=>{setShowImport(v)}} project={project} filterLst={filterLst} updateSections={(force=false)=>{if(force){setFilterLst([])};updateSections()}} />;
             break;
         case "outline":
-            modeBox = <OutlineBox createNewArticle={createNewArticle} changeArticle={changeArticle} project={project} dropArticle={(a,b,c)=>{dropArticle(a,b,c)}} articlesLst={articlesLst} articles={articles} collapsedArticlesLst={collapsedArticlesLst} toogleCollapse={a=>{toogleCollapse(a)}} />;
+            modeBox = <OutlineBox deleteArticle={deleteArticle} createNewArticle={createNewArticle} changeArticle={changeArticle} project={project} dropArticle={(a,b,c)=>{dropArticle(a,b,c)}} articlesLst={articlesLst} articles={articles} collapsedArticlesLst={collapsedArticlesLst} toggleCollapse={a=>{toggleCollapse(a)}} />;
             break;
         case "export":
             modeBox = <ExportBox project={project} />;

@@ -44,7 +44,7 @@ function OutlineBox(props){
                 onDragOver={e=>{e.preventDefault();e.target.style.borderColor="var(--bs-primary)"}}
                 onDragLeave={e=>{e.target.style.borderColor="transparent"}}
             ></div>
-            <ArticleBox changeArticle={props.changeArticle} project={props.project} articles={props.articles} a={a} dragObjectId={dragObjectId} setDragObjectId={id=>{setDragObjectId(id)}} dropArticle={(a,b,c)=>{props.dropArticle(a,b,c)}} collapsed={props.collapsedArticlesLst.includes(a.id)} toogleCollapse={a=>{props.toogleCollapse(a)}} />
+            <ArticleBox deleteArticle={props.deleteArticle} changeArticle={props.changeArticle} project={props.project} articles={props.articles} a={a} dragObjectId={dragObjectId} setDragObjectId={id=>{setDragObjectId(id)}} dropArticle={(a,b,c)=>{props.dropArticle(a,b,c)}} collapsed={props.collapsedArticlesLst.includes(a.id)} toggleCollapse={a=>{props.toggleCollapse(a)}} />
         </div>;
     };
     return <Container className="outlineBox" fluid>
@@ -121,7 +121,14 @@ function OutlineBox(props){
 }
 function ArticleBox(props){
     const [displaySections, setDisplaySections] = useState(false);
-
+    const [sectionCount, setSectionCount] = useState(0);
+    useEffect(()=>{
+        const fetchData=async()=>{
+            const sCount = await arachne.sections.get({article_id: props.a.id}, {count: true});
+            setSectionCount(sCount[0].count)
+        };
+        fetchData();
+    },[]);
     const dblClickCallback = e => {
         const target = e.target.closest(".articleBox");
         const el = target.getElementsByClassName("articleBoxName")[0];
@@ -143,7 +150,7 @@ function ArticleBox(props){
             if(e.target.className==="articleBox"){
                 if(e.keyCode!==9){e.preventDefault()}
                 if(e.keyCode===8||e.keyCode===46){ // delete
-                    
+                    props.deleteArticle(props.a.id);
                 }else if(e.keyCode===13){
                     dblClickCallback(e);
                 }else if(e.keyCode===37&&e.shiftKey){ // left+shift
@@ -153,7 +160,8 @@ function ArticleBox(props){
                     }
                     
                 }else if(e.keyCode===37&&e.shiftKey===false){ // left
-                    props.toogleCollapse(props.a.id);
+                    const children = props.articles.filter(a=>a.parent_id===props.a.id);
+                    if(children.length>0){props.toggleCollapse(props.a.id)}
                 }else if(e.keyCode===38&&e.shiftKey){ // up+shift
                     let previousArticles = props.articles.filter(a=>a.parent_id===props.a.parent_id&&a.sort_nr<props.a.sort_nr).sort((a,b)=>a.sort_nr>b.sort_nr);
                     if(previousArticles.length>0){
@@ -176,8 +184,7 @@ function ArticleBox(props){
                         else{props.dropArticle(props.a.id, previousArticles[previousArticles.length-1].id, 1)}
                     }
                 }else if(e.keyCode===39&&e.shiftKey===false){ // right
-                    if(displaySections){setDisplaySections(false)}
-                    else{setDisplaySections(true)}
+                    setDisplaySections(!displaySections);
                 }else if(e.keyCode===40&&e.shiftKey){ // down+shift
                     const nextArticle = props.articles.find(a=>a.parent_id===props.a.parent_id&&a.sort_nr>props.a.sort_nr);
                     if(nextArticle){props.dropArticle(props.a.id, props.a.parent_id, props.a.sort_nr+1)};
@@ -207,8 +214,8 @@ function ArticleBox(props){
                 e.target.blur();
             }
         }}
-    >{props.a.name}</span> {/*<i>({props.a.id})</i>*/}{props.collapsed?<span className="text-primary" style={{marginLeft: "15px"}}>...</span>:null}</div>
-    {displaySections?<ArticleBoxSections setSectionDetailId={id=>{props.setSectionDetailId(id)}} inputMode={1} project={props.project} articleId={props.a.id} />:null}
+    >{props.a.name}</span> {sectionCount>0?<small className="text-primary" style={{marginLeft: "20px"}}>{sectionCount}</small>:null}{props.collapsed?<span className="text-primary" style={{marginLeft: "15px"}}>...</span>:null}</div>
+    {displaySections?<ArticleBoxSections setSectionCount={setSectionCount} setSectionDetailId={id=>{props.setSectionDetailId(id)}} inputMode={1} project={props.project} articleId={props.a.id} />:null}
     </>;
 }
 function ArticleBoxSections(props){
@@ -248,6 +255,7 @@ function ArticleBoxSections(props){
     const loadSections=async()=>{
         const articleSections = await arachne.sections.get({article_id: props.articleId}, {order: ["date_sort"]});
         setSections(articleSections);
+        props.setSectionCount(articleSections.length);
         const tagLnkLst = [];
         for(const s of articleSections){
             const tagLnks = await arachne.tag_lnks.get({section_id: s.id});
@@ -295,8 +303,8 @@ function ArticleBoxSections(props){
     return <>
     <SectionDetailEdit project={props.project} handleClose={()=>{loadSections();setSectionDetailId(0)}} sectionDetailId={sectionDetailId} />
     <div className="ArticleBoxSections">
-        <div className="outlineSectionTagBox">{tagLst.map(t=><div className="outlineSectionTags" style={{backgroundColor: t.color}}>{t.name}</div>)}</div>
-        <div>{sections.map(s=><SectionBox s={s} setSectionDetailId={setSectionDetailId} />)}</div>
+        <div className="outlineSectionTagBox">{tagLst.map(t=><div key={t.id} className="outlineSectionTags" style={{backgroundColor: t.color}}>{t.name}</div>)}</div>
+        <div>{sections.map(s=><SectionBox key={s.id} s={s} setSectionDetailId={setSectionDetailId} />)}</div>
         <div style={{width:"100%", position: "relative", display: "inline-block"}}>
             <input className="tagBoxOutlineSection" value={inputValue} onChange={e=>{setInputValue(e.target.value)}} onFocus={()=>{loadACLst()}} onBlur={()=>{setInputValue("");setACLst([]);/*if(!props.inputMode){props.setInputMode()}*/}} type="text" onKeyDown={e=>{onKeyDown(e)}} />
             {acLst.length>0&&<div className="autocomplete-items" style={{borderColor: props.inputMode?null:"var(--bs-yellow)"}}>
@@ -338,7 +346,7 @@ function SectionBox(props){
                 props.setSectionDetailId(props.s.id);
             }
         }}><span className="sectionBoxTitle">{props.s.ref}</span> {props.s.text}
-        <div className="outlineSectionTagBox">{tagLst.map(t=><div className="outlineSectionTags" style={{backgroundColor: t.color}}>{t.name}</div>)}</div>
+        <div className="outlineSectionTagBox">{tagLst.map(t=><div key={t.id} className="outlineSectionTags" style={{backgroundColor: t.color}}>{t.name}</div>)}</div>
     </div>;
 }
 function SectionDetailEdit(props) {
