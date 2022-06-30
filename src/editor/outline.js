@@ -215,42 +215,46 @@ function ArticleBox(props){
             }
         }}
     >{props.a.name}</span> {sectionCount>0?<small className="text-primary" style={{marginLeft: "20px"}}>{sectionCount}</small>:null}{props.collapsed?<span className="text-primary" style={{marginLeft: "15px"}}>...</span>:null}</div>
-    {displaySections?<ArticleBoxSections setSectionCount={setSectionCount} setSectionDetailId={id=>{props.setSectionDetailId(id)}} inputMode={1} project={props.project} articleId={props.a.id} />:null}
+    {displaySections?<ArticleBoxSections articles={props.articles} setSectionCount={setSectionCount} setSectionDetailId={id=>{props.setSectionDetailId(id)}} inputMode={1} project={props.project} articleId={props.a.id} />:null}
     </>;
 }
 function ArticleBoxSections(props){
     const [sections, setSections] = useState([]);
+    const [inputMode, setInputMode] = useState(0);
     const [inputValue, setInputValue] = useState("");
     const [acLst, setACLst] = useState([]);
     const [currentFocus, setCurrentFocus] = useState(0);
     const [sectionDetailId, setSectionDetailId] = useState(0);
     const [tagLst, setTagLst] = useState([]);
+    const [hasFocus, setHasFocus] = useState(false);
     useEffect(()=>{loadSections()}, []);
-    useEffect(()=>{loadACLst()},[inputValue]);
+    useEffect(()=>{loadACLst()},[inputValue, inputMode, hasFocus]);
     const loadACLst=async()=>{
-        if(inputValue!==""){
+        if(hasFocus){
             let allSections = await arachne.sections.get({project_id: props.project.id})
-            allSections = allSections.filter(a=>a.ref!==null&&a.ref.toLowerCase().indexOf(inputValue.toLowerCase())>-1);
-            allSections = allSections.map(a=>{return {id: a.id, type: "section", name: `${a.ref}; ${a.text!==null?a.text.substring(0, 10):""}...`}});
+            allSections = allSections.filter(a=>(inputMode===0&&!(a.article_id>0)||(inputMode===1&&a.article_id===props.articleId)||(inputMode===2))&&a.ref!==null&&a.ref.toLowerCase().indexOf(inputValue.toLowerCase())>-1);
+            allSections = allSections.map(a=>{
+                return {id: a.id, type: "section", name: `${a.ref}; ${a.text!==null?a.text.substring(0, 10):""}...`, articleName: inputMode===2&&a.article_id!==props.articleId?props.articles.find(a=>a.id===props.articleId).name:null}
+            });
             let allTags = await arachne.tags.get({project_id: props.project.id});
             allTags = allTags.filter(a=>a.name.toLowerCase().indexOf(inputValue.toLowerCase())>-1);
             allTags = allTags.map(t=>{return {id: t.id, type: "tag", name: t.name}});
             allSections = allSections.concat(allTags);
             allSections.sort((a,b)=>a.name.toLowerCase()>b.name.toLowerCase());
             setACLst(allSections);
-        }else if(acLst.length>0){
-            setACLst([]);
         }
     }
     const addSections=async(item)=>{
+        // also: removes section if inputMode === 1
+        const articleId = inputMode===1?null:props.articleId;
         if(item.type==="tag"){
             const tagLnks = await arachne.tag_lnks.get({tag_id: item.id});
-            await arachne.sections.save(tagLnks.map(t=>{return {id: t.section_id, article_id: props.articleId}}));
-            await loadSections();
+            await arachne.sections.save(tagLnks.map(t=>{return {id: t.section_id, article_id: articleId}})); 
         }else{
-            await arachne.sections.save({id: item.id, article_id: props.articleId});
-            await loadSections();
+            await arachne.sections.save({id: item.id, article_id: articleId});
         }
+        await loadSections();
+        await loadACLst();
     };
     const loadSections=async()=>{
         const articleSections = await arachne.sections.get({article_id: props.articleId}, {order: ["date_sort"]});
@@ -274,15 +278,15 @@ function ArticleBoxSections(props){
             //createNewTag(acTags[0].name);
         }else if(e.keyCode===27){ // esc
             setInputValue("");
-            //setACLst([]);
+            setACLst([]);
         }else if(e.keyCode===190&&e.target.value===""){ // .
             e.preventDefault();
-            //if(props.inputMode!==1){props.setInputMode(1)}
-            //else{props.setInputMode(0)}
+            if(inputMode!==1){setInputMode(1)}
+            else{setInputMode(0)}
         }else if(e.keyCode===173&&e.target.value===""){ // -
             e.preventDefault();
-            //if(props.inputMode!==2){props.setInputMode(2)}
-            //else{props.setInputMode(0)}
+            if(inputMode!==2){setInputMode(2)}
+            else{setInputMode(0)}
         }else if (e.keyCode===40) { //down
             e.preventDefault();
             if(acLst.length>0){
@@ -300,15 +304,24 @@ function ArticleBoxSections(props){
             addSections(acLst[currentFocus]);
         }
     }
+    let borderStyle = "0.5px solid #ced4da"
+    let backgroundColor = "white"
+    if(inputMode===1){
+        borderStyle = "1px solid var(--bs-yellow)"
+        backgroundColor = "#ffecb1"
+    }else if(inputMode===2){
+        borderStyle = "1px solid var(--bs-teal)"
+        backgroundColor = "#e2f7ed"
+    }
     return <>
     <SectionDetailEdit project={props.project} handleClose={()=>{loadSections();setSectionDetailId(0)}} sectionDetailId={sectionDetailId} />
     <div className="ArticleBoxSections">
         <div className="outlineSectionTagBox">{tagLst.map(t=><div key={t.id} className="outlineSectionTags" style={{backgroundColor: t.color}}>{t.name}</div>)}</div>
         <div>{sections.map(s=><SectionBox key={s.id} s={s} setSectionDetailId={setSectionDetailId} />)}</div>
         <div style={{width:"100%", position: "relative", display: "inline-block"}}>
-            <input className="tagBoxOutlineSection" value={inputValue} onChange={e=>{setInputValue(e.target.value)}} onFocus={()=>{loadACLst()}} onBlur={()=>{setInputValue("");setACLst([]);/*if(!props.inputMode){props.setInputMode()}*/}} type="text" onKeyDown={e=>{onKeyDown(e)}} />
-            {acLst.length>0&&<div className="autocomplete-items" style={{borderColor: props.inputMode?null:"var(--bs-yellow)"}}>
-                {acLst.map((t,i)=><div key={t.id} style={{fontWeight: t.type==="tag"?"bold":null, fontStyle: t.type==="tag"?"italic":null, backgroundColor: props.inputMode?null:"#ffecb1", borderColor: props.inputMode?null:"var(--bs-yellow)"}} onMouseDown={async ()=>{await addSections(t)}} className={i===currentFocus?"autocomplete-active":""} dangerouslySetInnerHTML={parseHTML(t.name.replace(new RegExp(`(${inputValue})`, "gi"), "<u>$1</u>"))}></div>)}
+            <input className="tagBoxOutlineSection" value={inputValue} onChange={e=>{setInputValue(e.target.value)}} onFocus={()=>{setHasFocus(true)}} onBlur={()=>{setHasFocus(false);setInputValue("");setACLst([]);/*if(!props.inputMode){props.setInputMode()}*/}} type="text" onKeyDown={e=>{onKeyDown(e)}} />
+            {acLst.length>0&&<div className="autocomplete-items" style={{border: borderStyle}}>
+                {acLst.map((t,i)=><div key={t.id} style={{fontWeight: t.type==="tag"?"bold":null, fontStyle: t.type==="tag"?"italic":null, backgroundColor: backgroundColor, border: borderStyle}} onMouseDown={async ()=>{await addSections(t)}} className={i===currentFocus?"autocomplete-active":""}><span dangerouslySetInnerHTML={parseHTML(t.name.replace(new RegExp(`(${inputValue})`, "gi"), "<u>$1</u>"))}></span><br /><small>{t.articleName?t.articleName:null}</small></div>)}
             </div>}
         </div>
 
@@ -364,7 +377,6 @@ function SectionDetailEdit(props) {
     useEffect(()=>{if(props.sectionDetailId>0){loadSection();if(document.getElementById("sectionDetailEditFirstInput")){document.getElementById("sectionDetailEditFirstInput").focus()}}}, [props.sectionDetailId]);
     const loadSection = async () =>{
         const newSection = await arachne.sections.get({id: props.sectionDetailId});
-        //console.log(newSection[0].img+`${verso?"v":""}.jpg`);
         setImg(arachne.url+newSection[0].img+`${verso?"v":""}.jpg`);
         setReference(newSection[0].ref);
         setText(newSection[0].text);
