@@ -8,6 +8,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { arachne } from "./../arachne.js";
 import { AutoComplete, SelectMenu, ToolKit, StatusButton, sleep, sqlDate } from "./../elements.js";
 
+import { GeschichtsquellenImport } from "./../content/mlw.js";
 let StatisticsChart;
 
 function Statistics(props){
@@ -18,7 +19,7 @@ function Statistics(props){
     const [ressourceBox, setRessourceBox] = useState([]);
     useEffect(()=>{
         const fetchData=async()=>{
-            ({ StatisticsChart } = await import(`./../content/${props.PROJECT_NAME}.js`));
+            ({ StatisticsChart } = await import(`./../content/mlw.js`));
             const dataIn = await arachne.statistics.getAll();
             let newZettelBox = [];
             let newLemmaBox = [];
@@ -229,6 +230,7 @@ class ServerAside extends React.Component{
             "comment_moderator": "Kommentare moderieren",
             "faszikel": "Faszikel konvertieren",
             "ocr_jobs": "OCR-Aufträge aufgeben",
+            "geschichtsquellen": "Zugriff auf Geschichtsquellen-Verknüpfung",
         };
         let rightList = [];
         for(const [right, description] of Object.entries(rights)){
@@ -551,6 +553,9 @@ class Import extends React.Component{
                     </Row>}
                 <Row className="mt-4"><Col>Eine Anleitung zum Hochladen der Zettel finden Sie <a href="https://gitlab.lrz.de/haeberlin/dmlw/-/wikis/09-HiwiHow:-Zettel-scannen-und-hochladen">hier</a>.</Col></Row>
                 </Tab>
+                {arachne.project_name==="mlw"&&arachne.access("geschichtsquellen")&&<Tab eventKey="g" title="Geschichtsquellen-Daten" style={{padding: "0 25%"}}>
+                <GeschichtsquellenImport />
+            </Tab>}
             </Tabs>
         </Container>;
     }

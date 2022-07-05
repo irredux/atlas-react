@@ -1,4 +1,4 @@
-import { parseHTML, parseHTMLPreview, SelectMenu, StatusButton, AutoComplete } from "./../elements.js";
+import { parseHTML, parseHTMLPreview, SelectMenu, StatusButton, AutoComplete, TableView } from "./../elements.js";
 import { arachne } from "./../arachne.js";
 import { Accordion, Col, Row, Container, NavDropdown, Card, ListGroup, Spinner } from "react-bootstrap";
 import { useState, useEffect } from "react";
@@ -7,7 +7,7 @@ import { faSync, faAngleRight, faAngleLeft } from "@fortawesome/free-solid-svg-i
 import 'chart.js/auto';
 import { Bar, Pie } from "react-chartjs-2";
 function arachneTbls(){
-    return ["project", "author", "edition", "lemma", "opera_maiora", "opera_minora", "scan", "scan_lnk", "work", "zettel", "user", "seklit", "article", "zettel_lnk", "statistics", "scan_paths", "ocr_jobs", "comment", "scan_opera", "fulltext_search_view", "tags", "tag_lnks", "sections"];
+    return ["project", "author", "edition", "lemma", "opera_maiora", "opera_minora", "scan", "scan_lnk", "work", "zettel", "user", "seklit", "article", "zettel_lnk", "statistics", "scan_paths", "ocr_jobs", "comment", "scan_opera", "fulltext_search_view", "tags", "tag_lnks", "sections", "gq_werke", "gq_autoren"];
 }
 
 /* ************************************************************************************* */
@@ -383,6 +383,8 @@ function MainMenuContent(props){
         <NavDropdown.Item onClick={e => {props.loadMain(e, "minora")}}><i>opera minora</i>-Liste</NavDropdown.Item>
         <NavDropdown.Item onClick={e => {props.loadMain(e, "seklit")}}>Sekundärliteratur</NavDropdown.Item>
         <NavDropdown.Item onClick={e => {props.loadMain(e, "ressources")}}>Ressourcen</NavDropdown.Item>
+        {arachne.access("geschichtsquellen")&&<NavDropdown.Item onClick={e => {props.loadMain(e, "gq_autoren")}}>Geschichtsquellen-Autoren</NavDropdown.Item>}
+        {arachne.access("geschichtsquellen")&&<NavDropdown.Item onClick={e => {props.loadMain(e, "gq_werke")}}>Geschichtsquellen-Werke</NavDropdown.Item>}
     </>;
 }
 
@@ -695,11 +697,168 @@ function StatisticsChart(props){
     }
     return returnChart;
 }
+/* ************************************************************************************* */
+function GeschichtsquellenImport(props){
+    const [data, setData] = useState([null]); //db_length_werk, gq_length_werk, db_length_autor, gq_length_autor
+    const [addLstAutor, setAddLstAutor] = useState([]);
+    const [changeLstAutor, setChangeLstAutor] = useState([]);
+    const [deleteLstAutor, setDeleteLstAutor] = useState([]);
+    const [addLstWerk, setAddLstWerk] = useState([]);
+    const [changeLstWerk, setChangeLstWerk] = useState([]);
+    const [deleteLstWerk, setDeleteLstWerk] = useState([]);
+    useEffect(()=>{
+        const fetchData=async()=>{
+            // /geschichtsquellen/<string:type>
+            const db_data_autoren = await arachne.gq_autoren.getAll();
+            const db_data_werke = await arachne.gq_werke.getAll();
+            const re_autoren = await fetch("http://localhost:8080/geschichtsquellen/autoren");
+            const gq_autoren = await re_autoren.json();
+            const re_werke = await fetch("http://localhost:8080/geschichtsquellen/werke");
+            const gq_werke = await re_werke.json();
+
+            let newAddLst_autoren = [];
+            let newChangeLst_autoren = [];
+            let newDeleteLst_autoren = [];
+            let newAddLst_werke = [];
+            let newChangeLst_werke = [];
+            let newDeleteLst_werke = [];
+
+            const db_ids = db_data_werke.map(d=>d.gq_id);
+            // werke
+            for(const gq_id in gq_werke.data){
+                const gqWork = {
+                    gq_id: parseInt(gq_werke.data[gq_id][0]["_"].substring(15,gq_werke.data[gq_id][0]["_"].indexOf("\"",15))),
+                    gq_autor_id: gq_werke.data[gq_id][3]["_"]?parseInt(gq_werke.data[gq_id][3]["_"].substring(16, gq_werke.data[gq_id][3]["_"].indexOf("\"", 16))):null,
+                    werk_lat: gq_werke.data[gq_id][0]["_"].replace(/<.*?>/g, ""),
+                    werk_de: gq_werke.data[gq_id][1]["_"],
+                };
+                if(db_ids.includes(parseInt(gqWork.gq_id))){
+                    // dataset in db: test if there are changes.
+                    const current_db_row = db_data_werke.find(d=>d.gq_id===gqWork.gq_id);
+                    if (
+                        current_db_row.gq_autor!==gqWork.gq_autor ||
+                        current_db_row.werk_lat!==gqWork.werk_lat ||
+                        current_db_row.werk_de!==gqWork.werk_de
+                        ){
+                        gqWork.id = current_db_row.id;
+                        newChangeLst_werke.push(gqWork);
+                    }
+                }else{
+                    // dataset not in db.
+                    newAddLst_werke.push(gqWork);
+                }
+            }
+            // loop: datasets in db but not in gq!
+            // autoren
+            for(const gq_id in gq_autoren.data){
+                const gqAutor = {
+                    gq_id: parseInt(gq_autoren.data[gq_id][0]["_"].substring(16,gq_autoren.data[gq_id][0]["_"].indexOf("\"",16))),
+                    autor_lat: gq_autoren.data[gq_id][0]["_"].replace(/<.*?>/g, ""),
+                    autor_de: gq_autoren.data[gq_id][1]["_"],
+                };
+                if(db_ids.includes(parseInt(gqAutor.gq_id))){
+                    // dataset in db: test if there are changes.
+                    const current_db_row = db_data_autoren.find(d=>d.gq_id===gqAutor.gq_id);
+                    if (
+                        current_db_row.autor_lat!==gqAutor.autor_lat ||
+                        current_db_row.autor_de!==gqAutor.autor_de
+                        ){
+                        gqAutor.id = current_db_row.id;
+                        newChangeLst_autoren.push(gqAutor);
+                    }
+                }else{
+                    // dataset not in db.
+                    newAddLst_autoren.push(gqAutor);
+                }
+            }
+            // loop: datasets in db but not in gq!
+
+            setData([db_data_werke.length, Object.keys(gq_werke.data).length, db_data_autoren.length, Object.keys(gq_autoren.data).length])
+            setAddLstWerk(newAddLst_werke);
+            setChangeLstWerk(newChangeLst_werke);
+            setDeleteLstWerk(newDeleteLst_werke);
+            setAddLstAutor(newAddLst_autoren);
+            setChangeLstAutor(newChangeLst_autoren);
+            setDeleteLstAutor(newDeleteLst_autoren);
+        };
+        fetchData();
+    }, []);
+    return <>
+        <table width="100%">
+            <tbody>
+            <tr><th></th><th>Autoren</th><th>Werke</th></tr>
+            <tr><td>Datensätze in der Geschichtsquellen/Datenbank:</td><td>{data[3]}/{data[2]}</td><td>{data[1]}/{data[0]}</td></tr>
+            <tr><td>Neue Datensätze erstellen:</td><td>{addLstAutor.length}</td><td>{addLstWerk.length}</td></tr>
+            <tr><td>Datensätze ändern:</td><td>{changeLstAutor.length}</td><td>{changeLstWerk.length}</td></tr>
+            <tr><td>Datensätze löschen:</td><td>{deleteLstAutor.length}</td><td>{deleteLstWerk.length}</td></tr>
+            </tbody>
+        </table>
+        <div><StatusButton onClick={async()=>{
+            if(addLstWerk.length>0){await arachne.gq_werke.save(addLstWerk)}
+            if(addLstAutor.length>0){await arachne.gq_autoren.save(addLstAutor)}
+            if(changeLstWerk.length>0){await arachne.gq_werke.save(changeLstWerk)}
+            if(changeLstAutor.length>0){await arachne.gq_autoren.save(changeLstAutor)}
+            if(deleteLstWerk.length>0){await arachne.gq_werke.delete(deleteLstWerk)}
+            if(deleteLstAutor.length>0){await arachne.gq_autoren.delete(deleteLstAutor)}
+            return {status: 1}
+        }} value="Änderungen übernehmen" /></div>
+    </>;
+}
+function GeschichtsquellenInterfaceWerke(props){
+    const menuItems = [];
+    const tblRow=(props)=>{
+        return <>
+            <td title={"ID: "+props.cEl.id} dangerouslySetInnerHTML={parseHTML(props.cEl.opus)}></td>
+            <td dangerouslySetInnerHTML={parseHTML(props.cEl.full)}></td>
+            <td>{props.cEl.gq_id}</td>
+        </>;
+    };
+    const asideContent = [ // caption; type: t(ext-input), (text)a(rea), (auto)c(omplete); col names as array
+        {caption: "Zitiertitel", type: "span", col: "ac_web"},
+        {caption: "Zitiertitel", type: "text", col: "ac_web"},
+        {caption: "Geschichtsquellen:", type: "auto", col: ["", "gq_id"], search: {tbl: "geschichtsquellen", sCol: "opus", rCol: "opus"}},
+    ];
+    return <TableView
+        tblName="work"
+        searchOptions={[["id", "ID"]]}
+        sortOptions={[['["id"]', "ID"]]}
+        menuItems={menuItems}
+        tblRow={tblRow}
+        tblHeader={<><th>Zitiertitel</th><th>Informationen</th><th>verknpft. Geschichtsquellen-Einträge</th></>}
+        asideContent={asideContent}
+    />;
+}
+function GeschichtsquellenInterfaceAutoren(props){
+    const menuItems = [];
+    const tblRow=(props)=>{
+        return <>
+            <td title={"ID: "+props.cEl.id} dangerouslySetInnerHTML={parseHTML(props.cEl.opus)}></td>
+            <td dangerouslySetInnerHTML={parseHTML(props.cEl.full)}></td>
+            <td>{props.cEl.gq_id}</td>
+        </>;
+    };
+    const asideContent = [ // caption; type: t(ext-input), (text)a(rea), (auto)c(omplete); col names as array
+        {caption: "Zitiertitel", type: "span", col: "ac_web"},
+        {caption: "Zitiertitel", type: "text", col: "ac_web"},
+        {caption: "Geschichtsquellen:", type: "auto", col: ["", "gq_id"], search: {tbl: "geschichtsquellen", sCol: "opus", rCol: "opus"}},
+    ];
+    return <TableView
+        tblName="work"
+        searchOptions={[["id", "ID"]]}
+        sortOptions={[['["id"]', "ID"]]}
+        menuItems={menuItems}
+        tblRow={tblRow}
+        tblHeader={<><th>Zitiertitel</th><th>Informationen</th><th>verknpft. Geschichtsquellen-Einträge</th></>}
+        asideContent={asideContent}
+    />;
+}
+/* ************************************************************************************* */
 export {
     arachneTbls,
     LemmaRow, LemmaHeader, lemmaSearchItems, LemmaAsideContent,
     zettelSearchItems, ZettelCard, zettelBatchOptions, BatchInputType, ZettelAddLemmaContent, ZettelSingleContent, newZettelObject, exportZettelObject, zettelPresetOptions, zettelSortOptions,
     MainMenuContent,
     fetchIndexBoxData, IndexBoxDetail,
+    GeschichtsquellenImport, GeschichtsquellenInterfaceWerke, GeschichtsquellenInterfaceAutoren,
     StatisticsChart,
 }

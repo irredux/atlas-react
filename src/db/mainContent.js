@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { ChangeLog } from "./../changelog.js";
 import { Lemma } from "./lemma.js";
 import { Opera } from "./../content/mlw_opera.js";
+import { GeschichtsquellenInterfaceWerke, GeschichtsquellenInterfaceAutoren } from "./../content/mlw.js";
 import { DOMOpera, Konkordanz, Etudaus, DOMRessource } from "./../content/dom.js";
 import { TLLRessource } from "./../content/tll.js";
 import { Ressource, SekLit } from "./ressources.js";
@@ -31,6 +32,8 @@ function MainBody(props){
         "seklit": <SekLit />, // mlw
         "maiora": <Opera listName="opera_maiora" />, // mlw
         "minora": <Opera listName="opera_minora" />, // mlw
+        "gq_autoren": <GeschichtsquellenInterfaceAutoren />, // mllw
+        "gq_werke": <GeschichtsquellenInterfaceWerke />, // mllw
         "konkordanz": <Konkordanz />, // dom
         "quellenverzeichnis": <DOMOpera />, // dom
         "etudaus": <Etudaus />, // dom

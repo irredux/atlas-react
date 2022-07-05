@@ -127,36 +127,37 @@ class TableViewBox extends React.Component{
     }
 }
 function TableViewAside(props){
-    const [tblObject, setTblObject]=useState(Object.assign({},props.item));
+    const [tblObject, setTblObject]=useState({});//useState(Object.assign({},props.item));
     const [contentLst, setContentLst]=useState([]);
     useEffect(()=>{
         setTblObject(Object.assign({},props.item));
-        setContentLst(props.asideContent.map((a,i)=><TableViewAsideRow changeTblObject={(v,k)=>{changeTblObject(v,k)}} item={props.item} a={a} key={i} />));
     },[props.item.id]);
-    const changeTblObject = (value, key)=>{
-        const oldTblObject = tblObject;
-        oldTblObject[key]=value;
-        setTblObject(oldTblObject);
-    };
+    useEffect(()=>{
+        setContentLst(props.asideContent.map((a,i)=><TableViewAsideRow changeTblObject={(v,k)=>{
+            const oldTblObject = { ...tblObject }; //Object.assign({}, tblObject);
+            oldTblObject[k]=v;
+            setTblObject({ ...oldTblObject });
+        }} item={props.item} a={a} key={i} />));
+    }, [tblObject])
     return <Offcanvas show={true} placement="end" scroll={true} backdrop={false} onHide={()=>{props.onClose()}}>
             <Offcanvas.Header closeButton>
-                <Offcanvas.Title>ID {props.item.id}</Offcanvas.Title>
+                <Offcanvas.Title>ID {tblObject.id}</Offcanvas.Title>
             </Offcanvas.Header>
             <Offcanvas.Body>
                 {contentLst}
                 <Row>
                     <Col><StatusButton value="speichern" onClick={async ()=>{
-                    await arachne[props.tblName].save(Object.assign({},tblObject)); //shallow copy!
-                    props.onUpdate(tblObject.id);
-                    return {status: true};
-                }} />
-                <Button variant="danger" style={{marginLeft: "10px"}} onClick={async ()=>{
-                            if(window.confirm("Soll der Eintrag gelöscht werden? Dieser Schritt kann nicht rückgängig gemacht werden!")){
-                                await arachne[props.tblName].delete(props.item.id);
-                                props.onClose();
-                                props.onReload();
-                            }
-                        }}>löschen</Button></Col>
+                        await arachne[props.tblName].save(tblObject); //shallow copy!
+                        props.onUpdate(props.item.id);
+                        return {status: true};
+                    }} />
+                    <Button variant="danger" style={{marginLeft: "10px"}} onClick={async ()=>{
+                        if(window.confirm("Soll der Eintrag gelöscht werden? Dieser Schritt kann nicht rückgängig gemacht werden!")){
+                            await arachne[props.tblName].delete(props.item.id);
+                            props.onClose();
+                            props.onReload();
+                        }
+                    }}>löschen</Button></Col>
                 </Row>
             </Offcanvas.Body>
         </Offcanvas>;
@@ -176,6 +177,9 @@ function TableViewAsideRow(props){
             break;
         case "area": // textarea
             inputBox = <textarea style={{width: "230px", height: "100px"}} value={value?value:""} onChange={e=>{props.changeTblObject(e.target.value, props.a.col);setValue(e.target.value)}}></textarea>;
+            break;
+        case "span": // only displays values!
+            inputBox = <span>{value}</span>;
             break;
         default:
             inputBox = <span className="text-danger">Fehler: Unbekannter Input-Typ!</span>;

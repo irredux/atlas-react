@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { getSettings, setSetting } from "./mainContent.js";
 
 import { arachne } from "./../arachne.js";
-import { Message, ToolKit } from "./../elements.js";
+import { Message, ToolKit, sleep } from "./../elements.js";
 
 function Overview(props){
     const [sortName, setSortName] = useState(getSettings().projectSort);
@@ -117,10 +117,11 @@ function Overview(props){
         await refreshPage();
     };
     return <>
-        <Message show={renameId>0?true:false} title="Projekt umbenennen" msg="Geben Sie einen neuen Namen für das Projekt ein:" input={renameName} onReplay={async e=>{if(e!=-1 && e!=""){
+        <Message show={renameId>0?true:false} title="Projekt-Name auswählen" msg="Geben Sie einen Namen für das Projekt ein:" input={renameName} onReplay={async e=>{if(e!=-1 && e!=""){
             await arachne.project.save({id: renameId, name: e})
-            await refreshPage();
+            
         };
+        await refreshPage();
         setRenameId(0);
         }} />
         <Message show={shareId>0?true:false} title="Projekt freigeben" msg="Wem wollen Sie das Projekt freigeben?" dropDown={userLst} onReplay={async e=>{
@@ -212,10 +213,9 @@ function Overview(props){
             </Tab>
         </Tabs>
         </Container>
-        <NavBarBottom refreshPage={async ()=>{await refreshPage();}} setSortName={e=>setSortName(e)} />
+        <NavBarBottom setRenameId={setRenameId} setRenameName={setRenameName} setSortName={e=>setSortName(e)} />
     </>
 };
-
 function ProjectRow(props){
     const [showEdit, setShowEdit] = useState(false)
     const [shared, setShared] = useState();
@@ -246,10 +246,10 @@ function NavBarBottom(props){
     const ToolKitItems = [
         ["Sortieren nach", ()=>{setShowSort(true)}],
         ["neues Projekt erstellen", async ()=>{
-            if(window.confirm("Soll ein neues Projekt erstellt werden?")){
-                await arachne.project.save({name: "Neues Projekt", user_id: arachne.me.id, status: 1});
-                await props.refreshPage();
-            }
+            props.setRenameName("Neues Projekt");
+            await sleep(200);
+            const newId = await arachne.project.save({name: "Neues Projekt", user_id: arachne.me.id, status: 1});
+            props.setRenameId(newId);
         }],
     ];
     return <Navbar fixed="bottom" bg="light">
