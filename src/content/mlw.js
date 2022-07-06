@@ -799,15 +799,15 @@ function GeschichtsquellenImport(props){
             <tr><td>Datensätze löschen:</td><td>{deleteLstAutor.length}</td><td>{deleteLstWerk.length}</td></tr>
             </tbody>
         </table>
-        <div><StatusButton onClick={async()=>{
-            if(addLstWerk.length>0){await arachne.gq_werke.save(addLstWerk)}
-            if(addLstAutor.length>0){await arachne.gq_autoren.save(addLstAutor)}
-            if(changeLstWerk.length>0){await arachne.gq_werke.save(changeLstWerk)}
-            if(changeLstAutor.length>0){await arachne.gq_autoren.save(changeLstAutor)}
-            if(deleteLstWerk.length>0){await arachne.gq_werke.delete(deleteLstWerk)}
-            if(deleteLstAutor.length>0){await arachne.gq_autoren.delete(deleteLstAutor)}
-            return {status: 1}
-        }} value="Änderungen übernehmen" /></div>
+        <div>{addLstAutor.length>0||changeLstAutor.length>0||deleteLstAutor.length>0||addLstWerk.length>0||changeLstWerk.length>0||deleteLstWerk.length>0?<StatusButton onClick={async()=>{
+                    if(addLstAutor.length>0){await arachne.gq_autoren.save(addLstAutor)}
+                    if(changeLstAutor.length>0){await arachne.gq_autoren.save(changeLstAutor)}
+                    if(deleteLstAutor.length>0){await arachne.gq_autoren.delete(deleteLstAutor)}
+                    if(addLstWerk.length>0){await arachne.gq_werke.save(addLstWerk)}
+                    if(changeLstWerk.length>0){await arachne.gq_werke.save(changeLstWerk)}
+                    if(deleteLstWerk.length>0){await arachne.gq_werke.delete(deleteLstWerk)}
+                    return {status: 1}
+                }} value="Änderungen übernehmen" />:null}</div>
     </>;
 }
 function GeschichtsquellenInterfaceWerke(props){
