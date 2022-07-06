@@ -1,6 +1,6 @@
 import { parseHTML, parseHTMLPreview, SelectMenu, StatusButton, AutoComplete, TableView } from "./../elements.js";
 import { arachne } from "./../arachne.js";
-import { Accordion, Col, Row, Container, NavDropdown, Card, ListGroup, Spinner } from "react-bootstrap";
+import { Accordion, Col, Row, Container, NavDropdown, Card, ListGroup, Spinner, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSync, faAngleRight, faAngleLeft } from "@fortawesome/free-solid-svg-icons";
@@ -706,6 +706,8 @@ function GeschichtsquellenImport(props){
     const [addLstWerk, setAddLstWerk] = useState([]);
     const [changeLstWerk, setChangeLstWerk] = useState([]);
     const [deleteLstWerk, setDeleteLstWerk] = useState([]);
+    const [importError, setImportError] = useState(null);
+
     useEffect(()=>{
         const fetchData=async()=>{
             // /geschichtsquellen/<string:type>
@@ -716,6 +718,7 @@ function GeschichtsquellenImport(props){
             const re_werke = await fetch("http://localhost:8080/geschichtsquellen/werke");
             const gq_werke = await re_werke.json();
 
+
             let newAddLst_autoren = [];
             let newChangeLst_autoren = [];
             let newDeleteLst_autoren = [];
@@ -723,7 +726,8 @@ function GeschichtsquellenImport(props){
             let newChangeLst_werke = [];
             let newDeleteLst_werke = [];
 
-            const db_ids = db_data_werke.map(d=>d.gq_id);
+            const db_werke_ids = db_data_werke.map(d=>d.gq_id);
+            const db_autoren_ids = db_data_autoren.map(d=>d.gq_id);
             // werke
             for(const gq_id in gq_werke.data){
                 const gqWork = {
@@ -732,7 +736,7 @@ function GeschichtsquellenImport(props){
                     werk_lat: gq_werke.data[gq_id][0]["_"].replace(/<.*?>/g, ""),
                     werk_de: gq_werke.data[gq_id][1]["_"],
                 };
-                if(db_ids.includes(parseInt(gqWork.gq_id))){
+                if(db_werke_ids.includes(parseInt(gqWork.gq_id))){
                     // dataset in db: test if there are changes.
                     const current_db_row = db_data_werke.find(d=>d.gq_id===gqWork.gq_id);
                     if (
@@ -756,7 +760,7 @@ function GeschichtsquellenImport(props){
                     autor_lat: gq_autoren.data[gq_id][0]["_"].replace(/<.*?>/g, ""),
                     autor_de: gq_autoren.data[gq_id][1]["_"],
                 };
-                if(db_ids.includes(parseInt(gqAutor.gq_id))){
+                if(db_autoren_ids.includes(parseInt(gqAutor.gq_id))){
                     // dataset in db: test if there are changes.
                     const current_db_row = db_data_autoren.find(d=>d.gq_id===gqAutor.gq_id);
                     if (
@@ -768,7 +772,7 @@ function GeschichtsquellenImport(props){
                     }
                 }else{
                     // dataset not in db.
-                    console.log(gqAutor)
+                    console.log(gqAutor);
                     newAddLst_autoren.push(gqAutor);
                 }
             }
@@ -811,13 +815,12 @@ function GeschichtsquellenInterfaceWerke(props){
         return <>
             <td title={"ID: "+props.cEl.id} dangerouslySetInnerHTML={parseHTML(props.cEl.opus)}></td>
             <td dangerouslySetInnerHTML={parseHTML(props.cEl.full)}></td>
-            <td>{props.cEl.gq_id}</td>
+            <td><b style={{cursor: "pointer"}} onClick={()=>{window.open(`http://geschichtsquellen.de/werk/${props.cEl.gq_id}`, "_blank")}}>{props.cEl.gq_work}</b> {props.cEl.gq_id?<small>({props.cEl.gq_id})</small>:null}</td>
         </>;
     };
     const asideContent = [ // caption; type: t(ext-input), (text)a(rea), (auto)c(omplete); col names as array
         {caption: "Zitiertitel", type: "span", col: "ac_web"},
-        {caption: "Zitiertitel", type: "text", col: "ac_web"},
-        {caption: "Geschichtsquellen:", type: "auto", col: ["", "gq_id"], search: {tbl: "geschichtsquellen", sCol: "opus", rCol: "opus"}},
+        {caption: "Geschichts-quelle", type: "auto", col: ["gq_work", "gq_id"], search: {tbl: "gq_werke", sCol: "opus", rCol: "opus", idCol: "gq_id"}},
     ];
     return <TableView
         tblName="work"
@@ -825,7 +828,7 @@ function GeschichtsquellenInterfaceWerke(props){
         sortOptions={[['["id"]', "ID"]]}
         menuItems={menuItems}
         tblRow={tblRow}
-        tblHeader={<><th>Zitiertitel</th><th>Informationen</th><th>verknpft. Geschichtsquellen-Einträge</th></>}
+        tblHeader={<><th>Zitiertitel</th><th>Informationen</th><th>verknpft. Geschichtsquelle</th></>}
         asideContent={asideContent}
     />;
 }
@@ -833,23 +836,23 @@ function GeschichtsquellenInterfaceAutoren(props){
     const menuItems = [];
     const tblRow=(props)=>{
         return <>
-            <td title={"ID: "+props.cEl.id} dangerouslySetInnerHTML={parseHTML(props.cEl.opus)}></td>
+            <td title={"ID: "+props.cEl.id}>{props.cEl.in_use?null:"["}<aut><span dangerouslySetInnerHTML={parseHTML(props.cEl.abbr)}></span></aut>{props.cEl.in_use?null:"]"}</td>
             <td dangerouslySetInnerHTML={parseHTML(props.cEl.full)}></td>
-            <td>{props.cEl.gq_id}</td>
+            <td><b style={{cursor: "pointer"}} onClick={()=>{window.open(`http://geschichtsquellen.de/autor/${props.cEl.gq_id}`, "_blank")}}>{props.cEl.gq_author}</b> {props.cEl.gq_id?<small>({props.cEl.gq_id})</small>:null}</td>
         </>;
     };
-    const asideContent = [ // caption; type: t(ext-input), (text)a(rea), (auto)c(omplete); col names as array
-        {caption: "Zitiertitel", type: "span", col: "ac_web"},
-        {caption: "Zitiertitel", type: "text", col: "ac_web"},
-        {caption: "Geschichtsquellen:", type: "auto", col: ["", "gq_id"], search: {tbl: "geschichtsquellen", sCol: "opus", rCol: "opus"}},
+    const asideContent = [
+        {caption: "Autorenkürzel", type: "span", col: "abbr"},
+        {caption: "Autorenname:", type: "span", col: "full"},
+        {caption: "Geschichts-quelle:", type: "auto", col: ["gq_author", "gq_id"], search: {tbl: "gq_autoren", sCol: "autor_lat", rCol: "autor_lat", idCol: "gq_id"}},
     ];
     return <TableView
-        tblName="work"
+        tblName="author"
         searchOptions={[["id", "ID"]]}
         sortOptions={[['["id"]', "ID"]]}
         menuItems={menuItems}
         tblRow={tblRow}
-        tblHeader={<><th>Zitiertitel</th><th>Informationen</th><th>verknpft. Geschichtsquellen-Einträge</th></>}
+        tblHeader={<><th>Autorenkürzel</th><th>Informationen</th><th>verknpft. Geschichtsquelle</th></>}
         asideContent={asideContent}
     />;
 }

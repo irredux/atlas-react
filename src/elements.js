@@ -173,13 +173,13 @@ function TableViewAsideRow(props){
             inputBox = <input type="text" value={value?value:""} onChange={e=>{props.changeTblObject(e.target.value, props.a.col);setValue(e.target.value)}} />;
             break;
         case "auto": // autocomplete
-            inputBox = <AutoComplete onChange={(value, id)=>{props.changeTblObject(id, props.a.col[1]);setValue(value)}} value={value?value:""} tbl={props.a.search.tbl} searchCol={props.a.search.sCol} returnCol={props.a.search.rCol} />;
+            inputBox = <AutoComplete onChange={(value, id)=>{props.changeTblObject(id, props.a.col[1]);setValue(value)}} value={value?value:""} tbl={props.a.search.tbl} searchCol={props.a.search.sCol} returnCol={props.a.search.rCol} idCol={props.a.search.idCol?props.a.search.idCol:"id"} />;
             break;
         case "area": // textarea
             inputBox = <textarea style={{width: "230px", height: "100px"}} value={value?value:""} onChange={e=>{props.changeTblObject(e.target.value, props.a.col);setValue(e.target.value)}}></textarea>;
             break;
         case "span": // only displays values!
-            inputBox = <span>{value}</span>;
+            inputBox = <span dangerouslySetInnerHTML={parseHTML(value)}></span>;
             break;
         default:
             inputBox = <span className="text-danger">Fehler: Unbekannter Input-Typ!</span>;
@@ -638,7 +638,8 @@ class AutoComplete extends React.Component{
         this.state = {
             options: [],
             currentOptionId: null,
-            userSelected: false
+            userSelected: false,
+            idCol: props.idCol?props.idCol:"id",
         };
     }
     render(){
@@ -653,11 +654,11 @@ class AutoComplete extends React.Component{
             let i = -1;
             for(const option of this.state.options){
                 i++;
-                optionsElement.push(<div key={option.id} id={i} data-id={option.id} data-value={option[this.props.returnCol]} onClick={e=>{this.props.onChange(e.target.dataset.value, e.target.dataset.id);this.setState({userSelected: true})}} style={{cursor: "default", color: this.state.currentOptionId===i?"#2364AA":"inherit"}}>{option[this.props.returnCol]}</div>);
+                optionsElement.push(<div key={option.id} id={i} data-id={option[this.state.idCol]} data-value={option[this.props.returnCol]} onClick={e=>{this.props.onChange(e.target.dataset.value, e.target.dataset.id);this.setState({userSelected: true})}} style={{cursor: "default", color: this.state.currentOptionId===i?"#2364AA":"inherit"}}>{option[this.props.returnCol]}</div>);
             }
         }
         return <div>
-            <input className={this.props.classList} style={this.props.style} type="text" value={this.props.value} onBlur={()=>{setTimeout(()=>{this.setState({userSelected: true})},300)}} onChange={e=>{this.changeInputValue(e.target.value)}} onKeyDown={e=>{this.changeSelectedOption(e)}} />
+            <input className={this.props.classList} style={this.props.style} type="text" value={this.props.value} onBlur={()=>{setTimeout(()=>{this.setState({userSelected: true})},300)}} onChange={e=>{this.changeInputValue(e.target.value)}} onKeyDown={e=>{this.changeSelectedOption(e)}} />
             {optionsElement.length>0?<div style={optionsBoxStyle} className="mainColors">{optionsElement}</div>:null}
         </div>;
     }
@@ -666,7 +667,7 @@ class AutoComplete extends React.Component{
         if(newValue!==""){
             let query = {};
             query[this.props.searchCol] = newValue+"*";
-            const newOptions = await arachne[this.props.tbl].get(query, {select: ["id", this.props.returnCol], limit:10, order: [this.props.searchCol]});
+            const newOptions = await arachne[this.props.tbl].get(query, {select: [this.state.idCol, this.props.returnCol], limit:10, order: [this.props.searchCol]});
             this.setState({currentOptionId: newOptions.length>0?0:null, options: newOptions, userSelected: false});
         } else {
             // empty string;
@@ -682,7 +683,7 @@ class AutoComplete extends React.Component{
             this.setState({currentOptionId: this.state.currentOptionId+1});
         } else if (e.keyCode===13){
             // enter
-            this.props.onChange(this.state.options[this.state.currentOptionId][this.props.returnCol], this.state.options[this.state.currentOptionId].id);
+            this.props.onChange(this.state.options[this.state.currentOptionId][this.props.returnCol], this.state.options[this.state.currentOptionId][this.state.idCol]);
             this.setState({userSelected: true});
         }
     }
