@@ -383,8 +383,7 @@ function MainMenuContent(props){
         <NavDropdown.Item onClick={e => {props.loadMain(e, "minora")}}><i>opera minora</i>-Liste</NavDropdown.Item>
         <NavDropdown.Item onClick={e => {props.loadMain(e, "seklit")}}>Sekundärliteratur</NavDropdown.Item>
         <NavDropdown.Item onClick={e => {props.loadMain(e, "ressources")}}>Ressourcen</NavDropdown.Item>
-        {arachne.access("geschichtsquellen")&&<NavDropdown.Item onClick={e => {props.loadMain(e, "gq_autoren")}}>Geschichtsquellen-Autoren</NavDropdown.Item>}
-        {arachne.access("geschichtsquellen")&&<NavDropdown.Item onClick={e => {props.loadMain(e, "gq_werke")}}>Geschichtsquellen-Werke</NavDropdown.Item>}
+        {arachne.access("geschichtsquellen")&&<NavDropdown.Item onClick={e => {props.loadMain(e, "geschichtsquellen")}}>Geschichtsquellen</NavDropdown.Item>}
     </>;
 }
 
@@ -810,38 +809,8 @@ function GeschichtsquellenImport(props){
                 }} value="Änderungen übernehmen" />:null}</div>
     </>;
 }
-function GeschichtsquellenInterfaceWerke(props){
+function GeschichtsquellenInterface(props){
     const menuItems = [];
-    const tblRow=(props)=>{
-        return <>
-            <td title={"ID: "+props.cEl.id} dangerouslySetInnerHTML={parseHTML(props.cEl.opus)}></td>
-            <td dangerouslySetInnerHTML={parseHTML(props.cEl.full)}></td>
-            <td><b style={{cursor: "pointer"}} onClick={()=>{window.open(`http://geschichtsquellen.de/werk/${props.cEl.gq_id}`, "_blank")}}>{props.cEl.gq_work}</b> {props.cEl.gq_id?<small>({props.cEl.gq_id})</small>:null}</td>
-        </>;
-    };
-    const asideContent = [ // caption; type: t(ext-input), (text)a(rea), (auto)c(omplete); col names as array
-        {caption: "Zitiertitel", type: "span", col: "ac_web"},
-        {caption: "Geschichts-quelle", type: "auto", col: ["gq_work", "gq_id"], search: {tbl: "gq_werke", sCol: "opus", rCol: "opus", idCol: "gq_id"}},
-    ];
-    return <TableView
-        tblName="work"
-        searchOptions={[["id", "ID"]]}
-        sortOptions={[['["id"]', "ID"]]}
-        menuItems={menuItems}
-        tblRow={tblRow}
-        tblHeader={<><th>Zitiertitel</th><th>Informationen</th><th>verknpft. Geschichtsquelle</th></>}
-        asideContent={asideContent}
-    />;
-}
-function GeschichtsquellenInterfaceAutoren(props){
-    const menuItems = [];
-    const tblRow=(props)=>{
-        return <>
-            <td title={"ID: "+props.cEl.id}>{props.cEl.in_use?null:"["}<aut><span dangerouslySetInnerHTML={parseHTML(props.cEl.abbr)}></span></aut>{props.cEl.in_use?null:"]"}</td>
-            <td dangerouslySetInnerHTML={parseHTML(props.cEl.full)}></td>
-            <td><b style={{cursor: "pointer"}} onClick={()=>{window.open(`http://geschichtsquellen.de/autor/${props.cEl.gq_id}`, "_blank")}}>{props.cEl.gq_author}</b> {props.cEl.gq_id?<small>({props.cEl.gq_id})</small>:null}</td>
-        </>;
-    };
     const asideContent = [
         {caption: "Autorenkürzel", type: "span", col: "abbr"},
         {caption: "Autorenname:", type: "span", col: "full"},
@@ -852,10 +821,47 @@ function GeschichtsquellenInterfaceAutoren(props){
         searchOptions={[["id", "ID"]]}
         sortOptions={[['["id"]', "ID"]]}
         menuItems={menuItems}
-        tblRow={tblRow}
-        tblHeader={<><th>Autorenkürzel</th><th>Informationen</th><th>verknpft. Geschichtsquelle</th></>}
+        tblRow={GeschichtsquellenRow}
+        tblHeader={<><th>MLW-Autor <span style={{float: "right"}}>verknpft. Geschichtsquelle</span></th></>}
         asideContent={asideContent}
     />;
+}
+function GeschichtsquellenRow(props){
+    const [showDetails, setShowDetails] = useState(false);
+    const [workLst, setWorkLst] = useState([]);
+    const [gqWorkLst, setGQWorkLst] = useState([[null, "..."]]);
+    useEffect(()=>{
+        const fetchData=async()=>{
+            await refreshWorkLst();
+            const newGQWorkLst = await arachne.gq_werke.get({gq_autor_id: props.cEl.gq_id});
+            setGQWorkLst([[null, "..."]].concat(newGQWorkLst.map(w=>[w.gq_id, w.werk_lat])));
+        };
+        if(showDetails&&workLst.length===0){fetchData()}
+    }, [showDetails]);
+    const refreshWorkLst = async()=>{setWorkLst(await arachne.work.get({author_id: props.cEl.id}))};
+    return <>
+        <td title={"ID: "+props.cEl.id}>
+            {props.cEl.in_use?null:"["}<aut><span dangerouslySetInnerHTML={parseHTML(props.cEl.abbr)}></span></aut>{props.cEl.in_use?null:"]"}
+        <small style={{marginLeft: "5px"}}>(<span dangerouslySetInnerHTML={parseHTML(props.cEl.full)}></span>)</small>
+        <span style={{float: "right"}}><b style={{cursor: "pointer"}} onClick={()=>{setShowDetails(!showDetails)}}>{props.cEl.gq_author}</b> {props.cEl.gq_id?<small>(ID: {props.cEl.gq_id})</small>:null}</span>
+        
+        {showDetails&&<div style={{margin: "10px 0px", padding: "20px 15rem", borderTop: "1px solid black"}}>
+            <table width="100%">
+                <tbody>
+                    {workLst.map(w=><tr className="geschichtsquellenRows" key={w.id}><td width="33%">{w.ac_web}</td><td style={{paddingBottom: "10px"}}><SelectMenu style={{background: "none", width: "100%"}} options={gqWorkLst} onChange={async(event)=>{
+                            if(event.target.value==="..."){
+                                await arachne.work.save({id: w.id, gq_id: null})
+                            }else{
+                                await arachne.work.save({id: w.id, gq_id: event.target.value})
+                            }
+                            setWorkLst([]);
+                            await refreshWorkLst();
+                    }} value={w.gq_id} /></td><td width="10%" style={{textAlign: "right"}}>{w.gq_id&&<a href={`http://geschichtsquellen.de/werk/${w.gq_id}`} target="_blank">öffnen</a>}</td></tr>)}
+                </tbody>
+            </table>
+        </div>}
+        </td>
+    </>;
 }
 /* ************************************************************************************* */
 export {
@@ -864,6 +870,6 @@ export {
     zettelSearchItems, ZettelCard, zettelBatchOptions, BatchInputType, ZettelAddLemmaContent, ZettelSingleContent, newZettelObject, exportZettelObject, zettelPresetOptions, zettelSortOptions,
     MainMenuContent,
     fetchIndexBoxData, IndexBoxDetail,
-    GeschichtsquellenImport, GeschichtsquellenInterfaceWerke, GeschichtsquellenInterfaceAutoren,
+    GeschichtsquellenImport, GeschichtsquellenInterface,
     StatisticsChart,
 }

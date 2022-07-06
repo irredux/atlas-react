@@ -315,6 +315,15 @@ mark{
   color: #ffffff;
 }
 
+
+//////////////////////// Geschichtsquellen
+.geschichtsquellenRows{
+    borderBottom: "1px solid lightgray"; 
+}
+.geschichtsquellenRows:last-child{
+    border: none;
+}
+
 //////////////////////// Argos
 
 .pageTextEdit:focus{
