@@ -846,6 +846,7 @@ function GeschichtsquellenRow(props){
         <span style={{float: "right"}}><b style={{cursor: "pointer"}} onClick={()=>{setShowDetails(!showDetails)}}>{props.cEl.gq_author}</b> {props.cEl.gq_id?<small>(ID: {props.cEl.gq_id})</small>:null}</span>
         
         {showDetails&&<div style={{margin: "10px 0px", padding: "20px 15rem", borderTop: "1px solid black"}}>
+            <p><small><a href={`http://www.geschichtsquellen.de/autor/${props.cEl.gq_id}`} target="_blank">Autor in Geschichtsquelle öffnen.</a></small></p>
             <table width="100%">
                 <tbody>
                     {workLst.map(w=><tr className="geschichtsquellenRows" key={w.id}><td width="33%">{w.ac_web}</td><td style={{paddingBottom: "10px"}}><SelectMenu style={{background: "none", width: "100%"}} options={gqWorkLst} onChange={async(event)=>{
@@ -856,7 +857,7 @@ function GeschichtsquellenRow(props){
                             }
                             setWorkLst([]);
                             await refreshWorkLst();
-                    }} value={w.gq_id} /></td><td width="10%" style={{textAlign: "right"}}>{w.gq_id&&<a href={`http://geschichtsquellen.de/werk/${w.gq_id}`} target="_blank">öffnen</a>}</td></tr>)}
+                    }} value={w.gq_id} /></td><td width="10%" style={{textAlign: "right"}}>{w.gq_id&&<a href={`http://www.geschichtsquellen.de/werk/${w.gq_id}`} target="_blank">öffnen</a>}</td></tr>)}
                 </tbody>
             </table>
         </div>}
