@@ -713,11 +713,11 @@ function GeschichtsquellenImport(props){
             // /geschichtsquellen/<string:type>
             const db_data_autoren = await arachne.gq_autoren.getAll();
             const db_data_werke = await arachne.gq_werke.getAll();
-            const re_autoren = await fetch("http://www.geschichtsquellen.de/autoren/data");
-            // const re_autoren = await fetch("http://localhost:8080/geschichtsquellen/autoren");
+            //const re_autoren = await fetch("http://www.geschichtsquellen.de/autoren/data");
+            const re_autoren = await fetch(`${arachne.url}/geschichtsquellen/autoren`);
             const gq_autoren = await re_autoren.json();
-            // const re_werke = await fetch("http://localhost:8080/geschichtsquellen/werke");
-            const re_werke = await fetch("http://www.geschichtsquellen.de/werke/data");
+            const re_werke = await fetch(`${arachne.url}/geschichtsquellen/werke`);
+            //const re_werke = await fetch("http://www.geschichtsquellen.de/werke/data");
             const gq_werke = await re_werke.json();
 
 
