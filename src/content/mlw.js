@@ -774,7 +774,6 @@ function GeschichtsquellenImport(props){
                     }
                 }else{
                     // dataset not in db.
-                    console.log(gqAutor);
                     newAddLst_autoren.push(gqAutor);
                 }
             }
