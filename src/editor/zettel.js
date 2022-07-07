@@ -195,7 +195,7 @@ function SectionCard(props){
     };
     const openZettelDB = () =>{
         localStorage.setItem(arachne.project_name+"_searchBox_zettel",`[[{"id":0,"c":"id","o":"=","v":"${section.zettel_id}"}],1,["id"]]`);
-        window.open("/?site=zettel");
+        window.open(`/static/index.html?project=${arachne.project_name}&app=db&site=zettel`);
     }//style={{ width: '80%', maxWidth: "600px", margin: "auto" }}>
     return <Card ref={refImg} className={props.wideScreen?"largeScreen editor_zettel_card":"editor_zettel_card"} id={"s_"+props.sId} style={{ width: "80%", margin: "auto" }} onFocus={e=>{
         const el = document.getElementById("editor_zettel_current_active");
