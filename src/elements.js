@@ -292,17 +292,18 @@ function StatusButton(props){
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
     const [variant, setVariant] = useState(props.variant?props.variant:"primary");
+    const [progress, setProgress] = useState(0);
     const isMounted = useIsMounted();
     useEffect(()=>{
         let newStyle = props.style;
         if(newStyle){newStyle.display = "inline-block"}
         else{newStyle = {display: "inline-block"}}
         setStyle(newStyle);
-    }, [props.style]);
-
-    return <div style={style} className={props.className}><Button size={props.size?props.size:null} variant={variant} onClick={async ()=>{
+    }, [props.style, progress]);
+    const onProgress=(pg)=>{if(pg<100){setProgress(pg)}else{setProgress(0)}};
+    return <div style={style} className={props.className}><Button style={{background: progress>0?`linear-gradient(90deg, #0d6af4 ${progress}%, #e9ecef ${progress+1}%)`:null}} size={props.size?props.size:null} variant={variant} onClick={async (e)=>{
         setStatus(<Spinner style={{marginLeft: "10px"}} animation="border" size="sm" />);
-        const re = await props.onClick();
+        const re = await props.onClick(onProgress);
         if(isMounted()&&re){
             if(re.status===true||re.status===1){
                 setStatus(<FontAwesomeIcon style={{marginLeft: "10px"}} icon={faCheck} />);

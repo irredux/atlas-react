@@ -45,6 +45,11 @@ blau{color: blue}
 
 a:hover {cursor: pointer;} // links without href!
 
+.a_style{
+    cursor: pointer;
+    text-decoration: underline;
+
+}
 
 .noneLst{ // used in opera-lists
     list-style-type: none;

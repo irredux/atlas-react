@@ -501,7 +501,7 @@ class Import extends React.Component{
                     </Row>
                     <Row className="mb-2">
                         <Col xs={3}></Col>
-                        <Col><StatusButton value="Zettel hochladen" onClick={async ()=>{
+                        <Col><StatusButton value="Zettel hochladen" onClick={async (progress)=>{
                             if(this.state.zettelFiles==null){
                                 return {status: false, error: "Wählen Sie Bilder zum Hochladen aus."};
                             } else if(this.state.zettelFiles.length%2 != 0){
@@ -534,10 +534,14 @@ class Import extends React.Component{
                                 // loop through groups and upload!
                                 let firstId = 0;
                                 let lastId = 0;
+                                const maxLoops = uploadGroup.length;
+                                let currentLoop = 0;
                                 for(const uItem of uploadGroup){
                                     const r = await arachne.importZettel(uItem);
                                     if(firstId === 0){firstId=r[0]}
                                     lastId = r[1];
+                                    currentLoop ++;
+                                    progress(100/maxLoops*currentLoop);
                                 }
                                 this.setState({zettelSuccess: [firstId, lastId]});
                                 return {status: true};
@@ -547,7 +551,7 @@ class Import extends React.Component{
                     {this.state.zettelSuccess&&<Row>
                         <Col><Alert variant="success" onClose={()=>{this.setState({zettelSuccess: null})}} dismissible>
                             <Alert.Heading>Hochladen erfolgreich!</Alert.Heading><p>Die neuen Zettel haben IDs zwischen <b>{this.state.zettelSuccess[0]}</b> und <b>{this.state.zettelSuccess[1]}</b>. Möchten Sie die neuen Zettel in Zettel-Datenbank <Alert.Link href="#" onClick={e=>{
-                    localStorage.setItem("searchBox_zettel", `[[{"id":0,"c":"id","o":">=","v":${this.state.zettelSuccess[0]}},{"id":1,"c":"id","o":"<=","v":${this.state.zettelSuccess[1]}}],1,["id"]]`);
+                    localStorage.setItem(`${arachne.project_name}_searchBox_zettel`, `[[{"id":0,"c":"id","o":">=","v":${this.state.zettelSuccess[0]}},{"id":1,"c":"id","o":"<=","v":${this.state.zettelSuccess[1]}}],1,["id"]]`);
                     this.props.loadMain(e, "zettel");
                 }}>öffnen</Alert.Link>?</p></Alert></Col>
                     </Row>}

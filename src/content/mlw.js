@@ -1,9 +1,9 @@
 import { parseHTML, parseHTMLPreview, SelectMenu, StatusButton, AutoComplete, TableView } from "./../elements.js";
 import { arachne } from "./../arachne.js";
-import { Accordion, Col, Row, Container, NavDropdown, Card, ListGroup, Spinner, OverlayTrigger, Tooltip } from "react-bootstrap";
+import { Accordion, Col, Row, Container, NavDropdown, Card, ListGroup, Spinner } from "react-bootstrap";
 import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSync, faAngleRight, faAngleLeft } from "@fortawesome/free-solid-svg-icons";
+import { faSync } from "@fortawesome/free-solid-svg-icons";
 import 'chart.js/auto';
 import { Bar, Pie } from "react-chartjs-2";
 function arachneTbls(){
@@ -18,11 +18,11 @@ function LemmaHeader(){
 function LemmaRow(props){
     return <tr id={props.lemma.id} onDoubleClick={e=>{props.showDetail(parseInt(e.target.closest("tr").id))}}>
 		<td title={"ID: "+props.lemma.id}>
-			<a dangerouslySetInnerHTML={parseHTML(props.lemma.lemma_display)} onClick={e=>{
+			<span className="a_style" dangerouslySetInnerHTML={parseHTML(props.lemma.lemma_display)} onClick={e=>{
     			localStorage.setItem("mlw_searchBox_zettel", `[[{"id":0,"c":"lemma_id","o":"=","v":${props.lemma.id}}],1,["id"]]`);
     			props.loadMain(e);
 			}}>
-			</a>
+			</span>
 		</td>
 		<td dangerouslySetInnerHTML={parseHTML(props.lemma.dicts)}></td>
 		<td dangerouslySetInnerHTML={parseHTML(props.lemma.comment)}></td>
@@ -118,7 +118,7 @@ function LemmaAsideContent(props){
                 dicts: dicts,
                 lemma_nr: lemma_nr,
             };
-            const newId = await arachne.lemma.save(newLemmaValue);
+            await arachne.lemma.save(newLemmaValue);
             props.onUpdate(props.id);
             return {status: true};
         }
@@ -194,19 +194,21 @@ function ZettelCard(props){
 }
 function zettelBatchOptions(){return [[1, "Wort", "lemma_id", true],[2, "Werk", "work_id", true],[3,"Zettel-Typ", "type", false]]} // [id, description, db-col, use AutoComplete Component]; first array will trigger "add new lemma" if not in auto-complete list.
 function BatchInputType(props){
+    let returnComponent = null;
     switch(props.batchType){
         case 1:
-            return <AutoComplete onChange={(value, id)=>{props.setBatchValue(value);props.setBatchValueId(id)}} value={props.batchValue} tbl="lemma"  searchCol="lemma" returnCol="lemma_ac" />;
+            returnComponent = <AutoComplete onChange={(value, id)=>{props.setBatchValue(value);props.setBatchValueId(id)}} value={props.batchValue} tbl="lemma"  searchCol="lemma" returnCol="lemma_ac" />;
             break;
         case 2:
-            return <AutoComplete  value={props.batchValue} tbl="work" searchCol="ac_web" returnCol="ac_web" onChange={(value, id)=>{props.setBatchValue(value);props.setBatchValueId(id)}} />;
+            returnComponent = <AutoComplete  value={props.batchValue} tbl="work" searchCol="ac_web" returnCol="ac_web" onChange={(value, id)=>{props.setBatchValue(value);props.setBatchValueId(id)}} />;
             break;
         case 3:
-            return <SelectMenu style={{width: "86%"}} options={[[0, "..."],[1, "verzettelt"],[2,"Exzerpt"],[3,"Index"],[4,"Literatur"], [6, "Index (unkl. Stelle)"], [7, "Notiz"]]} onChange={event=>{props.setBatchValue(event.target.value)}} />;
+            returnComponent = <SelectMenu style={{width: "86%"}} options={[[0, "..."],[1, "verzettelt"],[2,"Exzerpt"],[3,"Index"],[4,"Literatur"], [6, "Index (unkl. Stelle)"], [7, "Notiz"]]} onChange={event=>{props.setBatchValue(event.target.value)}} />;
             break;
         default:
-            return <div style={{color: "red"}}>Unbekannter Stapel-Typ!</div>;  
+            returnComponent = <div style={{color: "red"}}>Unbekannter Stapel-Typ!</div>;  
     }
+    return returnComponent;
 }
 function ZettelAddLemmaContent(props){
     const [newLemma, setNewLemma]=useState(props.newLemma);
@@ -262,7 +264,7 @@ function ZettelAddLemmaContent(props){
         </Row>
         <Row className="mb-4">
             <Col>Fragezeichen:</Col>
-            <Col><SelectMenu options={[[0, "Nein"], [1, "Ja"]]} onChange={event=>{Fragezeichen(event.target.value)}} /></Col>
+            <Col><SelectMenu options={[[0, "Nein"], [1, "Ja"]]} onChange={event=>{setFragezeichen(event.target.value)}} /></Col>
         </Row>
     </>;
 }
@@ -846,7 +848,7 @@ function GeschichtsquellenRow(props){
         <span style={{float: "right"}}><b style={{cursor: "pointer"}} onClick={()=>{setShowDetails(!showDetails)}}>{props.cEl.gq_author}</b> {props.cEl.gq_id?<small>(ID: {props.cEl.gq_id})</small>:null}</span>
         
         {showDetails&&<div style={{margin: "10px 0px", padding: "20px 15rem", borderTop: "1px solid black"}}>
-            <p><small><a href={`http://www.geschichtsquellen.de/autor/${props.cEl.gq_id}`} target="_blank">Autor in Geschichtsquelle öffnen.</a></small></p>
+            <p><small><a href={`http://www.geschichtsquellen.de/autor/${props.cEl.gq_id}`} target="_blank">Autor in den Geschichtsquellen öffnen</a></small></p>
             <table width="100%">
                 <tbody>
                     {workLst.map(w=><tr className="geschichtsquellenRows" key={w.id}><td width="33%">{w.ac_web}</td><td style={{paddingBottom: "10px"}}><SelectMenu style={{background: "none", width: "100%"}} options={gqWorkLst} onChange={async(event)=>{
@@ -857,7 +859,7 @@ function GeschichtsquellenRow(props){
                             }
                             setWorkLst([]);
                             await refreshWorkLst();
-                    }} value={w.gq_id} /></td><td width="10%" style={{textAlign: "right"}}>{w.gq_id&&<a href={`http://www.geschichtsquellen.de/werk/${w.gq_id}`} target="_blank">öffnen</a>}</td></tr>)}
+                    }} value={w.gq_id} /></td><td width="10%" style={{textAlign: "right"}}>{w.gq_id&&<small><a href={`http://www.geschichtsquellen.de/werk/${w.gq_id}`} target="_blank">öffnen</a></small>}</td></tr>)}
                 </tbody>
             </table>
         </div>}
