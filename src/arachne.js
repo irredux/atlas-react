@@ -235,7 +235,7 @@ class Arachne {
                 bc.onmessage = e => {
                     if(e.data.type==="hello"&&e.data.msg==="world"){resolve(true)}
                 }
-                window.open(`/?project=${this.project_name}&app=echo`, "_blank");
+                window.open(`/${this.project_name}/echo`, "_blank");
                 setTimeout(()=>{resolve(false)},1000);
             });
             if(isOpened){
