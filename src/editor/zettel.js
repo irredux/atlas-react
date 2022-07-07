@@ -280,7 +280,7 @@ function RessourcesButtons(props){
     }
     useEffect(()=>{
         if(props.ressources.length===0){setButton(null)}
-        else if(props.ressources.length===1){setButton(<Button tabIndex="-1" size="sm" variant="outline-dark" onClick={()=>{openRessource(props.ressources[0].url===null||props.ressources[0].url===""?"/site/argos/"+props.ressources[0].id:props.ressources[0].url)}}>{props.ressources[0].label}</Button>)}
+        else if(props.ressources.length===1){setButton(<Button tabIndex="-1" size="sm" variant="outline-dark" onClick={()=>{openRessource(props.ressources[0].url===null||props.ressources[0].url===""?`/${arachne.project_name}/argos/${props.ressources[0].id}`:props.ressources[0].url)}}>{props.ressources[0].label}</Button>)}
         else{
             setSelected(props.ressources[0]);
         }
@@ -288,7 +288,7 @@ function RessourcesButtons(props){
     useEffect(()=>{
         if(selected!=null){
             setButton(<Dropdown as={ButtonGroup}>
-                <Button size="sm" variant="outline-dark" style={{width: "100%"}} onClick={()=>{openRessource(selected.url===null||selected.url===""?"/site/argos/"+selected.id:selected.url)}}>{selected.label}</Button>
+                <Button size="sm" variant="outline-dark" style={{width: "100%"}} onClick={()=>{openRessource(selected.url===null||selected.url===""?`/${arachne.project_name}/argos/${selected.id}`:selected.url)}}>{selected.label}</Button>
                 <Dropdown.Toggle split size="sm" variant="dark" id="dropdown-split-basic" />
                 <Dropdown.Menu>
                     {props.ressources.map(r=><Dropdown.Item key={r.id} onClick={()=>{setSelected(r)}}>{r.label}</Dropdown.Item>)}
