@@ -249,7 +249,7 @@ function SectionCard(props){
                         await sleep(300);
                         const el = document.getElementById(`s_${newId}`);
                         if(el){el.scrollIntoView({behavior: "auto", block: "center"})}
-                    }}>Stelle kopieren</Dropdown.Item>
+                    }}>Stelle duplizieren</Dropdown.Item>
                     <Dropdown.Item onClick={async ()=>{if(window.confirm("Soll die Stelle aus dem Projekt entfernt werden? Alle Änderungen gehen verloren.")){await arachne.sections.delete(props.sId);props.updateSections()}}} className="text-danger">Stelle löschen</Dropdown.Item>
                 </Dropdown.Menu>
             </Dropdown>
