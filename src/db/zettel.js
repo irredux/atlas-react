@@ -227,6 +227,7 @@ function ZettelAside(props){
     return <Offcanvas show={true} placement="end" scroll={true} backdrop={false} onHide={()=>{if(mode!="lemma"){props.onClose()}else{setMode(lastMode)}}}>{content}</Offcanvas>;
 }
 function ZettelAsideSingle(props){
+    const [commentCount, setCommentCount]=useState(0);
     const [ressourceLst, setRessourceLst]=useState([]);
     const [lemma, setLemma]=useState("");
     const [zettelObject, setZettelObject]=useState({});
@@ -295,9 +296,9 @@ function ZettelAsideSingle(props){
                     </Accordion.Body>
                 </Accordion.Item>}
                 {arachne.access("comment")?<Accordion.Item eventKey={2}>
-                    <Accordion.Header>Kommentare</Accordion.Header>
+                    <Accordion.Header>Kommentare{commentCount>0?<small style={{marginLeft: "5px"}}>({commentCount})</small>:null}</Accordion.Header>
                     <Accordion.Body>
-                        <CommentBox tbl="zettel" id={props.item.id} />
+                        <CommentBox tbl="zettel" id={props.item.id} setCommentCount={setCommentCount} />
                     </Accordion.Body>
                 </Accordion.Item>:null}
                 {arachne.access("admin")&&<Accordion.Item eventKey={3}>

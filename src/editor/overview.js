@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { getSettings, setSetting } from "./mainContent.js";
 
 import { arachne } from "./../arachne.js";
-import { Message, ToolKit, sleep } from "./../elements.js";
+import { Message, ToolKit } from "./../elements.js";
 
 function Overview(props){
     const [sortName, setSortName] = useState(getSettings().projectSort);
@@ -213,7 +213,7 @@ function Overview(props){
             </Tab>
         </Tabs>
         </Container>
-        <NavBarBottom setRenameId={setRenameId} setRenameName={setRenameName} setSortName={e=>setSortName(e)} />
+        <NavBarBottom refreshPage={refreshPage} setSortName={e=>setSortName(e)} />
     </>
 };
 function ProjectRow(props){
@@ -243,16 +243,19 @@ function ProjectRow(props){
 }
 function NavBarBottom(props){
     const [showSort, setShowSort] = useState(false);
+    const [createNewProject, setCreateNewProject] = useState(false);
     const ToolKitItems = [
         ["Sortieren nach", ()=>{setShowSort(true)}],
-        ["neues Projekt erstellen", async ()=>{
-            props.setRenameName("Neues Projekt");
-            await sleep(200);
-            const newId = await arachne.project.save({name: "Neues Projekt", user_id: arachne.me.id, status: 1});
-            props.setRenameId(newId);
-        }],
+        ["neues Projekt erstellen", async ()=>{setCreateNewProject(true)}],
     ];
     return <Navbar fixed="bottom" bg="light">
+        <Message show={createNewProject} title="Projekt-Name auswählen" msg="Geben Sie einen Namen für das neue Projekt ein:" input="Neues Projekt" onReplay={async name=>{
+            if(name!=-1 && name!=""){
+                await arachne.project.save({name: name, user_id: arachne.me.id, status: 1})
+            };
+            await props.refreshPage();
+            setCreateNewProject(false);
+        }} />
         <Message show={showSort} title="Sortierung der Projekte" msg="Wie sollen die Projekte sortiert werden? Nach ..." dropDown={[
             ["name", "Name"],
             ["u_date", "Änderungsdatum"],

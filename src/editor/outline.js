@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Modal, Card, Col, Container, Form, Row, FormControl, InputGroup, Dropdown, DropdownButton } from "react-bootstrap";
+import { Alert, Spinner, Modal, Card, Col, Container, Form, Row, FormControl, InputGroup, Dropdown, DropdownButton } from "react-bootstrap";
 import { arachne } from "./../arachne";
 import { parseHTML } from "./../elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -18,7 +18,6 @@ const defaultArticleHeadFields = [
     [908, "METRIK"],
     [909, "VERWECHSELBAR"],
 ];
-
 function OutlineBox(props){
     const [displayHead, setDisplayHead] = useState(true);
     const [displayBody, setDisplayBody] = useState(true);
@@ -110,13 +109,17 @@ function OutlineBox(props){
                 <Col xs="8" style={{userSelect: "none", textAlign: "right", cursor: "pointer", color: "var(--bs-gray-500)"}} onClick={()=>{setDisplayBody(!displayBody)}}>{displayBody?null:<><FontAwesomeIcon icon={faAngleDown} /> </>}Stellen</Col>
                 <Col></Col>
             </Row>
-            {displayBody?<Row>
+            {displayBody?<><Row>
                 <Col></Col>
                 <Col xs="8">
                     {props.articlesLst.map(a=>displayArticles(props.articles.find(b=>b.id===parseInt(a.split("-")[1])), a.split("-")[0]))}
                 </Col>
                 <Col></Col>
-            </Row>:null}
+            </Row>
+            <Row className="mt-4"><Col></Col><Col>
+                <Alert tabIndex="0" variant="secondary" style={{padding: "8px 16px", fontSize: "90%", textAlign: "center", cursor: "pointer"}} onKeyDown={e=>{if(e.keyCode===13){props.createNewArticle()}}} onClick={()=>{props.createNewArticle()}}>Eine neue Gruppe hinzufügen <small>({arachne.options.action_key.toUpperCase()}+N)</small></Alert>
+            </Col><Col></Col></Row>
+            </>:null}
         </Container>;
 }
 function ArticleBox(props){
@@ -227,30 +230,74 @@ function ArticleBoxSections(props){
     const [sectionDetailId, setSectionDetailId] = useState(0);
     const [tagLst, setTagLst] = useState([]);
     const [hasFocus, setHasFocus] = useState(false);
+    const [loading, setLoading] = useState(false);
     useEffect(()=>{loadSections()}, []);
     useEffect(()=>{loadACLst()},[inputValue, inputMode, hasFocus]);
     const loadACLst=async()=>{
         if(hasFocus){
-            let allSections = await arachne.sections.get({project_id: props.project.id})
-            allSections = allSections.filter(a=>(inputMode===0&&!(a.article_id>0)||(inputMode===1&&a.article_id===props.articleId)||(inputMode===2))&&a.ref!==null&&a.ref.toLowerCase().indexOf(inputValue.toLowerCase())>-1);
-            allSections = allSections.map(a=>{
-                return {id: a.id, type: "section", name: `${a.ref}; ${a.text!==null?a.text.substring(0, 10):""}...`, articleName: inputMode===2&&a.article_id!==props.articleId?props.articles.find(a=>a.id===props.articleId).name:null}
-            });
-            let allTags = await arachne.tags.get({project_id: props.project.id});
-            allTags = allTags.filter(a=>a.name.toLowerCase().indexOf(inputValue.toLowerCase())>-1);
-            allTags = allTags.map(t=>{return {id: t.id, type: "tag", name: t.name}});
-            allSections = allSections.concat(allTags);
-            allSections.sort((a,b)=>a.name.toLowerCase()>b.name.toLowerCase());
-            setACLst(allSections);
+            if(inputMode<3){
+                let allSections = await arachne.sections.get({project_id: props.project.id})
+                allSections = allSections.filter(a=>(inputMode===0&&!(a.article_id>0)||(inputMode===1&&a.article_id===props.articleId)||(inputMode===2))&&a.ref!==null&&a.ref.toLowerCase().indexOf(inputValue.toLowerCase())>-1);
+                allSections = allSections.map(a=>{
+                    return {id: a.id, type: "section", name: `${a.ref}; ${a.text!==null?a.text.substring(0, 10):""}...`, articleName: inputMode===2&&a.article_id!==props.articleId?props.articles.find(a=>a.id===props.articleId).name:null}
+                });
+                let allTags = await arachne.tags.get({project_id: props.project.id});
+                allTags = allTags.filter(a=>a.name.toLowerCase().indexOf(inputValue.toLowerCase())>-1);
+                allTags = allTags.map(t=>{return {id: t.id, type: "tag", name: t.name}});
+                allSections = allSections.concat(allTags);
+                allSections.sort((a,b)=>a.name.toLowerCase()>b.name.toLowerCase());
+                setACLst(allSections);
+            }else{
+                if(inputValue.length>3){
+                    setLoading(true);
+                    setACLst([]);
+                    const pages = await arachne.scan_lnk.search([{c: "full_text", o: "LIKE", v:`%${inputValue}%`}], {limit: "10", select: ["id", "edition_id", "full_text", "ac_web"]});
+                    let pages_from_sections = [];
+                    pages.forEach(p=>{
+                        let loopCount = 0
+                        for(const hit of p.full_text.matchAll(new RegExp(inputValue, "g"))){
+                            pages_from_sections.push({
+                                id: `${p.id}-${loopCount}`,
+                                edition_id: p.edition_id,
+                                type: "full_text",
+                                ac_web: p.ac_web,
+                                name: `...${p.full_text.substring(hit.index-100, hit.index+hit.length+100)}...`
+                            })
+                            loopCount ++;
+                        }
+                    })
+                    setACLst(pages_from_sections);
+                    setLoading(false);
+                }else{
+                    setACLst([]);
+                }
+            }
         }
     }
     const addSections=async(item)=>{
         // also: removes section if inputMode === 1
         const articleId = inputMode===1?null:props.articleId;
         if(item.type==="tag"){
+            // add tag
             const tagLnks = await arachne.tag_lnks.get({tag_id: item.id});
             await arachne.sections.save(tagLnks.map(t=>{return {id: t.section_id, article_id: articleId}})); 
+        } else if(item.type==="full_text"){
+            // add full-text
+            const edition = await arachne.edition.get({id: item.edition_id}, {select: ["work_id"]});
+            const work = await arachne.work.get({id: edition[0].work_id}, {select: ["date_sort"]})
+            await arachne.sections.save({
+                project_id: props.project.id,
+                ref: item.ac_web,
+                text: item.name,
+                date_sort: work[0].date_sort,
+                user_id: props.project.user_id,
+                shared_id: props.project.shared_id,
+                work_id: edition[0].work_id,
+                article_id: articleId
+            });
+            setACLst([]);
         }else{
+            // add section
             await arachne.sections.save({id: item.id, article_id: articleId});
         }
         await loadSections();
@@ -281,11 +328,15 @@ function ArticleBoxSections(props){
             setACLst([]);
         }else if(e.keyCode===190&&e.target.value===""){ // .
             e.preventDefault();
-            if(inputMode!==1){setInputMode(1)}
+            if(inputMode!==2){setInputMode(2)}
             else{setInputMode(0)}
         }else if(e.keyCode===173&&e.target.value===""){ // -
             e.preventDefault();
-            if(inputMode!==2){setInputMode(2)}
+            if(inputMode!==1){setInputMode(1)}
+            else{setInputMode(0)}
+        }else if(e.keyCode===60&&e.shiftKey===false&&e.target.value===""){ // <
+            e.preventDefault();
+            if(inputMode!==3){setInputMode(3)}
             else{setInputMode(0)}
         }else if (e.keyCode===40) { //down
             e.preventDefault();
@@ -312,6 +363,9 @@ function ArticleBoxSections(props){
     }else if(inputMode===2){
         borderStyle = "1px solid var(--bs-teal)"
         backgroundColor = "#e2f7ed"
+    }else if(inputMode===3){
+        borderStyle = "1px solid #074297"
+        backgroundColor = "#e6f0fe"
     }
     return <>
     <SectionDetailEdit project={props.project} handleClose={()=>{loadSections();setSectionDetailId(0)}} sectionDetailId={sectionDetailId} />
@@ -319,9 +373,14 @@ function ArticleBoxSections(props){
         <div className="outlineSectionTagBox">{tagLst.map(t=><div key={t.id} className="outlineSectionTags" style={{backgroundColor: t.color}}>{t.name}</div>)}</div>
         <div>{sections.map(s=><SectionBox key={s.id} s={s} setSectionDetailId={setSectionDetailId} />)}</div>
         <div style={{width:"100%", position: "relative", display: "inline-block"}}>
-            <input className="tagBoxOutlineSection" value={inputValue} onChange={e=>{setInputValue(e.target.value)}} onFocus={()=>{setHasFocus(true)}} onBlur={()=>{setHasFocus(false);setInputValue("");setACLst([]);/*if(!props.inputMode){props.setInputMode()}*/}} type="text" onKeyDown={e=>{onKeyDown(e)}} />
+            <input className="tagBoxOutlineSection" value={inputValue} onChange={e=>{setInputValue(e.target.value)}} onFocus={()=>{setHasFocus(true)}} onBlur={()=>{setHasFocus(false);setInputValue("");setACLst([]);/*if(!props.inputMode){props.setInputMode()}*/}} type="text" onKeyDown={e=>{onKeyDown(e)}} />{loading?<Spinner style={{position: "absolute", top: "12px", right: "4px"}} variant="primary" animation="border" size="sm" />:null}
             {acLst.length>0&&<div className="autocomplete-items" style={{border: borderStyle}}>
-                {acLst.map((t,i)=><div key={t.id} style={{fontWeight: t.type==="tag"?"bold":null, fontStyle: t.type==="tag"?"italic":null, backgroundColor: backgroundColor, border: borderStyle}} onMouseDown={async ()=>{await addSections(t)}} className={i===currentFocus?"autocomplete-active":""}><span dangerouslySetInnerHTML={parseHTML(t.name.replace(new RegExp(`(${inputValue})`, "gi"), "<u>$1</u>"))}></span><br /><small>{t.articleName?t.articleName:null}</small></div>)}
+                {acLst.map((t,i)=>
+                    <div key={t.id} style={{fontWeight: t.type==="tag"?"bold":null, fontStyle: t.type==="tag"?"italic":null, backgroundColor: backgroundColor, border: borderStyle}} onMouseDown={async ()=>{await addSections(t)}} className={i===currentFocus?"autocomplete-active":""}>
+                        {t.ac_web?<><b>{t.ac_web}</b>:</>:null}
+                        <p style={{marginLeft: t.ac_web?"15px":null}} dangerouslySetInnerHTML={parseHTML(t.name.replace(new RegExp(`(${inputValue})`, "gi"), "<u>$1</u>"))}></p>
+                        {t.articleName?<small>{t.articleName}</small>:null}
+                    </div>)}
             </div>}
         </div>
 

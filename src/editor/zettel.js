@@ -1,10 +1,10 @@
 import { useEffect, useState, useRef } from "react";
-import { Button, ButtonGroup, Dropdown, DropdownButton, Table, Badge, Card, Col, Form, Container, Navbar, Nav, Row, Modal, Accordion, Stack, Spinner, Offcanvas, Tabs, Tab } from "react-bootstrap";
+import { Button, ButtonGroup, Dropdown, Table, Badge, Card, Col, Form, Container, Navbar, Nav, Row, Modal, Accordion, Stack, Offcanvas, Tabs, Tab } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGear, faPlusCircle, faMinusCircle, faTimesCircle, faRotate, faPenToSquare, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 
 import { arachne } from "./../arachne.js";
-import { AutoComplete, SearchInput, ToolKit, useIntersectionObserver, Message, useShortcuts, sleep } from "./../elements.js"
+import { AutoComplete, SearchInput, StatusButton, ToolKit, useIntersectionObserver, Message, useShortcuts, sleep } from "./../elements.js"
 
 function ZettelBox(props){
     const [currentZettel, setCurrentZettel] = useState("?")
@@ -28,7 +28,7 @@ function ZettelBox(props){
         return ()=>{if(document.getElementById("cardBox")){resizeObserver.unobserve(document.getElementById("cardBox"))}};
     },[wideScreen]);
     return <>
-    <ImportZettel show={props.showImport} project={props.project} onReplay={e=>{
+    <ImportZettel updateArticles={props.updateArticles} show={props.showImport} project={props.project} onReplay={e=>{
             if(e){props.updateSections()};
             props.setShowImport(false);
         }} />
@@ -178,7 +178,7 @@ function SectionCard(props){
         // load ressources
         setRessources(await arachne.edition.get({work_id: newSection[0].work_id}, {select: ["id", "label", "url"]}));
     };
-    const loadTags =  async () =>{
+    const loadTags =  async()=>{
         let cAllTags = await arachne.tags.get({project_id: props.project.id});
         const cTagLnks = await arachne.tag_lnks.get({section_id: props.sId});
         let newTags = [];
@@ -227,27 +227,35 @@ function SectionCard(props){
             </Row>
             <div style={{display: "flex", justifyContent: "flex-end", gap: "15px", margin: "0 0.4rem 0 0.4rem", position: "absolute",  bottom: "10px", left: "10px", right: "10px"}}>
             <RessourcesButtons setRessourceView={url=>{props.setRessourceView(url)}} ressources={ressources} />
-            <DropdownButton tabIndex="-1" variant="outline-secondary" id="dropdown-basic-button" title={<FontAwesomeIcon icon={faGear} />}>
-                <Dropdown.Item onClick={()=>{openZettelDB()}}>Zettel bearbeiten</Dropdown.Item>
-                <Dropdown.Item onClick={()=>{setVerso(!verso)}}>Zettel drehen</Dropdown.Item>
-                <Dropdown.Divider />
-                <Dropdown.Item onClick={async()=>{
-                    const acWork = await arachne.work.get({id: section.work_id}, {select: ["ac_web"]})
-                    props.setChangeZettelWork({value: acWork[0].ac_web, id:section.work_id, section_id: props.sId});
-            }}>verknpft. Werk ändern</Dropdown.Item>
-                <Dropdown.Item onClick={()=>{setShowComment(true)}}>Kommentar hinzufügen</Dropdown.Item>
-                <Dropdown.Divider />
-                <Dropdown.Item onClick={async()=>{
-                    let vals = await arachne.sections.get({id: props.sId});
-                    delete vals.id;
-                    const newId = await arachne.sections.save(vals);
-                    props.updateSections(true);
-                    await sleep(300);
-                    const el = document.getElementById(`s_${newId}`);
-                    if(el){el.scrollIntoView({behavior: "auto", block: "center"})}
-            }}>Stelle kopieren</Dropdown.Item>
-                <Dropdown.Item onClick={async ()=>{if(window.confirm("Soll die Stelle aus dem Projekt entfernt werden? Alle Änderungen gehen verloren.")){await arachne.sections.delete(props.sId);props.updateSections()}}} className="text-danger">Stelle löschen</Dropdown.Item>
-            </DropdownButton>
+            <Dropdown>
+                <Dropdown.Toggle tabIndex="-1" variant="outline-secondary">
+                    <FontAwesomeIcon icon={faGear} />
+                </Dropdown.Toggle>
+                <Dropdown.Menu>
+                    <Dropdown.Item onClick={()=>{openZettelDB()}}>Zettel bearbeiten</Dropdown.Item>
+                    <Dropdown.Item onClick={()=>{setVerso(!verso)}}>Zettel drehen</Dropdown.Item>
+                    <Dropdown.Divider />
+                    <Dropdown.Item onClick={async()=>{
+                        const acWork = await arachne.work.get({id: section.work_id}, {select: ["ac_web"]})
+                        props.setChangeZettelWork({value: acWork[0].ac_web, id:section.work_id, section_id: props.sId});
+                    }}>verknpft. Werk ändern</Dropdown.Item>
+                    <Dropdown.Item onClick={()=>{setShowComment(true)}}>Kommentar hinzufügen</Dropdown.Item>
+                    <Dropdown.Divider />
+                    <Dropdown.Item onClick={async()=>{
+                        let vals = await arachne.sections.get({id: props.sId});
+                        delete vals.id;
+                        const newId = await arachne.sections.save(vals);
+                        props.updateSections(true);
+                        await sleep(300);
+                        const el = document.getElementById(`s_${newId}`);
+                        if(el){el.scrollIntoView({behavior: "auto", block: "center"})}
+                    }}>Stelle kopieren</Dropdown.Item>
+                    <Dropdown.Item onClick={async ()=>{if(window.confirm("Soll die Stelle aus dem Projekt entfernt werden? Alle Änderungen gehen verloren.")){await arachne.sections.delete(props.sId);props.updateSections()}}} className="text-danger">Stelle löschen</Dropdown.Item>
+                </Dropdown.Menu>
+            </Dropdown>
+            {/*<DropdownButton tabIndex="-1" variant="outline-secondary" id="dropdown-basic-button" title={<FontAwesomeIcon icon={faGear} />}>
+                            
+                        </DropdownButton>*/}
             </div>
         </Card.Body>
     </Card>;
@@ -316,7 +324,7 @@ function FilterBox(props){
         tb.children[tb.children.length-1].children[0].focus()
         }}>
             {props.filterTags.map(t=><FilterTag key={t.id} t={t} removeTag={t=>{removeTag(t)}} />)}
-            <FilterBoxInput inputMode={inputMode} setInputMode={v=>{setInputMode(v)}} tags={props.filterTags} addTag={newTag=>{addTag(newTag)}} removeTag={t=>{removeTag(t)}} project={props.project} />
+            <FilterBoxInput inputMode={inputMode} setInputMode={v=>{setInputMode(v)}} tags={props.filterTags} addTag={addTag} removeTag={t=>{removeTag(t)}} project={props.project} />
     </div>;
 }
 function FilterBoxInput(props){
@@ -348,11 +356,11 @@ function FilterBoxInput(props){
             setACTags([]);
         }else if(e.keyCode===190&&e.target.value===""){ // .
             e.preventDefault();
-            if(props.inputMode!==1){props.setInputMode(1)}
+            if(props.inputMode!==2){props.setInputMode(2)}
             else{props.setInputMode(0)}
         }else if(e.keyCode===173&&e.target.value===""){ // -
             e.preventDefault();
-            if(props.inputMode!==2){props.setInputMode(2)}
+            if(props.inputMode!==1){props.setInputMode(1)}
             else{props.setInputMode(0)}
         }else if (e.keyCode===40) { //down
             if(currentFocus+1 >= acTags.length){setCurrentFocus(0)}
@@ -372,10 +380,9 @@ function FilterBoxInput(props){
     const createNewTag = async (newTag, exitInput=false) =>{
         if(props.inputMode===0||props.inputMode===2){ // save new tag
             if(!props.tags.find(t=>t.name.toLowerCase()===newTag.toLowerCase())){
-                props.addTag(newTag)
+                await props.addTag(newTag);
                 if(props.inputMode===2){props.setInputMode(0)}
             }
-            
         }else{ // remove existing tag
             const existingTag = props.tags.find(t=>t.name.toLowerCase()===newTag.toLowerCase());
             if(existingTag){
@@ -423,6 +430,7 @@ function TagBox(props){
     </div>;
 }
 function TagBoxInput(props){
+    const [hasFocus, setHasFocus] = useState(false);
     const [inputValue, setInputValue] = useState("");
     const [acTags, setACTags] = useState([]);
     const [currentFocus, setCurrentFocus] = useState(-1);
@@ -431,17 +439,18 @@ function TagBoxInput(props){
             const currentTags = props.tags.map(t=>t.name);
             const newACTags = await arachne.tags.get({project_id: props.project.id});
             let currentACTags = newACTags.filter(t=>!currentTags.includes(t.name));
-            if(iValue===""){setACTags(currentACTags)}
-            else{setACTags(currentACTags.filter(t=>t.name.toLowerCase().indexOf(iValue.toLowerCase())>-1))}
+            if(iValue===""){setACTags(currentACTags.sort((a,b)=>a.name.toLowerCase()>b.name.toLowerCase()))}
+            else{setACTags(currentACTags.filter(t=>t.name.toLowerCase().indexOf(iValue.toLowerCase())>-1).sort((a,b)=>a.name.toLowerCase()>b.name.toLowerCase()))}
         }else{
-            if(iValue===""){setACTags(props.tags)}
-            else{setACTags(props.tags.filter(t=>t.name.toLowerCase().indexOf(iValue.toLowerCase())>-1))}
+            if(iValue===""){setACTags(props.tags.sort((a,b)=>a.name.toLowerCase()>b.name.toLowerCase()))}
+            else{setACTags(props.tags.filter(t=>t.name.toLowerCase().indexOf(iValue.toLowerCase())>-1).sort((a,b)=>a.name.toLowerCase()>b.name.toLowerCase()))}
         }
         setCurrentFocus(-1);
     };
     useEffect(()=>{
-        if(acTags.length>0||inputValue!==""){loadACTags(inputValue)}
-    }, [props.tags,inputValue,props.inputMode]);
+        if(hasFocus){loadACTags(inputValue)};
+        //if(acTags.length>0||inputValue!==""){loadACTags(inputValue)}
+    }, [hasFocus,props.tags,inputValue,props.inputMode]);
     const onKeyDown = e=>{
         if(e.keyCode===13&&acTags.length===1){
             e.preventDefault();
@@ -450,9 +459,9 @@ function TagBoxInput(props){
             setACTags([]);
         }else if(e.keyCode===190&&e.target.value===""){ // .
             e.preventDefault();
-            props.setInputMode();
         }else if(e.keyCode===173&&e.target.value===""){ // -
             e.preventDefault();
+            props.setInputMode();
         }else if (e.keyCode===40) { //down
             if(currentFocus+1 >= acTags.length){setCurrentFocus(0)}
             else{setCurrentFocus(currentFocus+1)}
@@ -487,7 +496,6 @@ function TagBoxInput(props){
                     await props.loadTags();
                 }
             }
-            
         }else{ // remove existing tag
             const existingTag = props.tags.find(t=>t.name.toLowerCase()===newTag.toLowerCase());
             if(existingTag){
@@ -498,11 +506,16 @@ function TagBoxInput(props){
             }
         }
         setInputValue("");
-        if(exitInput){setACTags([])}
-        else{loadACTags("")}
+        setACTags([]);
+        /*
+        if(exitInput){}
+        else{
+            setTimeout(()=>{loadACTags("")}, 500);
+            //sleep(1000).then(()=>{})
+        }*/
     };
     return <div style={{width:"300px", position: "relative", display: "inline-block"}}>
-        <input value={inputValue} onChange={e=>{setInputValue(e.target.value)}} onFocus={()=>{loadACTags("");props.centerSection()}} onBlur={()=>{setInputValue("");setACTags([]);if(!props.inputMode){props.setInputMode()}}} type="text" style={{background: "none", outline: "none", border: "none", margin: "1px 2px", padding: "4px 10px"}} onKeyDown={e=>{onKeyDown(e)}} />
+        <input value={inputValue} onChange={e=>{setInputValue(e.target.value)}} onFocus={()=>{setHasFocus(true);props.centerSection()}} onBlur={()=>{setHasFocus(false);setInputValue("");setACTags([]);if(!props.inputMode){props.setInputMode()}}} type="text" style={{background: "none", outline: "none", border: "none", margin: "1px 2px", padding: "4px 10px"}} onKeyDown={e=>{onKeyDown(e)}} />
     {acTags.length>0&&<div className="autocomplete-items" style={{borderColor: props.inputMode?null:"var(--bs-yellow)"}}>
         {acTags.map((t,i)=><div key={t.id} style={{backgroundColor: props.inputMode?null:"#ffecb1", borderColor: props.inputMode?null:"var(--bs-yellow)"}} onMouseDown={async ()=>{await createNewTag(t.name, true)}} className={i===currentFocus?"autocomplete-active":""}>{t.name}</div>)}
     </div>}
@@ -521,7 +534,6 @@ function Tag(props){
 }
 function ImportZettel(props){
     const [mode, setMode] = useState("lemma")
-    const [status, setStatus] = useState(null);
     const [lemma, setLemma] =useState("");
     const [SF, setSF] = useState(null);
     const [lemmaId, setLemmaId] = useState(null);
@@ -623,17 +635,27 @@ function ImportZettel(props){
                 onChange={e=>{setImportZettelText(e.target.checked)}}
             />
             <Button variant="secondary" onClick={()=>{props.onReplay(false)}}>Abbrechen</Button>
-            <Button variant="primary" onClick={async ()=>{
-                setStatus(<Spinner style={{marginLeft: "10px"}} animation="border" size="sm" />);
+            <StatusButton variant="primary" onClick={async(progress)=>{
                 const select = ["id", "ac_web", "img_path", "date_sort", "txt", "type", "work_id", "ocr_text_corr", "ocr_text"];
                 let zettelLst = [];
-                if(mode==="lemma"){zettelLst=await arachne.zettel.get({lemma_id: lemmaId}, {select: select})}
+                progress(0);
+                if(mode==="lemma"){
+                    zettelLst=await arachne.zettel.get({lemma_id: lemmaId}, {select: select});
+                    const lemmaArticle=await arachne.article.get({project_id: props.project.id, type: 900});
+                    console.log(lemmaArticle);
+                    if(lemmaArticle.length===0){
+                        await arachne.article.save({name: lemma.replace(/<.*?>/g, ""), project_id: props.project.id, type: 900})
+                        const newArticles = await arachne.article.get({project_id: props.project.id});
+                        props.updateArticles(newArticles);
+                    }
+                }
                 else{zettelLst=await arachne.zettel.search(SF, {select:select})}
                 let tagObj = {};
                 const currentTags = await arachne.tags.get({project_id: props.project.id});
                 currentTags.forEach(t=>{tagObj[t.name]=t.id});
                 let zettel_save_lst = []
                 let tag_lnks_save_lst = []
+                progress(25);
                 for(const z of zettelLst){
                     const cmnts = await arachne.comment.get({zettel_id: z.id}, {select: ["comment", "user"]});
                     zettel_save_lst.push({
@@ -674,15 +696,17 @@ function ImportZettel(props){
                         });
                     }
                 }
+                progress(50);
                 const newSecIds = await arachne.sections.save(zettel_save_lst);
                 tag_lnks_save_lst = tag_lnks_save_lst.map((t,i)=>{
                     t.section_id = newSecIds[i];
                     return t;
                 });
+                progress(75);
                 await arachne.tag_lnks.save(tag_lnks_save_lst);
-                setStatus(null);
+                progress(100);
                 props.onReplay(true);
-            }} disabled={(mode==="lemma"&&lemmaZettelCount>0)||(mode==="zettel"&&zettelZettelCount>0)?false:true}>Zettel laden{status}</Button>
+            }} disabled={(mode==="lemma"&&lemmaZettelCount>0)||(mode==="zettel"&&zettelZettelCount>0)?false:true} value="Zettel laden" />
         </Modal.Footer>
     </Modal>;
 }

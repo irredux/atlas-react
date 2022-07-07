@@ -41,9 +41,6 @@ function Editor(props){
             [`Filter neu laden (${arachne.options.action_key.toUpperCase()}+R)`, ()=>{setFilterLst([]);updateSections()}],
             [`Neue Stelle erstellen (${arachne.options.action_key.toUpperCase()}+N)`, ()=>{setChangeZettelWork({value: "", id: 0, section_id: 0})}],
         ])}
-        else if(mode==="outline"){setToolKitItems([
-            [`Neuer Artikel erstellen (${arachne.options.action_key.toUpperCase()}+N)`, ()=>{createNewArticle()}],
-        ])}
         else{setToolKitItems([])}
     },[mode])
     const updateArticles = inArticles => {
@@ -165,7 +162,7 @@ function Editor(props){
     let modeBox = null;
     switch(mode){
         case "zettel":
-            modeBox = <ZettelBox changeZettelWork={changeZettelWork} setChangeZettelWork={setChangeZettelWork} setLimitFilterResults={v=>{setLimitFilterResults(v)}} showImport={showImport} sectionsMenuActiveTabKey={sectionsMenuActiveTabKey} filterTags={filterTags} setFilterTags={newTags=>{setFilterTags(newTags)}} setSectionsMenuActiveTabKey={m=>{setSectionsMenuActiveTabKey(m)}} setShowImport={v=>{setShowImport(v)}} project={project} filterLst={filterLst} updateSections={(force=false)=>{if(force){setFilterLst([])};updateSections()}} />;
+            modeBox = <ZettelBox updateArticles={updateArticles} changeZettelWork={changeZettelWork} setChangeZettelWork={setChangeZettelWork} setLimitFilterResults={v=>{setLimitFilterResults(v)}} showImport={showImport} sectionsMenuActiveTabKey={sectionsMenuActiveTabKey} filterTags={filterTags} setFilterTags={newTags=>{setFilterTags(newTags)}} setSectionsMenuActiveTabKey={m=>{setSectionsMenuActiveTabKey(m)}} setShowImport={v=>{setShowImport(v)}} project={project} filterLst={filterLst} updateSections={(force=false)=>{if(force){setFilterLst([])};updateSections()}} />;
             break;
         case "outline":
             modeBox = <OutlineBox deleteArticle={deleteArticle} createNewArticle={createNewArticle} changeArticle={changeArticle} project={project} dropArticle={(a,b,c)=>{dropArticle(a,b,c)}} articlesLst={articlesLst} articles={articles} collapsedArticlesLst={collapsedArticlesLst} toggleCollapse={a=>{toggleCollapse(a)}} />;

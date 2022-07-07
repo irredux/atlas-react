@@ -193,7 +193,9 @@ function CommentBox(props){
     const loadComments=async()=>{
         let searchObject = {};
         searchObject[`${props.tbl}_id`] = props.id;
-        setCommentLst(await arachne.comment.get(searchObject));
+        const newCommentLst = await arachne.comment.get(searchObject);
+        setCommentLst(newCommentLst);
+        if(props.setCommentCount){props.setCommentCount(newCommentLst.length)};
     };
     return <>
         {commentLst.map(comment=><div key={comment.id} style={{marginBottom: "10px"}}>
@@ -202,7 +204,7 @@ function CommentBox(props){
             {comment.comment}{arachne.me.id===comment.user_id||arachne.access("comment_moderator")?<i className="minorTxt" style={{cursor: "pointer"}} onClick={async ()=>{
             if(window.confirm("Soll der Kommentar wirklich gelöscht werden? Dieser Schritt kann nicht rückgängig gemacht werden.")){
                 await arachne.comment.delete(comment.id);
-                this.loadComments();
+                loadComments();
             }
             }}> (löschen)</i>:null}
         </div>)}
@@ -301,7 +303,7 @@ function StatusButton(props){
         setStyle(newStyle);
     }, [props.style, progress]);
     const onProgress=(pg)=>{if(pg<100){setProgress(pg)}else{setProgress(0)}};
-    return <div style={style} className={props.className}><Button style={{background: progress>0?`linear-gradient(90deg, #0d6af4 ${progress}%, #e9ecef ${progress+1}%)`:null}} size={props.size?props.size:null} variant={variant} onClick={async (e)=>{
+    return <div style={style} className={props.className}><Button disabled={props.disabled} style={{background: progress>0?`linear-gradient(90deg, #0d6af4 ${progress}%, #e9ecef ${progress+1}%)`:null}} size={props.size?props.size:null} variant={variant} onClick={async (e)=>{
         setStatus(<Spinner style={{marginLeft: "10px"}} animation="border" size="sm" />);
         const re = await props.onClick(onProgress);
         if(isMounted()&&re){
@@ -325,7 +327,7 @@ function StatusButton(props){
                 setSuccess(null);
             }
         }
-    }}>{props.value}{status}</Button><div className="mt-2 text-danger">{error}</div><div className="mt-2 text-success">{success}</div></div>;
+    }}>{props.value}{status}</Button>{error&&<div className="mt-2 text-danger">{error}</div>}{success&&<div className="mt-2 text-success">{success}</div>}</div>;
 }
 function SearchHint(props){
     return <Alert style={{marginTop: "150px", textAlign: "center"}} variant="dark">
