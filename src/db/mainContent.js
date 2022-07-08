@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSignOutAlt, faSearch, faEllipsisV } from "@fortawesome/free-solid-svg-icons";
+import { faSignOutAlt, faSearch, faEllipsisV, faCaretDown } from "@fortawesome/free-solid-svg-icons";
 import { Container, Navbar, Nav, NavDropdown, Alert } from "react-bootstrap";
 import { useEffect, useState } from "react";
 
@@ -93,6 +93,12 @@ function MainNavBar(props){
 }
 
 const dbChangeLog = [
+    {
+        project: "mlw",
+        title: "Geschichtsquellen",
+        date: "2022-07-08",
+        description: <><p>Die Geschichtsquellen-Datensätze können nun mit den dMLW-Datensätzen verknüpft werden. Bereits gemachte Verknüpfungen werden mit einem <FontAwesomeIcon icon={faCaretDown} /> in den <i>opera</i>-Listen angezeigt. In den nächsten Wochen sollen alle Verknüpfungen eingetragen werden.</p></>
+    },
     {
         project: "tll",
         title: "Testversion",

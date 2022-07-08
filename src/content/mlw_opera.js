@@ -1,6 +1,6 @@
-import { Form, Navbar, Container, Offcanvas, Placeholder, Button } from "react-bootstrap";
+import { Form, Navbar, Container, Offcanvas, Placeholder, Button, Dropdown } from "react-bootstrap";
 import React, { useState, useEffect } from "react";
-import { faExternalLinkAlt, faForward, faBackward } from "@fortawesome/free-solid-svg-icons";
+import { faExternalLinkAlt, faForward, faBackward, faCaretDown } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import { arachne } from "./../arachne.js";
@@ -592,6 +592,19 @@ class Opera extends React.Component{
         this.setState({cTrLst: trLst, oMax: Math.floor(oMax[0]["count"]/this.resultsOnPage)+1, currentPage: 1});
     }
     createOperaLists(oLst, listName){
+        const CustomToggle = React.forwardRef(({ children, onClick }, ref) => (
+          <span
+            style={{cursor: "pointer"}}
+            ref={ref}
+            onClick={(e) => {
+              e.preventDefault();
+              onClick(e);
+            }}
+          >
+            {children}
+            <FontAwesomeIcon style={{color: "#4d565f", marginLeft: "5px"}} icon={faCaretDown} />
+          </span>
+        ));
         let trLst = [];
         let i = 0;
         for(const o of oLst){
@@ -614,16 +627,20 @@ class Opera extends React.Component{
             }
             i++;
             if(listName=="opera_maiora"){
-                let abbr = `<aut>${o.abbr}</aut>`;
-                let full = o.full;
-                if(o.work_id>0&&o.author_id===null){
-                    abbr= `<span>&nbsp;&nbsp;&nbsp;${o.abbr}</span>`;
-                    full = `<span>&nbsp;&nbsp;&nbsp;${o.full}</span>`;
-                }
+                const abbr = o.work_id>0&&o.author_id===null?`<span>&nbsp;&nbsp;&nbsp;${o.abbr}</span>`:`<aut>${o.abbr}</aut>`;
+                const full =  o.gq_id?<Dropdown>
+                    <Dropdown.Toggle as={CustomToggle} id="dropdown-custom-components">
+                        <span dangerouslySetInnerHTML={parseHTML(o.work_id>0&&o.author_id===null?`<span>&nbsp;&nbsp;&nbsp;${o.full}</span>`:o.full)}></span>
+                    </Dropdown.Toggle>
+
+                    <Dropdown.Menu>
+                        <Dropdown.Item eventKey="1" onClick={()=>{window.open(`http://geschichtsquellen.de/${o.work_id>0&&o.author_id===null?"werk":"autor"}/${o.gq_id}`, "_blank")}}>Geschichtsquelle</Dropdown.Item>
+                    </Dropdown.Menu>
+                </Dropdown>:<span dangerouslySetInnerHTML={parseHTML(o.work_id>0&&o.author_id===null?`<span>&nbsp;&nbsp;&nbsp;${o.full}</span>`:o.full)}></span>
                 trLst.push({o: o, data: [
                 <td key="0" className="c1" dangerouslySetInnerHTML={parseHTML(o.date_display)}></td>,
                 <td key="1" className="c2" dangerouslySetInnerHTML={parseHTML(abbr)}></td>,
-                <td key="2" className="c3" dangerouslySetInnerHTML={parseHTML(full)}></td>,
+                <td key="2" className="c3">{full}</td>,
                 <td key="3" className="c4"><span dangerouslySetInnerHTML={parseHTML(o.bibliography)}></span><ul className="noneLst">{editionLst}</ul></td>,
                 <td key="4" className="c5" dangerouslySetInnerHTML={parseHTML(o.comment)}></td>
             ]});

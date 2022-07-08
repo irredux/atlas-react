@@ -25,7 +25,7 @@ function  ChangeLog(){
     };
     return <Container>
         {arachne.changeLog.map((c,i)=>{if(displayAll||i<5){return <Alert key={i} variant={i===0?"primary":"secondary"}><Alert.Heading>{c.title}</Alert.Heading><i>{formatDate(c.date)}</i>{c.description}</Alert>}else{return null}})}
-        {displayAll?null:<Alert style={{cursor: "pointer", marginTop: "100px", textAlign: "center"}} variant="info" onClick={()=>{setDisplayAll(true)}}>Alle Änderungen anzeigen.</Alert>}
+        {displayAll?null:<Alert style={{cursor: "pointer", marginTop: "100px", textAlign: "center"}} variant="secondary" onClick={()=>{setDisplayAll(true)}}>Alle Änderungen anzeigen.</Alert>}
     </Container>;
     
 }
