@@ -52,12 +52,12 @@ function MainBody(props){
 }
 function MainNavBar(props){
     const [editions, setEditions] = useState([]);
-    const [editionTxt, setEditionTxt] = useState("zuletzte geöffnet");
+    const [editionTxt, setEditionTxt] = useState("zuletzt geöffnet");
     /*useEffect(async ()=>{
         const newEditions = getEditions();
         setEditions(newEditions.map(e=>{return <NavDropdown.Item key={e.id} onClick={ev=>{storeEdition(e.id, e.label, e.opus);props.loadMain(ev,"edition", e.id)}}>{e.label}{e.opus?` (${e.opus.substring(0,20)+(e.opus.length>20?"...":"")})`:null}</NavDropdown.Item>;}));
         if(props.res==="edition"){setEditionTxt(newEditions[0].label+(newEditions[0].opus?` (${newEditions[0].opus.substring(0,20)+(newEditions[0].opus.length>20?"...":"")})`:null))}
-        else{setEditionTxt("zuletzte geöffnet")}
+        else{setEditionTxt("zuletzt geöffnet")}
     }, [props.res, props.resId]);*/
     return <Navbar bg="dark" variant="dark" fixed="top">
         <Container fluid>

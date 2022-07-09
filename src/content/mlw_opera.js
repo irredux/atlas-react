@@ -628,13 +628,21 @@ class Opera extends React.Component{
             i++;
             if(listName=="opera_maiora"){
                 const abbr = o.work_id>0&&o.author_id===null?`<span>&nbsp;&nbsp;&nbsp;${o.abbr}</span>`:`<aut>${o.abbr}</aut>`;
-                const full =  o.gq_id?<Dropdown>
+                const full =  o.gq_work_id!==null||o.gq_author_id!=null?<Dropdown>
                     <Dropdown.Toggle as={CustomToggle} id="dropdown-custom-components">
                         <span dangerouslySetInnerHTML={parseHTML(o.work_id>0&&o.author_id===null?`<span>&nbsp;&nbsp;&nbsp;${o.full}</span>`:o.full)}></span>
                     </Dropdown.Toggle>
 
                     <Dropdown.Menu>
-                        <Dropdown.Item eventKey="1" onClick={()=>{window.open(`http://geschichtsquellen.de/${o.work_id>0&&o.author_id===null?"werk":"autor"}/${o.gq_id}`, "_blank")}}>Geschichtsquelle</Dropdown.Item>
+                        {o.same_line===1?<>
+                            {o.gq_author_id!==null&&<Dropdown.Item eventKey="1" onClick={()=>{window.open(`http://geschichtsquellen.de/autor/${o.gq_author_id}`, "_blank")}}>Geschichtsquelle <small>(Autor)</small></Dropdown.Item>}
+                            {o.gq_work_id!==null&&<Dropdown.Item eventKey="2" onClick={()=>{window.open(`http://geschichtsquellen.de/werk/${o.gq_work_id}`, "_blank")}}>Geschichtsquelle <small>(Werk)</small></Dropdown.Item>}
+                        </>:<>
+                            {o.work_id===null?
+                                <Dropdown.Item eventKey="3" onClick={()=>{window.open(`http://geschichtsquellen.de/autor/${o.gq_author_id}`, "_blank")}}>Geschichtsquelle</Dropdown.Item>:
+                                <Dropdown.Item eventKey="4" onClick={()=>{window.open(`http://geschichtsquellen.de/werk/${o.gq_work_id}`, "_blank")}}>Geschichtsquelle</Dropdown.Item>
+                            }</>
+                        }
                     </Dropdown.Menu>
                 </Dropdown>:<span dangerouslySetInnerHTML={parseHTML(o.work_id>0&&o.author_id===null?`<span>&nbsp;&nbsp;&nbsp;${o.full}</span>`:o.full)}></span>
                 trLst.push({o: o, data: [
@@ -645,9 +653,19 @@ class Opera extends React.Component{
                 <td key="4" className="c5" dangerouslySetInnerHTML={parseHTML(o.comment)}></td>
             ]});
             } else if(listName==="opera_minora"){
+                const cit =  o.gq_work_id!==null||o.gq_author_id!=null?<Dropdown>
+                    <Dropdown.Toggle as={CustomToggle} id="dropdown-custom-components">
+                        <span dangerouslySetInnerHTML={parseHTML(o.citation)}></span>
+                    </Dropdown.Toggle>
+
+                    <Dropdown.Menu>
+                        {o.gq_author_id!==null&&<Dropdown.Item eventKey="1" onClick={()=>{window.open(`http://geschichtsquellen.de/autor/${o.gq_author_id}`, "_blank")}}>Geschichtsquelle <small>(Autor)</small></Dropdown.Item>}
+                        {o.gq_work_id!==null&&<Dropdown.Item eventKey="2" onClick={()=>{window.open(`http://geschichtsquellen.de/werk/${o.gq_work_id}`, "_blank")}}>Geschichtsquelle <small>(Werk)</small></Dropdown.Item>}
+                    </Dropdown.Menu>
+                </Dropdown>:<span dangerouslySetInnerHTML={parseHTML(o.citation)}></span>
                 trLst.push({o: o, data: [
                 <td key="0" className="c1_min" dangerouslySetInnerHTML={parseHTML(o.date_display)}></td>,
-                <td key="1" className="c2_min" dangerouslySetInnerHTML={parseHTML(o.citation)}></td>,
+                <td key="1" className="c2_min">{cit}</td>,
                 <td key="2" className="c5_min"><span dangerouslySetInnerHTML={parseHTML(o.bibliography)}></span><ul className="noneLst">{editionLst}</ul></td>
             ]});
             } else if(listName==="tll_index"){
