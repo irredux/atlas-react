@@ -246,8 +246,8 @@ function ZettelAsideSingle(props){
             let saveObj = zettelObject;
             saveObj.user_id = arachne.me.id;
             await arachne.zettel.save(saveObj)
-
-            if(saveObj.lemma_id===null&&lemma!==""){
+            if(saveObj.lemma_id===null&&lemma!==""&&lemma!==null&&lemma!==undefined){
+                console.log("here we are!", saveObj.lemma_id, lemma);
                 document.querySelector(".onOpenSetFocus").focus();
                 props.openAddLemma(lemma, lemma, next);
             }else if(next){

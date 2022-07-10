@@ -7,7 +7,7 @@ import { faSync, faAngleRight, faAngleLeft } from "@fortawesome/free-solid-svg-i
 import 'chart.js/auto';
 import { Bar, Pie } from "react-chartjs-2";
 function arachneTbls(){
-    return ["project", "author", "edition", "lemma", "tll_index", "scan", "scan_lnk", "work", "zettel", "user", "seklit", "article", "zettel_lnk", "statistics", "scan_paths", "ocr_jobs", "comment", "scan_opera", "fulltext_search_view", "tags", "tag_lnks", "sections"];
+    return ["project", "auctores", "edition", "lemma", "tll_index", "scan", "scan_lnk", "opera", "opera_ac", "zettel", "user", "seklit", "article", "zettel_lnk", "statistics", "scan_paths", "ocr_jobs", "comment", "scan_opera", "fulltext_search_view", "tags", "tag_lnks", "sections"];
 }
 /* ************************************************************************************* */
 function LemmaHeader(){
@@ -187,14 +187,14 @@ function ZettelCard(props){
     }
     return box;
 }
-function zettelBatchOptions(){return [[1, "Wort", "lemma_id", true],[2, "Werk", "work_id", true],[3,"Zettel-Typ", "type", false]]} // [id, description, db-col, use AutoComplete Component]; first array will trigger "add new lemma" if not in auto-complete list.
+function zettelBatchOptions(){return [[1, "Wort", "lemma_id", true],[2, "Opus", "opus_id", true],[3,"Zettel-Typ", "type", false]]} // [id, description, db-col, use AutoComplete Component]; first array will trigger "add new lemma" if not in auto-complete list.
 function BatchInputType(props){
     switch(props.batchType){
         case 1:
             return <AutoComplete onChange={(value, id)=>{props.setBatchValue(value);props.setBatchValueId(id)}} value={props.batchValue} tbl="lemma"  searchCol="lemma" returnCol="lemma_ac" />;
             break;
         case 2:
-            return <AutoComplete  value={props.batchValue} tbl="work" searchCol="ac_web" returnCol="ac_web" onChange={(value, id)=>{props.setBatchValue(value);props.setBatchValueId(id)}} />;
+            return <AutoComplete  value={props.batchValue} tbl="opera_ac" searchCol="ac_web" returnCol="ac_web" onChange={(value, id)=>{props.setBatchValue(value);props.setBatchValueId(id)}} />;
             break;
         case 3:
             return <SelectMenu style={{width: "86%"}} options={[[0, "..."],[1, "verzettelt"],[2,"Exzerpt"],[3,"Index"],[4,"Literatur"], [6, "Index (unkl. Stelle)"], [7, "Notiz"]]} onChange={event=>{props.setBatchValue(event.target.value)}} />;
@@ -299,7 +299,7 @@ function ZettelSingleContent(props){
             id: props.item.id,
             type: type,
             lemma_id: lemmaId>0?lemmaId:null,
-            work_id: workId>0?workId:null,
+            opus_id: workId>0?workId:null,
             date_type: dateType,
             date_own: dateType===9?dateOwn:null,
             date_own_display: dateType===9?dateOwnDisplay:null,
@@ -321,14 +321,14 @@ function ZettelSingleContent(props){
         </Row>
         <Row className="mb-2">
             <Col xs={4}>Wort:</Col>
-            <Col><AutoComplete style={{width: "100%"}} onChange={(value, id)=>{setLemmaAc(value); setLemmaId(id)}} value={lemmaAc?lemmaAc:""} tbl="lemma" searchCol="lemma" returnCol="lemma_ac" /></Col>
+            <Col><AutoComplete style={{width: "100%"}} onChange={(value, id)=>{setLemmaAc(value); setLemmaId(id)}} value={lemmaAc?lemmaAc:""} tbl="lemma" searchCol="lemma" returnCol="lemma_display" /></Col>
         </Row>
         {type!==4&&type<6&&<Row className="mb-2">
             <Col xs={4}>Werk:</Col>
-            <Col><AutoComplete style={{width: "100%"}}  value={work?work:""} tbl="work" searchCol="ac_web" returnCol="ac_web" onChange={async (value, id)=>{
+            <Col><AutoComplete style={{width: "100%"}}  value={work?work:""} tbl="opera_ac" searchCol="ac_web" returnCol="ac_web" onChange={async (value, id)=>{
                 setWork(value);setWorkId(id);
                 if(id>0){
-                    const newDateType = await arachne.work.get({id: id}, {select: ["date_display", "date_type"]});
+                    const newDateType = await arachne.opera.get({id: id}, {select: ["date_display", "date_type"]});
                     if(newDateType.length>0){setDateType(newDateType[0].date_type);setDateDisplay(newDateType[0].date_display)}
                 }
             }} /></Col>
