@@ -670,14 +670,30 @@ class Opera extends React.Component{
             ]});
             } else if(listName==="tll_index"){
                 let leftPad = null;
-                const abbr = o.author_id===null?<aut>{o.abbr}</aut>:o.abbr
+                let abbrComponent;
+                if(o.auctor_id!==null&&o.abbr_opus!==null){ // author + work
+                    abbrComponent = <><aut>{o.abbr}</aut> <span style={{color: "green"}}> {o.abbr_opus}</span>{o.citation&&<span style={{color: "red"}}> {o.citation}</span>}</>;
+                }else if(o.auctor_id!==null){ // work
+                    if(o.citation){
+                        abbrComponent = <><span>{o.abbr}</span> <span style={{color: "red"}} dangerouslySetInnerHTML={parseHTML(o.citation)}></span></>;
+                    }else{
+                        abbrComponent = o.abbr;
+                    }
+                }else{ // author
+                    abbrComponent = <aut>{o.abbr}</aut>;
+                }
+
+                if(o.in_use===0){
+                    abbrComponent = <><span style={{color: "orange"}}>[</span>{abbrComponent}<span style={{color: "orange"}}>]</span></>;
+                }
+
                 if(o.example){leftPad = "4rem"}
-                else if(o.author_id>0){leftPad = "2rem"}
+                else if(o.auctor_id>0){leftPad = "2rem"}
                 trLst.push({o: o, data: [
                    <td key="0" className="c0_tll" dangerouslySetInnerHTML={parseHTML(o.ord)}></td>,
                    <td key="1" className="c1_tll" style={{paddingLeft: leftPad}} dangerouslySetInnerHTML={parseHTML(o.date_display)}></td>,
-                   <td key="2" className="c2_tll" style={{paddingLeft: leftPad}}>{abbr}</td>,
-                   <td key="3" className="c3_tll" style={{paddingLeft: leftPad}} dangerouslySetInnerHTML={parseHTML(o.ref)}></td>,
+                   <td key="2" className="c2_tll" style={{paddingLeft: leftPad}}>{abbrComponent}</td>,
+                   <td key="3" className="c3_tll" style={{paddingLeft: leftPad}} dangerouslySetInnerHTML={parseHTML(o.ref_source)}></td>,
                    <td key="4" className="c4_tll" style={{paddingLeft: leftPad}} dangerouslySetInnerHTML={parseHTML(o.full)}></td>,
                    <td key="5" className="c5_tll" style={{paddingLeft: leftPad}} dangerouslySetInnerHTML={parseHTML(o.bibliography)}></td>,
                 ]});

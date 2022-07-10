@@ -191,10 +191,23 @@ table.operaBox > tbody > tr > td{
 .operaBox_tll_index > div > table > tbody > tr:hover{
     background-color: lightgray;
 }
+
+
+.c4_tll>.ebene2klein{
+    font-size: 85%;
+}
+
+/* is this class used?? */
 .tll_notUsed{
     text-decoration: line-through;
     color: red;
 }
+
+.c2_tll u, .c3_tll u, .c4_tll u{
+    text-decoration: none;
+    font-variant:small-caps;
+}
+
 
 /* ****************   ZETTEL   **************** */
 .searchFields>select{box-shadow: none;}
