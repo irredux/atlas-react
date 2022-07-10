@@ -164,7 +164,7 @@ function ZettelCard(props){
         else{classList+="zettel_img in_use"}
         box =
         <div className="zettel" id={zettel.id} style={style}>
-            <img alt="" style={{objectFit: "fill", borderRadius: "7px"}} className={classList} src={"/mlw"+zettel.img_path+".jpg"}></img>
+            <img alt="" style={{objectFit: "fill", borderRadius: "7px"}} className={classList} src={"/tll"+zettel.img_path+".jpg"}></img>
             {props.showDetail?<div className="zettel_msg" dangerouslySetInnerHTML={parseHTML(zettel.date_own_display?zettel.date_own_display:zettel.date_display)}></div>:null}
             {props.showDetail?
             <div className="zettel_menu">
