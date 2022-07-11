@@ -1,6 +1,6 @@
 import { parseHTML, parseHTMLPreview, SelectMenu, StatusButton, AutoComplete, TableView } from "./../elements.js";
 import { arachne } from "./../arachne.js";
-import { Accordion, Col, Row, Container, NavDropdown, Card, ListGroup, Spinner } from "react-bootstrap";
+import { Accordion, Col, Row, Container, Form, NavDropdown, Card, ListGroup, Spinner } from "react-bootstrap";
 import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSync } from "@fortawesome/free-solid-svg-icons";
@@ -867,6 +867,120 @@ function GeschichtsquellenRow(props){
     </>;
 }
 /* ************************************************************************************* */
+function MLW_Import_Ressource(props){
+    const [scanWork, setScanWork] = useState();
+    const [scanId, setScanId] = useState();
+    const [scanType, setScanType] = useState(0);
+    const [scanEditor, setScanEditor] = useState();
+    const [scanYear, setScanYear] = useState();
+    const [scanVolume, setScanVolume] = useState();
+    const [scanVolumeContent, setScanVolumeContent] = useState();
+    const [scanSerie, setScanSerie] = useState();
+    const [scanLocation, setScanLocation] = useState();
+    const [scanLibrary, setScanLibrary] = useState();
+    const [scanSignature, setScanSignature] = useState();
+    const [scanPath, setScanPath] = useState();
+    const [scanFiles, setScanFiles] = useState();
+    return <>
+        <Row className="mb-2">
+            <Col xs={3}>Werk:</Col>
+            <Col><AutoComplete  style={{width: "100%"}} value={scanWork?scanWork:""} tbl="work" searchCol="ac_web" returnCol="ac_web" onChange={async (value, id)=>{setScanWork(value);setScanId(id)}} /></Col>
+        </Row>
+        <Row className="mb-4">
+            <Col xs={3}>Ressource:</Col>
+            <Col><SelectMenu options={[[0, "Edition (relevant)"], [1, "Edition (veraltet)"], [2, "Handschrift"], [3, "Alter Druck (relevant)"], [4, "Alter Druck (veraltet)"], [5, "Sonstiges"]]} onChange={e=>{setScanType(parseInt(e.target.value))}} /></Col>
+        </Row>
+        {scanType===0||scanType===1||scanType===5?[
+            <Row key="0" className="mb-2">
+                <Col xs={3}>Editor:</Col>
+                <Col><input type="text" style={{width: "100%"}} value={scanEditor?scanEditor:""} onChange={e=>{setScanEditor(e.target.value)}} /></Col>
+            </Row>,
+            <Row key="1" className="mb-2">
+                <Col xs={3}>Jahr:</Col>
+                <Col><input type="text" style={{width: "100%"}} value={scanYear?scanYear:""} onChange={e=>{setScanYear(e.target.value)}} /></Col>
+            </Row>,
+            <Row key="2" className="mb-2">
+                <Col xs={3}>Band:</Col>
+                <Col><input type="text" style={{width: "100%"}} value={scanVolume?scanVolume:""} onChange={e=>{setScanVolume(e.target.value)}} /></Col>
+            </Row>,
+            <Row key="3" className="mb-2">
+                <Col xs={3}>Bandinhalt:</Col>
+                <Col><input type="text" style={{width: "100%"}} value={scanVolumeContent?scanVolumeContent:""} onChange={e=>{setScanVolumeContent(e.target.value)}} /></Col>
+            </Row>,
+            <Row key="4" className="mb-4">
+                <Col xs={3}>Reihe:</Col>
+                <Col><SelectMenu options={[[0, ""], [1, "Migne PL"], [2, "ASBen."], [3, "ASBoll."], [4, "AnalBoll."], [5, "Mon. Boica"], [6, "Ma. Schatzverzeichnisse"], [7, "Ma. Bibliothekskataloge"]]} onChange={e=>{setScanSerie(parseInt(e.target.value))}} /></Col>
+            </Row>,
+        ]:null}
+        {scanType===2?[
+            <Row key="5" className="mb-2">
+                <Col xs={3}>Stadt:</Col>
+                <Col><input type="text" style={{width: "100%"}} value={scanLocation?scanLocation:""} onChange={e=>{setScanLocation(e.target.value)}} /></Col>
+            </Row>,
+            <Row key="6" className="mb-2">
+                <Col xs={3}>Bibliothek:</Col>
+                <Col><input type="text" style={{width: "100%"}} value={scanLibrary?scanLibrary:""} onChange={e=>{setScanLibrary(e.target.value)}} /></Col>
+            </Row>,
+            <Row key="7" className="mb-4">
+                <Col xs={3}>Signatur:</Col>
+                <Col><input type="text" style={{width: "100%"}} value={scanSignature?scanSignature:""} onChange={e=>{setScanSignature(e.target.value)}} /></Col>
+            </Row>,
+        ]:null}
+        {scanType===3||scanType===4?[
+            <Row key="8" className="mb-2">
+                <Col xs={3}>Drucker:</Col>
+                <Col><input type="text" style={{width: "100%"}} value={scanEditor?scanEditor:""} onChange={e=>{setScanEditor(e.target.value)}} /></Col>
+            </Row>,
+            <Row key="9" className="mb-2">
+                <Col xs={3}>Ort:</Col>
+                <Col><input type="text" style={{width: "100%"}} value={scanLocation?scanLocation:""} onChange={e=>{setScanLocation(e.target.value)}} /></Col>
+            </Row>,
+            <Row key="10" className="mb-4">
+                <Col xs={3}>Jahr:</Col>
+                <Col><input type="text" style={{width: "100%"}} value={scanYear?scanYear:""} onChange={e=>{setScanYear(e.target.value)}} /></Col>
+            </Row>,
+        ]:null}
+        <Row className="mb-2">
+            <Col xs={3}>Dateipfad:</Col>
+            <Col><input type="text" style={{width: "100%"}} value={scanPath?scanPath:""} placeholder="/A/ABBO FLOR. Calc./" onChange={e=>{setScanPath(e.target.value)}} /></Col>
+        </Row>
+        <Row className="mb-4">
+            <Col xs={3}>.png-Dateien:</Col>
+            <Col><Form.Group>
+                <Form.Control type="file" multiple accept="image/png" onChange={e=>{setScanFiles(e.target.files)}} />
+            </Form.Group></Col>
+        </Row>
+        <Row>
+            <Col xs={3}></Col>
+            <Col><StatusButton value="hochladen" onClick={async ()=>{
+                if(scanFiles==null){
+                    return {status: false, error: "Geben Sie Dateien zum Hochladen an."};
+                } else if((scanType===0||scanType===1||scanType===5)&&(!scanEditor||!scanYear)){
+                    return {status: false, error: "Geben Sie den Editor und das Jahr ein."};
+                } else if(scanId === null){
+                    return {status: false, error: "Kein gültiges Werk ausgewählt!"};
+                } else if(scanPath&&scanId){
+                    return props.importRessource({
+                        work_id: scanId,
+                        ressource: scanType,
+                        editor: scanEditor,
+                        year: scanYear,
+                        volume: scanVolume,
+                        vol_cont: scanVolumeContent,
+                        serie: scanSerie,
+                        location: scanLocation,
+                        library: scanLibrary,
+                        signature: scanSignature,
+                        path: scanPath,
+                        url: "",
+                    }, scanFiles);
+                    
+                } else{return {status: false, error: "Geben Sie einen gültigen Pfad ein!"};}
+            }} /></Col>
+            </Row>
+    </>;
+}
+/* ************************************************************************************* */
 export {
     arachneTbls,
     LemmaRow, LemmaHeader, lemmaSearchItems, LemmaAsideContent,
@@ -875,4 +989,5 @@ export {
     fetchIndexBoxData, IndexBoxDetail,
     GeschichtsquellenImport, GeschichtsquellenInterface,
     StatisticsChart,
+    MLW_Import_Ressource,
 }

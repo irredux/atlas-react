@@ -8,8 +8,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { arachne } from "./../arachne.js";
 import { AutoComplete, SelectMenu, ToolKit, StatusButton, sleep, sqlDate } from "./../elements.js";
 
-import { GeschichtsquellenImport } from "./../content/mlw.js";
+import { MLW_Import_Ressource, GeschichtsquellenImport } from "./../content/mlw.js"; // cannot lazy load these components!
+import { TLL_Import_Ressource } from "./../content/tll.js"; // cannot lazy load these components!
+
 let StatisticsChart;
+
 
 function Statistics(props){
     const [statData, setStatData] = useState([]);
@@ -285,7 +288,168 @@ class ServerAside extends React.Component{
         }
     }
 }
-class Import extends React.Component{
+function Import(props){
+    const importRessource =async(editionObj, fileLst)=>{
+        // create new edition
+        if(editionObj.path.substring(0,1)!="/"){editionObj.path = "/"+editionObj.path}
+        if(editionObj.path.substring(editionObj.path.length-1)!="/"){editionObj.path = editionObj.path+"/"}
+        const newEditionId = await arachne.edition.save(editionObj);
+        // upload files
+        if(newEditionId>0){
+            let uploadForm = new FormData();
+            uploadForm.append("edition_id", newEditionId);
+            uploadForm.append("path", editionObj.path);
+            const fLength = fileLst.length;
+            for(let i=0; i<fLength; i++){uploadForm.append("files", fileLst[i])}
+            const re = await arachne.importScans(uploadForm);
+            if(re.status===400){return {status: false, error: `Fehler beim Hochladen der Dateien. Eine neue Ressource mit ID ${newEditionId} wurde aber bereits erstellt.`};}
+            else if(re.body.length==1){console.log(`Bereits auf dem Server und deshalb übersprungen: ${re.body.join(", ")}`);return {status: true, success: `Das Hochladen war erfolgreich. Eine Datei wurde übersprungen (s. Konsole). Eine neue Ressource mit ID ${newEditionId} wurde erstellt.`};}
+            else if(re.body.length>0){console.log(`Bereits auf dem Server und deshalb übersprungen: ${re.body.join(", ")}`);return {status: true, success: `Das Hochladen war erfolgreich. ${re.body.length} Dateien wurden übersprungen (s. Konsole). Eine neue Ressource mit ID ${newEditionId} wurde erstellt.`};}
+            else{return {status: true, success: `Eine neue Ressource mit ID ${newEditionId} wurde erstellt.`};}
+        } else {
+            return {status: false, error: "Edition konnte nicht erstellt werden. Keine Bilder wurden hochgeladen."};
+        }
+    };
+
+    let importRessourceComponent = null;
+    if(arachne.project_name==="mlw"){
+        importRessourceComponent = <MLW_Import_Ressource importRessource={importRessource} />;
+    }else if(arachne.project_name==="tll"){
+        importRessourceComponent = <TLL_Import_Ressource importRessource={importRessource} />;
+    }
+    return <Container className="mainBody">
+        <Tabs defaultActiveKey="r" className="mb-5">
+            <Tab eventKey="r" title="Ressource" style={{padding: "0 25%"}}>
+                {importRessourceComponent}
+            </Tab>
+            {/*<Tab eventKey="o" title="ocr-Dateien" style={{padding: "0 25%"}}>
+                            <Row className="mb-2">
+                                <Col xs={3}>Ressource:</Col>
+                                <Col><AutoComplete  style={{width: "100%"}} value={this.state.ocrRessource} tbl="scan_paths" searchCol="path" returnCol="path" onChange={async (value, id)=>{
+                                        this.setState({ocrRessource: value, ocrRessourceId: id})
+                                    }} /></Col>
+                            </Row>
+                            <Row className="mb-4">
+                                <Col xs={3}>.txt-Dateien:</Col>
+                                <Col><Form.Group>
+                                    <Form.Control type="file" multiple accept="text/plain" onChange={e=>{this.setState({ocrFiles: e.target.files})}} />
+                                </Form.Group></Col>
+                            </Row>
+                            <Row>
+                                <Col xs={3}></Col>
+                                <Col><StatusButton type="button" value="hochladen" onClick={async ()=>{
+                                if(this.state.ocrFiles==null){
+                                    return {status: false, error: "Geben Sie Dateien zum Hochladen an."};
+                                }else if(this.state.ocrRessourceId==null){
+                                    return {status: false, error: "Wählen Sie einen Ordner aus."};
+                                }else{
+                                    const scanLst = await arachne.scan.get({path: this.state.ocrRessource}, {select: ["id", "filename"]});
+                                    //console.log(scanLst);
+                                    let missLst = [];
+                                    let saveLst = [];
+                                    for(const file of this.state.ocrFiles){
+                                        const fName = file.name.substring(0,file.name.length-4);
+                                        const cScan = scanLst.find(i => i.filename == fName);
+                                        if(cScan){
+                                            //console.log(cScan);
+                                            const fileTxt = await file.text();
+                                            saveLst.push({id: cScan.id, full_text: fileTxt});
+                                        } else {
+                                            missLst.push(file.name);
+                                        }
+                                    }
+                                    if(saveLst.length>0){await arachne.scan.save(saveLst)}
+                                    if(missLst.length>1){console.log(`übersprungene Dateien: ${missLst.join(", ")}`);return {status: true, success: `Dateien wurden hochgeladen. ${missLst.length} Dateien konnten nicht zugewiesen werden (s. Konsole).`};}
+                                    else if(missLst.length==1){console.log(`übersprungene Dateien: ${missLst.join(", ")}`);return {status: true, success: "Dateien wurden hochgeladen. 1 Datei konnte nicht zugewiesen werden (s. Konsole)."};}
+                                    else{return {status: true};}
+                                }
+                            }} /></Col>
+                            </Row>
+                        </Tab>*/}
+            {/*<Tab eventKey="z" title="Zettel" style={{padding: "0 25%"}}>
+                            <Row className="mb-2">
+                                <Col xs={3}>Buchstabe:</Col>
+                                <Col><SelectMenu options={[["A", "A"], ["B", "B"], ["C", "C"], ["D", "D"], ["E", "E"], ["F", "F"], ["G", "G"], ["H", "H"], ["I", "I/J"], ["K", "K"], ["L", "L"], ["M", "M"], ["N", "N"], ["O", "O"], ["P", "P"], ["Q", "Q"], ["R", "R"], ["S", "S"], ["T", "T"], ["U", "U/V"], ["W", "W"], ["X", "X"], ["Y", "Y"], ["Z", "Z"]]} onChange={e=>{this.setState({zettelLetter: e.target.value})}} /></Col>
+                            </Row>
+                            <Row className="mb-2">
+                                <Col xs={3}>erstellt von:</Col>
+                                <Col><SelectMenu options={this.state.zettelEditors} onChange={e=>{this.setState({zettelEditorSelected: e.target.value})}} /></Col>
+                            </Row>
+                            <Row className="mb-2">
+                                <Col xs={3}>Zettel-Typ:</Col>
+                                <Col><SelectMenu options={[[0, "Index-/Exzerpt-Zettel"], [1, "verzetteltes Material"], [4, "Literatur"]]} onChange={e=>{this.setState({zettelType: e.target.value})}} /></Col>
+                            </Row>
+                            <Row className="mb-4">
+                                <Col xs={3}>Bilder:</Col>
+                                <Col><Form.Group>
+                                    <Form.Control type="file" multiple accept="image/jpeg" onChange={e=>{this.setState({zettelFiles: e.target.files})}} />
+                                </Form.Group></Col>
+                            </Row>
+                            <Row className="mb-2">
+                                <Col xs={3}></Col>
+                                <Col><StatusButton value="Zettel hochladen" onClick={async (progress)=>{
+                                    if(this.state.zettelFiles==null){
+                                        return {status: false, error: "Wählen Sie Bilder zum Hochladen aus."};
+                                    } else if(this.state.zettelFiles.length%2 != 0){
+                                        return {status: false, error: "Wählen Sie eine gerade Anzahl Bilder aus (jeweils Vorder- und Rückseiten!)."}
+                                    }else{
+                                        const maxItem= 100;
+                                        let cItemCount = maxItem;
+                                        let cUploadIndex = -1;
+                                        let uploadGroup = [];
+                                        let zettelFiles = this.state.zettelFiles;
+                                        //console.log(zettelFiles);
+                                        // sort imgs
+                                        zettelFiles = Array.from(zettelFiles);
+                                        zettelFiles.sort((a, b) => {if(b.name < a.name){return 1;}else{return -1;}});
+                                        //console.log(zettelFiles);
+            
+                                        // prepare upload groups
+                                        for(let i=0; i<zettelFiles.length; i++){
+                                            if(cItemCount >= maxItem){
+                                                cItemCount = 0;
+                                                cUploadIndex ++;
+                                                uploadGroup.push(new FormData());
+                                                uploadGroup[cUploadIndex].append("letter", this.state.zettelLetter);
+                                                uploadGroup[cUploadIndex].append("type", this.state.zettelType);
+                                                uploadGroup[cUploadIndex].append("user_id_id", this.state.zettelEditorSelected);
+                                            }
+                                            cItemCount ++;
+                                            uploadGroup[cUploadIndex].append("files", zettelFiles[i]);
+                                        }
+                                        // loop through groups and upload!
+                                        let firstId = 0;
+                                        let lastId = 0;
+                                        const maxLoops = uploadGroup.length;
+                                        let currentLoop = 0;
+                                        for(const uItem of uploadGroup){
+                                            const r = await arachne.importZettel(uItem);
+                                            if(firstId === 0){firstId=r[0]}
+                                            lastId = r[1];
+                                            currentLoop ++;
+                                            progress(100/maxLoops*currentLoop);
+                                        }
+                                        this.setState({zettelSuccess: [firstId, lastId]});
+                                        return {status: true};
+                                    }
+                                }} /></Col>
+                            </Row>
+                            {this.state.zettelSuccess&&<Row>
+                                <Col><Alert variant="success" onClose={()=>{this.setState({zettelSuccess: null})}} dismissible>
+                                    <Alert.Heading>Hochladen erfolgreich!</Alert.Heading><p>Die neuen Zettel haben IDs zwischen <b>{this.state.zettelSuccess[0]}</b> und <b>{this.state.zettelSuccess[1]}</b>. Möchten Sie die neuen Zettel in Zettel-Datenbank <Alert.Link href="#" onClick={e=>{
+                            localStorage.setItem(`${arachne.project_name}_searchBox_zettel`, `[[{"id":0,"c":"id","o":">=","v":${this.state.zettelSuccess[0]}},{"id":1,"c":"id","o":"<=","v":${this.state.zettelSuccess[1]}}],1,["id"]]`);
+                            this.props.loadMain(e, "zettel");
+                        }}>öffnen</Alert.Link>?</p></Alert></Col>
+                            </Row>}
+                        <Row className="mt-4"><Col>Eine Anleitung zum Hochladen der Zettel finden Sie <a href="https://gitlab.lrz.de/haeberlin/dmlw/-/wikis/09-HiwiHow:-Zettel-scannen-und-hochladen">hier</a>.</Col></Row>
+                        </Tab>*/}
+            {arachne.project_name==="mlw"&&arachne.access("geschichtsquellen")&&<Tab eventKey="g" title="Geschichtsquellen-Daten" style={{padding: "0 25%"}}>
+            <GeschichtsquellenImport />
+        </Tab>}
+        </Tabs>
+    </Container>;
+}
+class Import_OLD extends React.Component{
     constructor(props){
         super(props);
         this.state = {
@@ -316,252 +480,7 @@ class Import extends React.Component{
         };
     }
     render(){
-        return <Container className="mainBody">
-            <Tabs defaultActiveKey="r" className="mb-5">
-                <Tab eventKey="r" title="Ressource" style={{padding: "0 25%"}}>
-                    <Row className="mb-2">
-                        <Col xs={3}>Werk:</Col>
-                        <Col><AutoComplete  style={{width: "100%"}} value={this.state.scanWork} tbl="work" searchCol="ac_web" returnCol="ac_web" onChange={async (value, id)=>{
-                                this.setState({scanWork: value, scanWorkId: id})
-                            }} /></Col>
-                    </Row>
-                    <Row className="mb-4">
-                        <Col xs={3}>Ressource:</Col>
-                        <Col><SelectMenu options={[[0, "Edition (relevant)"], [1, "Edition (veraltet)"], [2, "Handschrift"], [3, "Alter Druck (relevant)"], [4, "Alter Druck (veraltet)"], [5, "Sonstiges"]]} onChange={e=>{this.setState({scanType: parseInt(e.target.value)})}} /></Col>
-                    </Row>
-                    {this.state.scanType===0||this.state.scanType===1||this.state.scanType===5?[
-                        <Row key="0" className="mb-2">
-                            <Col xs={3}>Editor:</Col>
-                            <Col><input type="text" style={{width: "100%"}} onChange={e=>{this.setState({scanEditor: e.target.value})}} /></Col>
-                        </Row>,
-                        <Row key="1" className="mb-2">
-                            <Col xs={3}>Jahr:</Col>
-                            <Col><input type="text" style={{width: "100%"}} onChange={e=>{this.setState({scanYear: e.target.value})}} /></Col>
-                        </Row>,
-                        <Row key="2" className="mb-2">
-                            <Col xs={3}>Band:</Col>
-                            <Col><input type="text" style={{width: "100%"}} onChange={e=>{this.setState({scanVolume: e.target.value})}} /></Col>
-                        </Row>,
-                        <Row key="3" className="mb-2">
-                            <Col xs={3}>Bandinhalt:</Col>
-                            <Col><input type="text" style={{width: "100%"}} onChange={e=>{this.setState({scanVolumeContent: e.target.value})}} /></Col>
-                        </Row>,
-                        <Row key="4" className="mb-4">
-                            <Col xs={3}>Reihe:</Col>
-                            <Col><SelectMenu options={[[0, ""], [1, "Migne PL"], [2, "ASBen."], [3, "ASBoll."], [4, "AnalBoll."], [5, "Mon. Boica"], [6, "Ma. Schatzverzeichnisse"], [7, "Ma. Bibliothekskataloge"]]} onChange={e=>{this.setState({scanSerie: parseInt(e.target.value)})}} /></Col>
-                        </Row>,
-                    ]:null}
-                    {this.state.scanType===2?[
-                        <Row key="5" className="mb-2">
-                            <Col xs={3}>Stadt:</Col>
-                            <Col><input type="text" style={{width: "100%"}} onChange={e=>{this.setState({scanLocation: e.target.value})}} /></Col>
-                        </Row>,
-                        <Row key="6" className="mb-2">
-                            <Col xs={3}>Bibliothek:</Col>
-                            <Col><input type="text" style={{width: "100%"}} onChange={e=>{this.setState({scanLibrary: e.target.value})}} /></Col>
-                        </Row>,
-                        <Row key="7" className="mb-4">
-                            <Col xs={3}>Signatur:</Col>
-                            <Col><input type="text" style={{width: "100%"}} onChange={e=>{this.setState({scanSignature: e.target.value})}} /></Col>
-                        </Row>,
-                    ]:null}
-                    {this.state.scanType===3||this.state.scanType===4?[
-                        <Row key="8" className="mb-2">
-                            <Col xs={3}>Drucker:</Col>
-                            <Col><input type="text" style={{width: "100%"}} onChange={e=>{this.setState({scanEditor: e.target.value})}} /></Col>
-                        </Row>,
-                        <Row key="9" className="mb-2">
-                            <Col xs={3}>Ort:</Col>
-                            <Col><input type="text" style={{width: "100%"}} onChange={e=>{this.setState({scanLocation: e.target.value})}} /></Col>
-                        </Row>,
-                        <Row key="10" className="mb-4">
-                            <Col xs={3}>Jahr:</Col>
-                            <Col><input type="text" style={{width: "100%"}} onChange={e=>{this.setState({scanYear: e.target.value})}} /></Col>
-                        </Row>,
-                    ]:null}
-                    <Row className="mb-2">
-                        <Col xs={3}>Dateipfad:</Col>
-                        <Col><input type="text" style={{width: "100%"}} placeholder="/A/ABBO FLOR. Calc./" onChange={e=>{this.setState({scanPath: e.target.value})}} /></Col>
-                    </Row>
-                    <Row className="mb-4">
-                        <Col xs={3}>.png-Dateien:</Col>
-                        <Col><Form.Group>
-                            <Form.Control type="file" multiple accept="image/png" onChange={e=>{this.setState({scanFiles: e.target.files})}} />
-                        </Form.Group></Col>
-                    </Row>
-                    <Row>
-                        <Col xs={3}></Col>
-                        <Col><StatusButton value="hochladen" onClick={async ()=>{
-                    if(this.state.scanFiles==null){
-                        return {status: false, error: "Geben Sie Dateien zum Hochladen an."};
-                    } else if((this.state.scanType===0||this.state.scanType===1||this.state.scanType===5)&&(!this.state.scanEditor||!this.state.scanYear)){
-                        return {status: false, error: "Geben Sie den Editor und das Jahr ein."};
-                    } else if(this.state.scanWorkId === null){
-                        return {status: false, error: "Kein gültiges Werk ausgewählt!"};
-                    } else if(this.state.scanPath&&this.state.scanWorkId){
-                        // create new edition
-                        let nPath = this.state.scanPath;
-                        if(nPath.substring(0,1)!="/"){nPath = "/"+nPath}
-                        if(nPath.substring(nPath.length-1)!="/"){nPath = nPath+"/"}
-                        const newEditionId = await arachne.edition.save({
-                            work_id: this.state.scanWorkId,
-                            ressource: this.state.scanType,
-                            editor: this.state.scanEditor,
-                            year: this.state.scanYear,
-                            volume: this.state.scanVolume,
-                            vol_cont: this.state.scanVolumeContent,
-                            serie: this.state.scanSerie,
-                            location: this.state.scanLocation,
-                            library: this.state.scanLibrary,
-                            signature: this.state.scanSignature,
-                            path: nPath,
-                            url: "",
-                        });
-                        // upload files
-                        if(newEditionId>0){
-                            let uploadForm = new FormData();
-                            uploadForm.append("edition_id", newEditionId);
-                            uploadForm.append("path", this.state.scanPath);
-                            const fLength = this.state.scanFiles.length;
-                            for(let i=0; i<fLength; i++){uploadForm.append("files", this.state.scanFiles[i])}
-                            const re = await arachne.importScans(uploadForm);
-                            if(re.status===400){return {status: false, error: `Fehler beim Hochladen der Dateien. Eine neue Ressource mit ID ${newEditionId} wurde aber bereits erstellt.`};}
-                            else if(re.body.length==1){console.log(`Bereits auf dem Server und deshalb übersprungen: ${re.body.join(", ")}`);return {status: true, success: `Das Hochladen war erfolgreich. Eine Datei wurde übersprungen (s. Konsole). Eine neue Ressource mit ID ${newEditionId} wurde erstellt.`};}
-                            else if(re.body.length>0){console.log(`Bereits auf dem Server und deshalb übersprungen: ${re.body.join(", ")}`);return {status: true, success: `Das Hochladen war erfolgreich. ${re.body.length} Dateien wurden übersprungen (s. Konsole). Eine neue Ressource mit ID ${newEditionId} wurde erstellt.`};}
-                            else{return {status: true, success: `Eine neue Ressource mit ID ${newEditionId} wurde erstellt.`};}
-                        } else {
-                            return {status: false, error: "Edition konnte nicht erstellt werden. Keine Bilder wurden hochgeladen."};
-                        }
-                    } else{return {status: false, error: "Geben Sie einen gültigen Pfad ein!"};}                    
-                }} /></Col>
-                    </Row>
-                </Tab>
-                <Tab eventKey="o" title="ocr-Dateien" style={{padding: "0 25%"}}>
-                    <Row className="mb-2">
-                        <Col xs={3}>Ressource:</Col>
-                        <Col><AutoComplete  style={{width: "100%"}} value={this.state.ocrRessource} tbl="scan_paths" searchCol="path" returnCol="path" onChange={async (value, id)=>{
-                                this.setState({ocrRessource: value, ocrRessourceId: id})
-                            }} />{/*const paths = await arachne.scan_paths.getAll({select: ["path"], order: ["path"]}); ||||||| <SelectMenu options={this.state.pathLst} onChange={async e=>{this.setState({ocrRessource: e.target.value})}} />*/}</Col>
-                    </Row>
-                    <Row className="mb-4">
-                        <Col xs={3}>.txt-Dateien:</Col>
-                        <Col><Form.Group>
-                            <Form.Control type="file" multiple accept="text/plain" onChange={e=>{this.setState({ocrFiles: e.target.files})}} />
-                        </Form.Group></Col>
-                    </Row>
-                    <Row>
-                        <Col xs={3}></Col>
-                        <Col><StatusButton type="button" value="hochladen" onClick={async ()=>{
-                        if(this.state.ocrFiles==null){
-                            return {status: false, error: "Geben Sie Dateien zum Hochladen an."};
-                        }else if(this.state.ocrRessourceId==null){
-                            return {status: false, error: "Wählen Sie einen Ordner aus."};
-                        }else{
-                            const scanLst = await arachne.scan.get({path: this.state.ocrRessource}, {select: ["id", "filename"]});
-                            //console.log(scanLst);
-                            let missLst = [];
-                            let saveLst = [];
-                            for(const file of this.state.ocrFiles){
-                                const fName = file.name.substring(0,file.name.length-4);
-                                const cScan = scanLst.find(i => i.filename == fName);
-                                if(cScan){
-                                    //console.log(cScan);
-                                    const fileTxt = await file.text();
-                                    saveLst.push({id: cScan.id, full_text: fileTxt});
-                                } else {
-                                    missLst.push(file.name);
-                                }
-                            }
-                            if(saveLst.length>0){await arachne.scan.save(saveLst)}
-                            if(missLst.length>1){console.log(`übersprungene Dateien: ${missLst.join(", ")}`);return {status: true, success: `Dateien wurden hochgeladen. ${missLst.length} Dateien konnten nicht zugewiesen werden (s. Konsole).`};}
-                            else if(missLst.length==1){console.log(`übersprungene Dateien: ${missLst.join(", ")}`);return {status: true, success: "Dateien wurden hochgeladen. 1 Datei konnte nicht zugewiesen werden (s. Konsole)."};}
-                            else{return {status: true};}
-                        }
-                    }} /></Col>
-                    </Row>
-                </Tab>
-                <Tab eventKey="z" title="Zettel" style={{padding: "0 25%"}}>
-                    <Row className="mb-2">
-                        <Col xs={3}>Buchstabe:</Col>
-                        <Col><SelectMenu options={[["A", "A"], ["B", "B"], ["C", "C"], ["D", "D"], ["E", "E"], ["F", "F"], ["G", "G"], ["H", "H"], ["I", "I/J"], ["K", "K"], ["L", "L"], ["M", "M"], ["N", "N"], ["O", "O"], ["P", "P"], ["Q", "Q"], ["R", "R"], ["S", "S"], ["T", "T"], ["U", "U/V"], ["W", "W"], ["X", "X"], ["Y", "Y"], ["Z", "Z"]]} onChange={e=>{this.setState({zettelLetter: e.target.value})}} /></Col>
-                    </Row>
-                    <Row className="mb-2">
-                        <Col xs={3}>erstellt von:</Col>
-                        <Col><SelectMenu options={this.state.zettelEditors} onChange={e=>{this.setState({zettelEditorSelected: e.target.value})}} /></Col>
-                    </Row>
-                    <Row className="mb-2">
-                        <Col xs={3}>Zettel-Typ:</Col>
-                        <Col><SelectMenu options={[[0, "Index-/Exzerpt-Zettel"], [1, "verzetteltes Material"], [4, "Literatur"]]} onChange={e=>{this.setState({zettelType: e.target.value})}} /></Col>
-                    </Row>
-                    <Row className="mb-4">
-                        <Col xs={3}>Bilder:</Col>
-                        <Col><Form.Group>
-                            <Form.Control type="file" multiple accept="image/jpeg" onChange={e=>{this.setState({zettelFiles: e.target.files})}} />
-                        </Form.Group></Col>
-                    </Row>
-                    <Row className="mb-2">
-                        <Col xs={3}></Col>
-                        <Col><StatusButton value="Zettel hochladen" onClick={async (progress)=>{
-                            if(this.state.zettelFiles==null){
-                                return {status: false, error: "Wählen Sie Bilder zum Hochladen aus."};
-                            } else if(this.state.zettelFiles.length%2 != 0){
-                                return {status: false, error: "Wählen Sie eine gerade Anzahl Bilder aus (jeweils Vorder- und Rückseiten!)."}
-                            }else{
-                                const maxItem= 100;
-                                let cItemCount = maxItem;
-                                let cUploadIndex = -1;
-                                let uploadGroup = [];
-                                let zettelFiles = this.state.zettelFiles;
-                                //console.log(zettelFiles);
-                                // sort imgs
-                                zettelFiles = Array.from(zettelFiles);
-                                zettelFiles.sort((a, b) => {if(b.name < a.name){return 1;}else{return -1;}});
-                                //console.log(zettelFiles);
-
-                                // prepare upload groups
-                                for(let i=0; i<zettelFiles.length; i++){
-                                    if(cItemCount >= maxItem){
-                                        cItemCount = 0;
-                                        cUploadIndex ++;
-                                        uploadGroup.push(new FormData());
-                                        uploadGroup[cUploadIndex].append("letter", this.state.zettelLetter);
-                                        uploadGroup[cUploadIndex].append("type", this.state.zettelType);
-                                        uploadGroup[cUploadIndex].append("user_id_id", this.state.zettelEditorSelected);
-                                    }
-                                    cItemCount ++;
-                                    uploadGroup[cUploadIndex].append("files", zettelFiles[i]);
-                                }
-                                // loop through groups and upload!
-                                let firstId = 0;
-                                let lastId = 0;
-                                const maxLoops = uploadGroup.length;
-                                let currentLoop = 0;
-                                for(const uItem of uploadGroup){
-                                    const r = await arachne.importZettel(uItem);
-                                    if(firstId === 0){firstId=r[0]}
-                                    lastId = r[1];
-                                    currentLoop ++;
-                                    progress(100/maxLoops*currentLoop);
-                                }
-                                this.setState({zettelSuccess: [firstId, lastId]});
-                                return {status: true};
-                            }
-                        }} /></Col>
-                    </Row>
-                    {this.state.zettelSuccess&&<Row>
-                        <Col><Alert variant="success" onClose={()=>{this.setState({zettelSuccess: null})}} dismissible>
-                            <Alert.Heading>Hochladen erfolgreich!</Alert.Heading><p>Die neuen Zettel haben IDs zwischen <b>{this.state.zettelSuccess[0]}</b> und <b>{this.state.zettelSuccess[1]}</b>. Möchten Sie die neuen Zettel in Zettel-Datenbank <Alert.Link href="#" onClick={e=>{
-                    localStorage.setItem(`${arachne.project_name}_searchBox_zettel`, `[[{"id":0,"c":"id","o":">=","v":${this.state.zettelSuccess[0]}},{"id":1,"c":"id","o":"<=","v":${this.state.zettelSuccess[1]}}],1,["id"]]`);
-                    this.props.loadMain(e, "zettel");
-                }}>öffnen</Alert.Link>?</p></Alert></Col>
-                    </Row>}
-                <Row className="mt-4"><Col>Eine Anleitung zum Hochladen der Zettel finden Sie <a href="https://gitlab.lrz.de/haeberlin/dmlw/-/wikis/09-HiwiHow:-Zettel-scannen-und-hochladen">hier</a>.</Col></Row>
-                </Tab>
-                {arachne.project_name==="mlw"&&arachne.access("geschichtsquellen")&&<Tab eventKey="g" title="Geschichtsquellen-Daten" style={{padding: "0 25%"}}>
-                <GeschichtsquellenImport />
-            </Tab>}
-            </Tabs>
-        </Container>;
+        return null;
     }
     componentDidMount(){
         /*

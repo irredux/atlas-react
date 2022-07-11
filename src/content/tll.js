@@ -1,6 +1,6 @@
 import { parseHTML, parseHTMLPreview, SelectMenu, StatusButton, AutoComplete, TableView } from "./../elements.js";
 import { arachne } from "./../arachne.js";
-import { Accordion, Col, Row, Container, NavDropdown, Card, ListGroup, Spinner } from "react-bootstrap";
+import { Accordion, Form, Col, Row, Container, NavDropdown, Card, ListGroup, Spinner } from "react-bootstrap";
 import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSync, faAngleRight, faAngleLeft } from "@fortawesome/free-solid-svg-icons";
@@ -715,6 +715,61 @@ function StatisticsChart(props){
     }
     return returnChart;
 }
+/* ************************************************************************************* */
+function TLL_Import_Ressource(props){
+    const [scanWork, setScanWork] = useState();
+    const [scanId, setScanId] = useState();
+    const [scanEditor, setScanEditor] = useState();
+    const [scanYear, setScanYear] = useState();
+    const [scanPath, setScanPath] = useState();
+    const [scanFiles, setScanFiles] = useState();
+    return <>
+        <Row className="mb-2">
+            <Col xs={3}>Opus:</Col>
+            <Col><AutoComplete  style={{width: "100%"}} value={scanWork?scanWork:""} tbl="opera_ac" searchCol="ac_web" returnCol="ac_web" onChange={async (value, id)=>{setScanWork(value);setScanId(id)}} /></Col>
+        </Row>
+        <Row key="0" className="mb-2">
+            <Col xs={3}>Editor:</Col>
+            <Col><input type="text" style={{width: "100%"}} value={scanEditor?scanEditor:""} onChange={e=>{setScanEditor(e.target.value)}} /></Col>
+        </Row>
+        <Row key="1" className="mb-2">
+            <Col xs={3}>Jahr:</Col>
+            <Col><input type="text" style={{width: "100%"}} value={scanYear?scanYear:""} onChange={e=>{setScanYear(e.target.value)}} /></Col>
+        </Row>
+        <Row className="mb-2">
+            <Col xs={3}>Dateipfad:</Col>
+            <Col><input type="text" style={{width: "100%"}} value={scanPath?scanPath:""} placeholder="/A/ABBO FLOR. Calc./" onChange={e=>{setScanPath(e.target.value)}} /></Col>
+        </Row>
+        <Row className="mb-4">
+            <Col xs={3}>.png-Dateien:</Col>
+            <Col><Form.Group>
+                <Form.Control type="file" multiple accept="image/png" onChange={e=>{setScanFiles(e.target.files)}} />
+            </Form.Group></Col>
+        </Row>
+        <Row>
+            <Col xs={3}></Col>
+            <Col><StatusButton value="hochladen" onClick={async ()=>{
+                if(scanFiles==null){
+                    return {status: false, error: "Geben Sie Dateien zum Hochladen an."};
+                } else if(!scanEditor||!scanYear){
+                    return {status: false, error: "Geben Sie den Editor und das Jahr ein."};
+                } else if(scanId === null){
+                    return {status: false, error: "Kein gültiges Opus ausgewählt!"};
+                } else if(scanPath&&scanId){
+                    return props.importRessource({
+                        opus_id: scanId,
+                        editor: scanEditor,
+                        year: scanYear,
+                        path: scanPath,
+                        url: "",
+                    }, scanFiles);
+                    
+                } else{return {status: false, error: "Geben Sie einen gültigen Pfad ein!"};}
+            }} /></Col>
+            </Row>
+    </>;
+}
+/* ************************************************************************************* */
 export {
     arachneTbls,
     LemmaRow, LemmaHeader, lemmaSearchItems, LemmaAsideContent,
@@ -723,4 +778,5 @@ export {
     fetchIndexBoxData, IndexBoxDetail,
     TLLRessource,
     StatisticsChart,
+    TLL_Import_Ressource,
 }
