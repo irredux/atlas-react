@@ -169,7 +169,7 @@ function ZettelCard(props){
             {props.showDetail?
             <div className="zettel_menu">
                 <span style={{float: "left", overflow: "hidden", maxHeight: "50px", maxWidth: "250px"}} dangerouslySetInnerHTML={parseHTML(zettel.lemma_display)}></span>
-                <span style={{float: "right"}} dangerouslySetInnerHTML={parseHTML(zettel.opus)}></span>
+                <span style={{float: "right"}} dangerouslySetInnerHTML={parseHTML(zettel.ac_web)}></span>
             </div>
             :null}
         </div>;
@@ -180,7 +180,7 @@ function ZettelCard(props){
             <div className="digitalZettel">
                 <div className='digitalZettelLemma' dangerouslySetInnerHTML={parseHTML(zettel.lemma_display)}></div>
                 <div className='digitalZettelDate' dangerouslySetInnerHTML={parseHTML(zettel.date_display)}></div>
-                <div className='digitalZettelWork' dangerouslySetInnerHTML={parseHTML(zettel.opus)}></div>
+                <div className='digitalZettelWork' dangerouslySetInnerHTML={parseHTML(zettel.ac_web)}></div>
                 <div className='digitalZettelText' dangerouslySetInnerHTML={parseHTML(zettel.txt)}></div>
             </div>
         </div>;
@@ -191,13 +191,13 @@ function zettelBatchOptions(){return [[1, "Wort", "lemma_id", true],[2, "Opus", 
 function BatchInputType(props){
     switch(props.batchType){
         case 1:
-            return <AutoComplete onChange={(value, id)=>{props.setBatchValue(value);props.setBatchValueId(id)}} value={props.batchValue} tbl="lemma"  searchCol="lemma" returnCol="lemma_ac" />;
+            return <AutoComplete onChange={(value, id)=>{props.setBatchValue(value);props.setBatchValueId(id)}} value={props.batchValue} tbl="lemma"  searchCol="lemma" returnCol="lemma_display" />;
             break;
         case 2:
             return <AutoComplete  value={props.batchValue} tbl="opera_ac" searchCol="ac_web" returnCol="ac_web" onChange={(value, id)=>{props.setBatchValue(value);props.setBatchValueId(id)}} />;
             break;
         case 3:
-            return <SelectMenu style={{width: "86%"}} options={[[0, "..."],[1, "verzettelt"],[2,"Exzerpt"],[3,"Index"],[4,"Literatur"], [6, "Index (unkl. Stelle)"], [7, "Notiz"]]} onChange={event=>{props.setBatchValue(event.target.value)}} />;
+            return <SelectMenu style={{width: "86%"}} options={[[1, "Perikopenzettel"], [2, "Exzerptzettel"], [3, "Lexikonzettel"], [4, "Indexzettel"], [5, "Literaturzettel"]]} onChange={event=>{props.setBatchValue(event.target.value)}} />;
             break;
         default:
             return <div style={{color: "red"}}>Unbekannter Stapel-Typ!</div>;  
@@ -263,7 +263,7 @@ function ZettelAddLemmaContent(props){
 }
 function ZettelSingleContent(props){
     const [type, setType]=useState(props.item.type);
-    const [lemmaAc, setLemmaAc]=useState(props.item.lemma_ac);
+    const [lemmaAc, setLemmaAc]=useState(props.item.lemma_display);
     const [lemmaId, setLemmaId]=useState(props.item.lemma_id);
     const [work, setWork]=useState(props.item.ac_web);
     const [workId, setWorkId]=useState(props.item.work_id);
@@ -276,7 +276,7 @@ function ZettelSingleContent(props){
     const [txt, setTxt]=useState(props.item.txt);
     useEffect(()=>{
         setType(props.item.type);
-        setLemmaAc(props.item.lemma_ac);
+        setLemmaAc(props.item.lemma_display);
         setLemmaId(props.item.lemma_id);
         setWork(props.item.ac_web);
         setWorkId(props.item.work_id);
@@ -317,7 +317,7 @@ function ZettelSingleContent(props){
     return <>
         <Row className="mb-2">
             <Col xs={4}>Zetteltyp:</Col>
-            <Col><SelectMenu style={{width: "100%"}} value={type?type:0} options={[[0, "..."],[1, "verzettelt"],[2,"Exzerpt"],[3,"Index"],[4,"Literatur"], [6, "Index (unkl. Werk)"], [7, "Notiz"]]} onChange={event=>{setType(parseInt(event.target.value))}} classList="onOpenSetFocus" /></Col>
+            <Col><SelectMenu style={{width: "100%"}} value={type?type:0} options={[[0, "..."],[1, "Perikopenzettel"], [2, "Exzerptzettel"], [3, "Lexikonzettel"], [4, "Indexzettel"], [5, "Literaturzettel"],]} onChange={event=>{setType(parseInt(event.target.value))}} classList="onOpenSetFocus" /></Col>
         </Row>
         <Row className="mb-2">
             <Col xs={4}>Wort:</Col>
@@ -513,12 +513,12 @@ function TLLRessource(props){
         }]
     ];
     const tblRow=(props)=>{
-        return <><td title={"ID: "+props.cEl.id}>{props.cEl.editor} {props.cEl.year}</td><td></td></>;
+        return <><td title={"ID: "+props.cEl.id}>{props.cEl.editor} {props.cEl.year}</td><td>{props.cEl.ac_web}</td></>;
     };
     const asideContent = [ // caption; type: t(ext-input), (text)a(rea), (auto)c(omplete); col names as array
         {caption: "EditorIn", type: "text", col: "editor"},
         {caption: "Jahr", type: "text", col: "year"},
-        {caption: <i>opus</i>, type: "auto", col: ["sigel", "opera_id"], search: {tbl: "opera", sCol: "sigel", rCol: "sigel"}},
+        {caption: <i>opus</i>, type: "auto", col: ["ac_web", "opus_id"], search: {tbl: "opera_ac", sCol: "ac_web", rCol: "ac_web"}},
         {caption: <span>URL <small>(extern)</small></span>, type: "text", col: "url"},
         {caption: <span>Pfad <small>(auf dem Server)</small></span>, type: "text", col: "path"},
         {caption: "Kommentar", type: "area", col: "comment"},
