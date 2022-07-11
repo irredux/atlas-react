@@ -694,8 +694,8 @@ class Opera extends React.Component{
                    <td key="1" className="c1_tll" style={{paddingLeft: leftPad}} dangerouslySetInnerHTML={parseHTML(o.date_display)}></td>,
                    <td key="2" className="c2_tll" style={{paddingLeft: leftPad}}>{abbrComponent}</td>,
                    <td key="3" className="c3_tll" style={{paddingLeft: leftPad}} dangerouslySetInnerHTML={parseHTML(o.ref_source)}></td>,
-                   <td key="4" className="c4_tll" style={{paddingLeft: leftPad}}><div dangerouslySetInnerHTML={parseHTML(o.full)}></div><div><ul className="noneLst">{editionLst}</ul></div></td>,
-                   <td key="5" className="c5_tll" style={{paddingLeft: leftPad}} dangerouslySetInnerHTML={parseHTML(o.bibliography)}></td>,
+                   <td key="4" className="c4_tll" style={{paddingLeft: leftPad}} dangerouslySetInnerHTML={parseHTML(o.full)}></td>,
+                   <td key="5" className="c5_tll" style={{paddingLeft: leftPad}}><div dangerouslySetInnerHTML={parseHTML(o.bibliography)}></div><ul className="noneLst">{editionLst}</ul></td>,
                 ]});
             } else {
                 throw new Error("listname unknown!")
