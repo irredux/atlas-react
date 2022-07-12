@@ -716,7 +716,7 @@ function StatisticsChart(props){
     return returnChart;
 }
 /* ************************************************************************************* */
-function TLL_Import_Ressource(props){
+function TLLImportRessource(props){
     const [scanWork, setScanWork] = useState();
     const [scanId, setScanId] = useState();
     const [scanEditor, setScanEditor] = useState();
@@ -756,7 +756,7 @@ function TLL_Import_Ressource(props){
                 } else if(scanId === null){
                     return {status: false, error: "Kein gültiges Opus ausgewählt!"};
                 } else if(scanPath&&scanId){
-                    return props.importRessource({
+                    return await props.importRessource({
                         opus_id: scanId,
                         editor: scanEditor,
                         year: scanYear,
@@ -769,6 +769,50 @@ function TLL_Import_Ressource(props){
             </Row>
     </>;
 }
+function TLLImportZettel(props){
+    const [zettelLetter, setZettelLetter]=useState("A");
+    const [zettelEditors, setZettelEditors]=useState([]);
+    const [zettelEditorSelected, setZettelEditorSelected]=useState(arachne.me.id); // here: id of arachne.me?
+    const [zettelType, setZettelType]=useState(0);
+    const [zettelLst, setZettelLst] = useState();
+    useEffect(()=>{
+        const fetchData=async()=>{
+            const newUsers = await arachne.user.getAll({order: ["last_name"]});
+            setZettelEditors(newUsers.map(u=>[u.id, u.last_name]));
+        };
+        if(arachne.access("admin")){fetchData()}
+    }, []);
+    return <>
+        <Row className="mb-2">
+            <Col xs={3}>Buchstabe:</Col>
+            <Col><SelectMenu options={[["A", "A"], ["B", "B"], ["C", "C"], ["D", "D"], ["E", "E"], ["F", "F"], ["G", "G"], ["H", "H"], ["I", "I/J"], ["K", "K"], ["L", "L"], ["M", "M"], ["N", "N"], ["O", "O"], ["P", "P"], ["Q", "Q"], ["R", "R"], ["S", "S"], ["T", "T"], ["U", "U/V"], ["W", "W"], ["X", "X"], ["Y", "Y"], ["Z", "Z"]]} value={zettelLetter} onChange={e=>{setZettelLetter(e.target.value)}} /></Col>
+        </Row>
+        <Row className="mb-2">
+            <Col xs={3}>erstellt von:</Col>
+            <Col><SelectMenu options={zettelEditors} value={zettelEditorSelected} onChange={e=>{setZettelEditorSelected(parseInt(e.target.value))}} /></Col>
+        </Row>
+        <Row className="mb-2">
+            <Col xs={3}>Zettel-Typ:</Col>
+            <Col><SelectMenu options={[[0, "..."], [1, "Perikopenzettel"], [2, "Exzerptzettel"], [3, "Lexikonzettel"], [4, "Indexzettel"], [5, "Literaturzettel"]]} value={zettelType} onChange={e=>{setZettelType(parseInt(e.target.value))}} /></Col>
+        </Row>
+        <Row className="mb-4">
+            <Col xs={3}>Bilder:</Col>
+            <Col><Form.Group>
+                <Form.Control type="file" multiple accept="image/jpeg" onChange={e=>{setZettelLst(e.target.files)}} />
+            </Form.Group></Col>
+        </Row>
+        <Row className="mb-2">
+            <Col xs={3}></Col>
+            <Col><StatusButton value="Zettel hochladen" onClick={async (progress)=>{
+                if(zettelLst==null){
+                    return {status: false, error: "Wählen Sie Bilder zum Hochladen aus."};
+                }else{
+                    return await props.importZettel(progress, zettelLst, zettelLetter, zettelType, zettelEditorSelected);
+                }
+            }} /></Col>
+        </Row>
+    </>;
+}
 /* ************************************************************************************* */
 export {
     arachneTbls,
@@ -778,5 +822,5 @@ export {
     fetchIndexBoxData, IndexBoxDetail,
     TLLRessource,
     StatisticsChart,
-    TLL_Import_Ressource,
+    TLLImportRessource, TLLImportZettel,
 }

@@ -9,9 +9,7 @@ import { Bar, Pie } from "react-chartjs-2";
 function arachneTbls(){
     return ["project", "author", "edition", "lemma", "opera_maiora", "opera_minora", "scan", "scan_lnk", "work", "zettel", "user", "seklit", "article", "zettel_lnk", "statistics", "scan_paths", "ocr_jobs", "comment", "scan_opera", "fulltext_search_view", "tags", "tag_lnks", "sections", "gq_werke", "gq_autoren"];
 }
-
 /* ************************************************************************************* */
-
 function LemmaHeader(){
 	return <tr><th width="30%">Wortansatz</th><th width="20%">Wörterbücher</th><th>Kommentar</th></tr>;
 }
@@ -141,9 +139,7 @@ function LemmaAsideContent(props){
         </Row>
     </Container>;
 }
-
 /* ************************************************************************************* */
-
 function zettelSearchItems(){
     return [
         ["lemma", "Wort"],
@@ -376,9 +372,7 @@ function zettelPresetOptions(){return [
     ['[{"id": 2, "c": "date_type", "o": "=", "v": 9},{"id": 3, "c": "date_own", "o": "!=", "v": "NULL"},{"id": 4, "c": "type", "o": "!=", "v": 3},{"id": 5, "c": "type", "o": "!=", "v": 6},{"id": 6, "c": "type", "o": "!=", "v": 7}]', "Datumszuweisung"],
 ]}
 function zettelSortOptions(){return [['["id"]', "ID"], ['["lemma","lemma_nr","date_sort","date_type"]', "Datum"], ['["ocr_length"]', "Textlänge"]]}
-
 /* ************************************************************************************* */
-
 function MainMenuContent(props){
     return <>
         <NavDropdown.Item onClick={e => {props.loadMain(e, "maiora")}}><i>opera maiora</i>-Liste</NavDropdown.Item>
@@ -388,9 +382,7 @@ function MainMenuContent(props){
         {arachne.access("geschichtsquellen")&&<NavDropdown.Item onClick={e => {props.loadMain(e, "geschichtsquellen")}}>Geschichtsquellen</NavDropdown.Item>}
     </>;
 }
-
 /* ************************************************************************************* */
-
 const fetchIndexBoxData=async()=>{
     let wl = await arachne.lemma.getAll({select: ["id", "lemma", "lemma_display"], order: ["lemma"]})
     wl=wl.map(w=>{return {id: w.id, lemma_display: w.lemma_display, lemma: w.lemma.toLowerCase()}})
@@ -516,9 +508,7 @@ function IndexBoxDetail(props){
         </Container>
     </>:null);
 }
-
 /* ************************************************************************************* */
-
 function StatisticsChart(props){
     let returnChart = null;
     switch(props.name){
@@ -867,7 +857,7 @@ function GeschichtsquellenRow(props){
     </>;
 }
 /* ************************************************************************************* */
-function MLW_Import_Ressource(props){
+function MLWImportRessource(props){
     const [scanWork, setScanWork] = useState();
     const [scanId, setScanId] = useState();
     const [scanType, setScanType] = useState(0);
@@ -960,7 +950,7 @@ function MLW_Import_Ressource(props){
                 } else if(scanId === null){
                     return {status: false, error: "Kein gültiges Werk ausgewählt!"};
                 } else if(scanPath&&scanId){
-                    return props.importRessource({
+                    return await props.importRessource({
                         work_id: scanId,
                         ressource: scanType,
                         editor: scanEditor,
@@ -980,6 +970,52 @@ function MLW_Import_Ressource(props){
             </Row>
     </>;
 }
+function MLWImportZettel(props){
+    const [zettelLetter, setZettelLetter]=useState("A");
+    const [zettelEditors, setZettelEditors]=useState([]);
+    const [zettelEditorSelected, setZettelEditorSelected]=useState(arachne.me.id); // here: id of arachne.me?
+    const [zettelType, setZettelType]=useState(0);
+    const [zettelLst, setZettelLst] = useState();
+    useEffect(()=>{
+        const fetchData=async()=>{
+            const newUsers = await arachne.user.getAll({order: ["last_name"]});
+            setZettelEditors(newUsers.map(u=>[u.id, u.last_name]));
+        };
+        if(arachne.access("admin")){fetchData()}
+    }, []);
+    return <>
+        <Row className="mb-2">
+            <Col xs={3}>Buchstabe:</Col>
+            <Col><SelectMenu options={[["A", "A"], ["B", "B"], ["C", "C"], ["D", "D"], ["E", "E"], ["F", "F"], ["G", "G"], ["H", "H"], ["I", "I/J"], ["K", "K"], ["L", "L"], ["M", "M"], ["N", "N"], ["O", "O"], ["P", "P"], ["Q", "Q"], ["R", "R"], ["S", "S"], ["T", "T"], ["U", "U/V"], ["W", "W"], ["X", "X"], ["Y", "Y"], ["Z", "Z"]]} value={zettelLetter} onChange={e=>{setZettelLetter(e.target.value)}} /></Col>
+        </Row>
+        <Row className="mb-2">
+            <Col xs={3}>erstellt von:</Col>
+            <Col><SelectMenu options={zettelEditors} value={zettelEditorSelected} onChange={e=>{setZettelEditorSelected(parseInt(e.target.value))}} /></Col>
+        </Row>
+        <Row className="mb-2">
+            <Col xs={3}>Zettel-Typ:</Col>
+            <Col><SelectMenu options={[[0, "Index-/Exzerpt-Zettel"], [1, "verzetteltes Material"], [4, "Literatur"]]} value={zettelType} onChange={e=>{setZettelType(parseInt(e.target.value))}} /></Col>
+        </Row>
+        <Row className="mb-4">
+            <Col xs={3}>Bilder:</Col>
+            <Col><Form.Group>
+                <Form.Control type="file" multiple accept="image/jpeg" onChange={e=>{setZettelLst(e.target.files)}} />
+            </Form.Group></Col>
+        </Row>
+        <Row className="mb-2">
+            <Col xs={3}></Col>
+            <Col><StatusButton value="Zettel hochladen" onClick={async (progress)=>{
+                if(zettelLst==null){
+                    return {status: false, error: "Wählen Sie Bilder zum Hochladen aus."};
+                } else if(zettelLst.length%2 != 0){
+                    return {status: false, error: "Wählen Sie eine gerade Anzahl Bilder aus (jeweils Vorder- und Rückseiten!)."}
+                }else{
+                    return await props.importZettel(progress, zettelLst, zettelLetter, zettelType, zettelEditorSelected);
+                }
+            }} /></Col>
+        </Row>
+    </>;
+}
 /* ************************************************************************************* */
 export {
     arachneTbls,
@@ -989,5 +1025,5 @@ export {
     fetchIndexBoxData, IndexBoxDetail,
     GeschichtsquellenImport, GeschichtsquellenInterface,
     StatisticsChart,
-    MLW_Import_Ressource,
+    MLWImportRessource, MLWImportZettel,
 }

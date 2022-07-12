@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { createRoot } from "react-dom/client";
+import reportWebVitals from './reportWebVitals';
 
 import "./index.scss";
 
@@ -128,3 +129,5 @@ function App(){
 
 const root = createRoot(document.getElementById("root"))
 root.render(<App />);
+
+//reportWebVitals(console.log);

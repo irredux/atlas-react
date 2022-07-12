@@ -748,7 +748,7 @@ function StatisticsChart(props){
     return returnChart;
 }
 /* ************************************************************************************* */
-function DOM_Import_Ressource(props){
+function DOMImportRessource(props){
     const [scanWork, setScanWork] = useState();
     const [scanId, setScanId] = useState();
     const [scanEditor, setScanEditor] = useState();
@@ -788,7 +788,7 @@ function DOM_Import_Ressource(props){
                 } else if(scanId === null){
                     return {status: false, error: "Kein gültiges Opus ausgewählt!"};
                 } else if(scanPath&&scanId){
-                    return props.importRessource({
+                    return await props.importRessource({
                         opera_id: scanId,
                         editor: scanEditor,
                         year: scanYear,
@@ -801,6 +801,45 @@ function DOM_Import_Ressource(props){
             </Row>
     </>;
 }
+function DOMImportZettel(props){
+    const [zettelLetter, setZettelLetter]=useState("A");
+    const [zettelEditors, setZettelEditors]=useState([]);
+    const [zettelEditorSelected, setZettelEditorSelected]=useState(arachne.me.id); // here: id of arachne.me?
+    const [zettelLst, setZettelLst] = useState();
+    useEffect(()=>{
+        const fetchData=async()=>{
+            const newUsers = await arachne.user.getAll({order: ["last_name"]});
+            setZettelEditors(newUsers.map(u=>[u.id, u.last_name]));
+        };
+        if(arachne.access("admin")){fetchData()}
+    }, []);
+    return <>
+        <Row className="mb-2">
+            <Col xs={3}>Buchstabe:</Col>
+            <Col><SelectMenu options={[["A", "A"], ["B", "B"], ["C", "C"], ["D", "D"], ["E", "E"], ["F", "F"], ["G", "G"], ["H", "H"], ["I", "I"], ["J", "J"], ["K", "K"], ["L", "L"], ["M", "M"], ["N", "N"], ["O", "O"], ["P", "P"], ["Q", "Q"], ["R", "R"], ["S", "S"], ["T", "T"], ["U", "U"], ["V", "V"], ["W", "W"], ["X", "X"], ["Y", "Y"], ["Z", "Z"]]} value={zettelLetter} onChange={e=>{setZettelLetter(e.target.value)}} /></Col>
+        </Row>
+        <Row className="mb-2">
+            <Col xs={3}>erstellt von:</Col>
+            <Col><SelectMenu options={zettelEditors} value={zettelEditorSelected} onChange={e=>{setZettelEditorSelected(parseInt(e.target.value))}} /></Col>
+        </Row>
+        <Row className="mb-4">
+            <Col xs={3}>Bilder:</Col>
+            <Col><Form.Group>
+                <Form.Control type="file" multiple accept="image/jpeg" onChange={e=>{setZettelLst(e.target.files)}} />
+            </Form.Group></Col>
+        </Row>
+        <Row className="mb-2">
+            <Col xs={3}></Col>
+            <Col><StatusButton value="Zettel hochladen" onClick={async (progress)=>{
+                if(zettelLst==null){
+                    return {status: false, error: "Wählen Sie Bilder zum Hochladen aus."};
+                }else{
+                    return await props.importZettel(progress, zettelLst, zettelLetter, 0, zettelEditorSelected);
+                }
+            }} /></Col>
+        </Row>
+    </>;
+}
 /* ************************************************************************************* */
 export {
     arachneTbls,
@@ -810,5 +849,5 @@ export {
     DOMOpera, Konkordanz, Etudaus, DOMRessource,
     fetchIndexBoxData, IndexBoxDetail,
     StatisticsChart,
-    DOM_Import_Ressource,
+    DOMImportRessource, DOMImportZettel,
 }
