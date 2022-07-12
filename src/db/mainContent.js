@@ -94,6 +94,12 @@ function MainNavBar(props){
 
 const dbChangeLog = [
     {
+        project: "tll",
+        title: "Import und Ressourcen",
+        date: "2022-07-12",
+        description: <><p>Zettel, Ressourcen und Volltexte können importiert werden. Die Ressourcen können hinzugefügt und verwaltet werden, sie werden im Index angezeigt. Argos ist allerdings erst begrenzt lauffähig.</p></>
+    },
+    {
         project: "dom",
         title: "Import und Ressourcen",
         date: "2022-07-12",
