@@ -738,7 +738,7 @@ function TLL_Import_Ressource(props){
         </Row>
         <Row className="mb-2">
             <Col xs={3}>Dateipfad:</Col>
-            <Col><input type="text" style={{width: "100%"}} value={scanPath?scanPath:""} placeholder="/A/ABBO FLOR. Calc./" onChange={e=>{setScanPath(e.target.value)}} /></Col>
+            <Col><input type="text" style={{width: "100%"}} value={scanPath?scanPath:""} placeholder="/A/ABLAB. epigr./" onChange={e=>{setScanPath(e.target.value)}} /></Col>
         </Row>
         <Row className="mb-4">
             <Col xs={3}>.png-Dateien:</Col>

@@ -639,6 +639,7 @@ class AutoComplete extends React.Component{
     constructor(props){
         super(props);
         this.state = {
+            placeholder: props.placeholder?props.placeholder:"",
             options: [],
             currentOptionId: null,
             userSelected: false,
@@ -661,7 +662,7 @@ class AutoComplete extends React.Component{
             }
         }
         return <div>
-            <input className={this.props.classList} style={this.props.style} type="text" value={this.props.value} onBlur={()=>{setTimeout(()=>{this.setState({userSelected: true})},300)}} onChange={e=>{this.changeInputValue(e.target.value)}} onKeyDown={e=>{this.changeSelectedOption(e)}} />
+            <input placeholder={this.state.placeholder} className={this.props.classList} style={this.props.style} type="text" value={this.props.value} onBlur={()=>{setTimeout(()=>{this.setState({userSelected: true})},300)}} onChange={e=>{this.changeInputValue(e.target.value)}} onKeyDown={e=>{this.changeSelectedOption(e)}} />
             {optionsElement.length>0?<div style={optionsBoxStyle} className="mainColors">{optionsElement}</div>:null}
         </div>;
     }

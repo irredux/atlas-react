@@ -1,16 +1,14 @@
 import { parseHTML, StatusButton, SelectMenu, AutoComplete, TableView } from "./../elements.js";
 import { arachne } from "./../arachne.js";
 import { useState, useEffect } from "react";
-import { Col, Row, Container, NavDropdown } from "react-bootstrap";
+import { Col, Form, Row, Container, NavDropdown } from "react-bootstrap";
 import 'chart.js/auto';
 import { Bar, Pie } from "react-chartjs-2";
 
 function arachneTbls(){
-    return ["lemma", "work", "zettel", "user", "konkordanz", "opera", "comment", "etudaus", "ocr_jobs", "edition", "statistics"];
+    return ["lemma", "work", "zettel", "user", "konkordanz", "opera", "comment", "etudaus", "ocr_jobs", "edition", "scan", "scan_lnk", "scan_paths", "statistics"];
 }
-
 /* ************************************************************************************* */
-
 function LemmaHeader(){
 	return <tr><th width="30%">Lemma</th><th width="20%">Farbe</th><th>Kommentar</th><th>dom en ligne</th></tr>;
 }
@@ -159,9 +157,7 @@ function LemmaAsideContent(props){
         </Row>
     </Container>;
 }
-
 /* ************************************************************************************* */
-
 function zettelSearchItems(){
     return [
         ["lemma_simple", "Wort"],
@@ -353,9 +349,7 @@ function newZettelObject(){return {txt: "Neuer Zettel"}}
 function exportZettelObject(){return ["img_path", "zettel_sigel", "lemma_display", "txt"]}
 function zettelPresetOptions(){return null}
 function zettelSortOptions(){return [['["id"]', "ID"], ['["lemma_simple"]', "Lemma"]]}
-
 /* ************************************************************************************* */
-
 function MainMenuContent(props){
 
 
@@ -366,9 +360,7 @@ function MainMenuContent(props){
         <NavDropdown.Item onClick={e => {props.loadMain(e, "domressource")}}>Ressourcen</NavDropdown.Item>
     </>;
 }
-
 /* ************************************************************************************* */
-
 function DOMOpera(props){
     const menuItems = [
         ["neuer Eintrag", async(that)=>{
@@ -378,18 +370,6 @@ function DOMOpera(props){
             }
         }]
     ];
-    const tblRow=(props)=>{
-        return <>
-            <td title={"ID: "+props.cEl.id} dangerouslySetInnerHTML={parseHTML(props.cEl.sigel)}></td>
-            <td dangerouslySetInnerHTML={parseHTML(props.cEl.werk)}></td>
-            <td className="minorTxt">
-                {props.cEl.bibgrau&&<p dangerouslySetInnerHTML={parseHTML(props.cEl.bibgrau)}></p>}
-                {props.cEl.bibvoll&&<p dangerouslySetInnerHTML={parseHTML(props.cEl.bibvoll)}></p>}
-                {props.cEl.bibzusatz&&<p dangerouslySetInnerHTML={parseHTML(props.cEl.bibzusatz)}></p>}
-            </td>
-            <td style={{textAlign: "right"}}>{props.cEl.konkordanz_count}</td>
-        </>;
-    };
     const asideContent = [ // caption; type: t(ext-input), (text)a(rea), (auto)c(omplete); col names as array
         {caption: "dol-ID", type: "text", col: "db_id"},
         {caption: "Sigel", type: "text", col: "sigel"},
@@ -403,12 +383,32 @@ function DOMOpera(props){
         searchOptions={[["sigel", "Sigel"], ["id", "ID"], ["konkordanz_count", "verknpft. Konk."]]}
         sortOptions={[['["id"]', "ID"], ['["sigel"]', "Sigel"]]}
         menuItems={menuItems}
-        tblRow={tblRow}
+        tblRow={DOMOperaRow}
         tblHeader={<><th>Sigel</th><th>Titel der Quelle</th><th>Bibliographie</th><th>verknpft. Konkordanz-Einträge</th></>}
         asideContent={asideContent}
     />;
 }
-
+function DOMOperaRow(props){
+    const [editionLst, setEditionLst]=useState([]);
+    useEffect(()=>{
+        const fetchData=async()=>{
+            const newEditions = await arachne.edition.get({opera_id: props.cEl.id}, {select: ["id", "url", "label"]});
+            setEditionLst(newEditions.map(e=><li key={e.id}><a href={e.url?e.url:`/dom/argos/${e.id}`} target="_blank" rel="noreferrer">{e.label}</a></li>));
+        };
+        fetchData();
+    },[]);
+    return <>
+            <td title={"ID: "+props.cEl.id} dangerouslySetInnerHTML={parseHTML(props.cEl.sigel)}></td>
+            <td dangerouslySetInnerHTML={parseHTML(props.cEl.werk)}></td>
+            <td className="minorTxt">
+                {props.cEl.bibgrau&&<p dangerouslySetInnerHTML={parseHTML(props.cEl.bibgrau)}></p>}
+                {props.cEl.bibvoll&&<p dangerouslySetInnerHTML={parseHTML(props.cEl.bibvoll)}></p>}
+                {props.cEl.bibzusatz&&<p dangerouslySetInnerHTML={parseHTML(props.cEl.bibzusatz)}></p>}
+                {setEditionLst.length>0&&<ul className="noneLst">{editionLst}</ul>}
+            </td>
+            <td style={{textAlign: "right"}}>{props.cEl.konkordanz_count}</td>
+        </>;
+}
 function Konkordanz(props){
     const menuItems = [
         ["neuer Eintrag", async(that)=>{
@@ -436,7 +436,6 @@ function Konkordanz(props){
         asideContent={asideContent}
     />;
 }
-
 function Etudaus(props){
     const menuItems = [
         ["neuer Eintrag", async(that)=>{
@@ -464,7 +463,6 @@ function Etudaus(props){
         asideContent={asideContent}
     />;
 }
-
 function DOMRessource(props){
     const menuItems = [
         ["neuer Eintrag", async(that)=>{
@@ -475,12 +473,12 @@ function DOMRessource(props){
         }]
     ];
     const tblRow=(props)=>{
-        return <><td title={"ID: "+props.cEl.id}>{props.cEl.editor} {props.cEl.year}</td><td>{props.cEl.sigel} <small>(ID {props.cEl.opera_id})</small></td></>;
+        return <><td title={"ID: "+props.cEl.id}>{props.cEl.editor} {props.cEl.year}</td><td>{props.cEl.ac_web} <small>(ID {props.cEl.opera_id})</small></td></>;
     };
     const asideContent = [ // caption; type: t(ext-input), (text)a(rea), (auto)c(omplete); col names as array
         {caption: "EditorIn", type: "text", col: "editor"},
         {caption: "Jahr", type: "text", col: "year"},
-        {caption: "verknpft. Werk", type: "auto", col: ["sigel", "opera_id"], search: {tbl: "opera", sCol: "sigel", rCol: "sigel"}},
+        {caption: "verknpft. Werk", type: "auto", col: ["ac_web", "opera_id"], search: {tbl: "opera", sCol: "sigel", rCol: "sigel"}},
         {caption: <span>URL <small>(extern)</small></span>, type: "text", col: "url"},
         {caption: <span>Pfad <small>(auf dem Server)</small></span>, type: "text", col: "path"},
         {caption: "Kommentar", type: "area", col: "comment"},
@@ -496,9 +494,7 @@ function DOMRessource(props){
         asideContent={asideContent}
     />;
 }
-
 /* ************************************************************************************* */
-
 const fetchIndexBoxData=async()=>{
     let wl = await arachne.lemma.getAll({select: ["id", "lemma_display", "lemma_simple", "nr", "farbe"], order: ["lemma_simple"]})
     wl=wl.map(w=>{
@@ -527,9 +523,7 @@ function IndexBoxDetail(props){
             <div>{zettel!==null?zettel.length===0?<span>Keine Zettel mit diesem Lemma verknüpft!</span>:zettel.map(z=><div key={z.id}><div><img style={{width: arachne.options.z_width}} src={"https://dienste.badw.de:9999/dom"+z.img_path+".jpg"} /></div><div>{z.opera} ({z.id})</div></div>):<span>Zettel werden geladen...</span>}</div>
         </>:<div>Daten werden geladen...</div>);
 }
-
 /* ************************************************************************************* */
-
 function StatisticsChart(props){
     let returnChart = null;
     switch(props.name){
@@ -753,7 +747,61 @@ function StatisticsChart(props){
     }
     return returnChart;
 }
-
+/* ************************************************************************************* */
+function DOM_Import_Ressource(props){
+    const [scanWork, setScanWork] = useState();
+    const [scanId, setScanId] = useState();
+    const [scanEditor, setScanEditor] = useState();
+    const [scanYear, setScanYear] = useState();
+    const [scanPath, setScanPath] = useState();
+    const [scanFiles, setScanFiles] = useState();
+    return <>
+        <Row className="mb-2">
+            <Col xs={3}>Quelle:</Col>
+            <Col><AutoComplete  style={{width: "100%"}} value={scanWork?scanWork:""} tbl="opera" searchCol="sigel" returnCol="sigel" onChange={async (value, id)=>{setScanWork(value);setScanId(id)}} /></Col>
+        </Row>
+        <Row key="0" className="mb-2">
+            <Col xs={3}>Editor:</Col>
+            <Col><input type="text" style={{width: "100%"}} value={scanEditor?scanEditor:""} onChange={e=>{setScanEditor(e.target.value)}} /></Col>
+        </Row>
+        <Row key="1" className="mb-2">
+            <Col xs={3}>Jahr:</Col>
+            <Col><input type="text" style={{width: "100%"}} value={scanYear?scanYear:""} onChange={e=>{setScanYear(e.target.value)}} /></Col>
+        </Row>
+        <Row className="mb-2">
+            <Col xs={3}>Dateipfad:</Col>
+            <Col><input type="text" style={{width: "100%"}} value={scanPath?scanPath:""} placeholder="/A/Abaco/" onChange={e=>{setScanPath(e.target.value)}} /></Col>
+        </Row>
+        <Row className="mb-4">
+            <Col xs={3}>.png-Dateien:</Col>
+            <Col><Form.Group>
+                <Form.Control type="file" multiple accept="image/png" onChange={e=>{setScanFiles(e.target.files)}} />
+            </Form.Group></Col>
+        </Row>
+        <Row>
+            <Col xs={3}></Col>
+            <Col><StatusButton value="hochladen" onClick={async ()=>{
+                if(scanFiles==null){
+                    return {status: false, error: "Geben Sie Dateien zum Hochladen an."};
+                } else if(!scanEditor||!scanYear){
+                    return {status: false, error: "Geben Sie den Editor und das Jahr ein."};
+                } else if(scanId === null){
+                    return {status: false, error: "Kein gültiges Opus ausgewählt!"};
+                } else if(scanPath&&scanId){
+                    return props.importRessource({
+                        opera_id: scanId,
+                        editor: scanEditor,
+                        year: scanYear,
+                        path: scanPath,
+                        url: "",
+                    }, scanFiles);
+                    
+                } else{return {status: false, error: "Geben Sie einen gültigen Pfad ein!"};}
+            }} /></Col>
+            </Row>
+    </>;
+}
+/* ************************************************************************************* */
 export {
     arachneTbls,
     LemmaRow, LemmaHeader, lemmaSearchItems, LemmaAsideContent,
@@ -762,4 +810,5 @@ export {
     DOMOpera, Konkordanz, Etudaus, DOMRessource,
     fetchIndexBoxData, IndexBoxDetail,
     StatisticsChart,
+    DOM_Import_Ressource,
 }

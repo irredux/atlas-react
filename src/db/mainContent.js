@@ -80,7 +80,7 @@ function MainNavBar(props){
                     <NavDropdown title="Einstellungen">
                         <NavDropdown.Item onClick={e => {props.loadMain(e, "account")}}>Konto</NavDropdown.Item>
                         <NavDropdown.Item onClick={e => {props.loadMain(e, "server")}}>Server</NavDropdown.Item>
-                        {arachne.project_name!="dom"&&<NavDropdown.Item onClick={e => {props.loadMain(e, "import")}}>Import</NavDropdown.Item>}
+                        <NavDropdown.Item onClick={e => {props.loadMain(e, "import")}}>Import</NavDropdown.Item>
                         <NavDropdown.Item onClick={e => {props.loadMain(e, "stats")}}>Statistik</NavDropdown.Item>
                     </NavDropdown>
                     <Nav.Link>
@@ -93,6 +93,12 @@ function MainNavBar(props){
 }
 
 const dbChangeLog = [
+    {
+        project: "dom",
+        title: "Import und Ressourcen",
+        date: "2022-07-12",
+        description: <><p>Zettel, Ressourcen und Volltexte können importiert werden. Die Ressourcen können hinzugefügt und verwaltet werden, sie werden im Quellenverzeichnis angezeigt. Argos ist allerdings erst begrenzt lauffähig.</p></>
+    },
     {
         project: "mlw",
         title: "Geschichtsquellen",
