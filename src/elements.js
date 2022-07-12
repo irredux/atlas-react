@@ -67,9 +67,10 @@ class TableView extends React.Component{
         </>;
     }
     async reloadEntry(id){
+        console.log("boom");
         if(id>0){
             let newItem = await arachne[this.props.tblName].get({id: id}); newItem = newItem[0];
-            let currentElements = this.state.currentElements;
+            let currentElements = [...this.state.currentElements];
             const indexOfNewItem = currentElements.findIndex(i => i.id===newItem.id)
             currentElements[indexOfNewItem] = newItem;
             this.setState({currentElements: currentElements, item: newItem});
@@ -147,7 +148,7 @@ function TableViewAside(props){
                 {contentLst}
                 <Row>
                     <Col><StatusButton value="speichern" onClick={async ()=>{
-                        await arachne[props.tblName].save(tblObject); //shallow copy!
+                        await arachne[props.tblName].save({...tblObject}); //shallow copy!
                         props.onUpdate(props.item.id);
                         return {status: true};
                     }} />
