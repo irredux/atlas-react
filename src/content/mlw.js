@@ -409,7 +409,7 @@ function Zettel(props){
     return <Card style={{width: "30rem"}} className="mb-3">
         <FontAwesomeIcon style={{position: "absolute", top: "12px", right: "10px"}} onClick={()=>{if(verso===""){setVerso("v")}else{setVerso("")}}} icon={faSync} />
         <Card.Header style={{height: "41px"}} dangerouslySetInnerHTML={parseHTML(props.z.opus)}></Card.Header>
-        <Card.Img variant="bottom" src={`${arachne.url}/mlw${props.z.img_path}${verso}.jpg`} />
+        <Card.Img variant="bottom" src={`${arachne.url}${props.z.img_path}${verso}.jpg`} />
         <Card.Body>
             <Card.Text><ListGroup horizontal>{editions}</ListGroup></Card.Text>
         </Card.Body>
