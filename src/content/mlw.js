@@ -397,20 +397,6 @@ function IndexBoxZettel(props){
     const imgRef = useRef(null);
     const [img, setImg] = useState(null);
 
-    useEffect(()=>{
-        const fetchData=async()=>{
-            if(props.z.work_id>0){
-                const newEditions = await arachne.edition.get({work_id: props.z.work_id}, {select: ["id", "label", "url"]});
-                let editionsLst = [];
-                for(const e of newEditions){
-                    editionsLst.push(<ListGroup.Item key={e.id}><a href={e.url===""?`/site/argos/${e.id}`:e.url} target="_blank" rel="noreferrer">{e.label}</a></ListGroup.Item>);
-                }
-                setEditons(editionsLst)
-            }
-        };
-        fetchData();
-    }, []);
-
     useIntersectionObserver({
         target: imgRef,
         onIntersect: ([{ intersectionRatio, isIntersecting }], observerElement) => {
@@ -424,6 +410,14 @@ function IndexBoxZettel(props){
           if(isVisible){
                 const fetchData = async ()=>{
                     setImg(`${arachne.url}${props.z.img_path}${verso}.jpg`);
+                    if(props.z.work_id>0&&editions.length===0){
+                        const newEditions = await arachne.edition.get({work_id: props.z.work_id}, {select: ["id", "label", "url"]});
+                        let editionsLst = [];
+                        for(const e of newEditions){
+                            editionsLst.push(<ListGroup.Item key={e.id}><a href={e.url===""?`/site/argos/${e.id}`:e.url} target="_blank" rel="noreferrer">{e.label}</a></ListGroup.Item>);
+                        }
+                        setEditons(editionsLst)
+                    }
                 }
                 fetchData();
                 
