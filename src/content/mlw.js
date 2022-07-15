@@ -310,10 +310,12 @@ function ZettelSingleContent(props){
         });
         if(!(dateOwnDisplay===null||dateOwnDisplay==="")&&(dateOwn===null||dateOwn==="")){
             props.setZettelObjectErr({status: 2, msg: "Sie dürfen kein Anzeigedatum speichern, ohne ein Sortierdatum anzugeben!"});
-        } else if(workId>0&&dateType===9&&((dateOwn!=""&&dateOwn!=null&&!Number.isInteger(dateOwn))||((dateOwn===""||dateOwn===null)))){
+        }else if((dateOwnDisplay===null||dateOwnDisplay==="")&&!(dateOwn===null||dateOwn==="")){
+            props.setZettelObjectErr({status: 2, msg: "Sie dürfen kein Sortierdatum speichern, ohne ein Anzeigedatum anzugeben!"});
+        } else if(isNaN(dateOwn)){
+            props.setZettelObjectErr({status: 2, msg: "Das Sortierdatum muss eine Ganzzahl sein!"});
+        } else if(workId>0&&dateType===9&&(dateOwn===null||dateOwn==="")){
             props.setZettelObjectErr({status: 1, msg: "Achtung: Dieser Zettel benötigt eine Datierung! Soll er trotzdem ohne Datierung gespeichert werden?"});
-        } else if (dateType===9&&!(dateOwn===null||dateOwn==="")&&(dateOwnDisplay===null||dateOwnDisplay==="")){
-            props.setZettelObjectErr({status: 2, msg: "Setzen Sie ein Anzeigedatum für den Zettel!"});
         }else{props.setZettelObjectErr(null)}
     },[txt,type,lemmaId,workId,dateType,dateOwn,dateOwnDisplay]);
     useEffect(()=>{props.setLemma(lemmaAc)},[lemmaAc]);

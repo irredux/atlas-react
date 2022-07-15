@@ -85,7 +85,7 @@ class Zettel extends React.Component{
                 />
                 {this.state.count==0?<SearchHint />:null}
             </Container>
-            {(arachne.access("z_edit")&&this.state.selectionDetail.ids.length>0)?<ZettelAside onReload={()=>{this.loadPage(this.state.currentPage)}} onClose={()=>{this.setState({selectionDetail: {ids: []}})}} selection={this.state.selectionDetail} item={this.state.itemDetail} onUpdate={ids=>{this.reloadZettel(ids)}} showDetail={this.state.showDetail} openNextItem={()=>{this.openNextItem()}} toggleShowDetail={()=>{this.setState({showDetail: !this.state.showDetail})}} />:""}
+            {(arachne.access("z_edit")&&this.state.selectionDetail.ids.length>0)?<ZettelAside onReload={()=>{this.loadPage(this.state.currentPage)}} onClose={()=>{this.setState({selectionDetail: {ids: []}})}} selection={this.state.selectionDetail} item={this.state.itemDetail} onUpdate={async(ids)=>{await this.reloadZettel(ids)}} showDetail={this.state.showDetail} openNextItem={()=>{this.openNextItem()}} toggleShowDetail={()=>{this.setState({showDetail: !this.state.showDetail})}} />:""}
         </>;
     }
     async openNextItem(){// save current element
@@ -177,7 +177,7 @@ function ZettelAside(props){
                 setContent(<ZettelAsideBatch  openAddLemma={(l,ld)=>openAddLemma(l,ld)} saveBatch={async (t,v,i)=>{return await saveBatch(t,v,i)}} onUpdate={props.onUpdate} selection={props.selection} />);
                 break;
             case "single":
-                setContent(<ZettelAsideSingle openAddLemma={(l, ld, n)=>openAddLemma(l, ld, n)} onClose={props.onClose} onReload={props.onReload} showDetail={props.showDetail} toggleShowDetail={()=>{props.toggleShowDetail()}} item={props.item} openNextItem={props.openNextItem} onUpdate={id=>{props.onUpdate(id)}} />);
+                setContent(<ZettelAsideSingle openAddLemma={(l, ld, n)=>openAddLemma(l, ld, n)} onClose={props.onClose} onReload={props.onReload} showDetail={props.showDetail} toggleShowDetail={()=>{props.toggleShowDetail()}} item={props.item} openNextItem={props.openNextItem} onUpdate={props.onUpdate} />);
                 break;
             case "lemma":
                 setContent(<ZettelAddLemma saveAfterAddLemma={async(l,l_id)=>{return await saveAfterAddLemma(l,l_id)}} newLemma={newLemma} newLemmaDisplay={newLemma} closeAddLemma={()=>{setMode(lastMode)}} />);
@@ -209,7 +209,7 @@ function ZettelAside(props){
             newValueLst.push(newValueObj);
         }
         await arachne.zettel.save(newValueLst);
-        props.onUpdate(props.selection.ids);
+        await props.onUpdate(props.selection.ids);
         return {status: true};
     }
     const openAddLemma=(l, ld,next=false)=>{setLastMode(mode);setNewLemma(l);setNewLemmaDisplay(ld);setMode("lemma");setNextAfterLemmaAdd(next)};
@@ -218,6 +218,7 @@ function ZettelAside(props){
         if(props.selection.ids.length===1){
             await arachne.zettel.save({id: props.item.id, lemma_id: lemma_id})
             if(nextAfterLemmaAdd){props.openNextItem()}
+            else{await props.onUpdate([props.item.id])}
         } else {
             re=await saveBatch(1,lemma, lemma_id);
         }
@@ -245,9 +246,8 @@ function ZettelAsideSingle(props){
             // save data
             let saveObj = zettelObject;
             saveObj.user_id = arachne.me.id;
-            await arachne.zettel.save(saveObj)
+            await arachne.zettel.save(saveObj);
             if(saveObj.lemma_id===null&&lemma!==""&&lemma!==null&&lemma!==undefined){
-                console.log("here we are!", saveObj.lemma_id, lemma);
                 document.querySelector(".onOpenSetFocus").focus();
                 props.openAddLemma(lemma, lemma, next);
             }else if(next){
