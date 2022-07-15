@@ -1,7 +1,7 @@
-import { parseHTML, parseHTMLPreview, SelectMenu, StatusButton, AutoComplete, TableView } from "./../elements.js";
+import { parseHTML, parseHTMLPreview, SelectMenu, StatusButton, AutoComplete, TableView, useIntersectionObserver } from "./../elements.js";
 import { arachne } from "./../arachne.js";
 import { Accordion, Col, Row, Container, Form, NavDropdown, Card, ListGroup, Spinner } from "react-bootstrap";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSync } from "@fortawesome/free-solid-svg-icons";
 import 'chart.js/auto';
@@ -390,9 +390,13 @@ const fetchIndexBoxData=async()=>{
     wl=wl.map(w=>{return {id: w.id, lemma_display: w.lemma_display, lemma: w.lemma.toLowerCase()}})
     return wl;
 }
-function Zettel(props){
+function IndexBoxZettel(props){
     const [verso, setVerso] = useState("");
     const [editions, setEditons] = useState([]);
+    const [isVisible, setIsVisible] = useState(false);
+    const imgRef = useRef(null);
+    const [img, setImg] = useState(null);
+
     useEffect(()=>{
         const fetchData=async()=>{
             if(props.z.work_id>0){
@@ -406,10 +410,33 @@ function Zettel(props){
         };
         fetchData();
     }, []);
-    return <Card style={{width: "30rem"}} className="mb-3">
+
+    useIntersectionObserver({
+        target: imgRef,
+        onIntersect: ([{ intersectionRatio, isIntersecting }], observerElement) => {
+            if (isIntersecting&&!isVisible) {
+                setIsVisible(true);
+            }
+            if(intersectionRatio>0.1){observerElement.unobserve(imgRef.current)}
+        }
+      });
+      useEffect(()=>{
+          if(isVisible){
+                const fetchData = async ()=>{
+                    setImg(`${arachne.url}${props.z.img_path}${verso}.jpg`);
+                }
+                fetchData();
+                
+          }else{
+              setImg(null);
+          }
+      },[isVisible]);
+
+
+    return <Card ref={imgRef} style={{width: "30rem"}} className="mb-3">
         <FontAwesomeIcon style={{position: "absolute", top: "12px", right: "10px"}} onClick={()=>{if(verso===""){setVerso("v")}else{setVerso("")}}} icon={faSync} />
         <Card.Header style={{height: "41px"}} dangerouslySetInnerHTML={parseHTML(props.z.opus)}></Card.Header>
-        <Card.Img variant="bottom" src={`${arachne.url}${props.z.img_path}${verso}.jpg`} />
+        <Card.Img variant="bottom" src={img} />
         <Card.Body>
             <Card.Text><ListGroup horizontal>{editions}</ListGroup></Card.Text>
         </Card.Body>
@@ -487,22 +514,22 @@ function IndexBoxDetail(props){
                     <Accordion.Item eventKey="v">
                         <Accordion.Header>verzetteltes Material&nbsp;{vZettels?<span>({vZettels.length})</span>:<Spinner size="sm" animation="border" />}</Accordion.Header>
                         <Accordion.Body>
-                            <Container className="d-flex flex-wrap justify-content-center">{vZettels?vZettels.map(z=>{return <Zettel key={z.id} z={z} />;}):null}</Container></Accordion.Body>
+                            <Container className="d-flex flex-wrap" style={{justifyContent: "space-around"}}>{vZettels?vZettels.map(z=>{return <IndexBoxZettel key={z.id} z={z} />;}):null}</Container></Accordion.Body>
                     </Accordion.Item>
                     <Accordion.Item eventKey="e">
                         <Accordion.Header>Exzerpt-Zettel&nbsp;{eZettels?<span>({eZettels.length})</span>:<Spinner size="sm" animation="border" />}</Accordion.Header>
                         <Accordion.Body>
-                            <Container className="d-flex flex-wrap justify-content-center">{eZettels?eZettels.map(z=>{return <Zettel key={z.id} z={z} />;}):null}</Container></Accordion.Body>
+                            <Container className="d-flex flex-wrap justify-content-center">{eZettels?eZettels.map(z=>{return <IndexBoxZettel key={z.id} z={z} />;}):null}</Container></Accordion.Body>
                     </Accordion.Item>
                     <Accordion.Item eventKey="i">
                         <Accordion.Header>Index-Zettel&nbsp;{iZettels?<span>({iZettels.length})</span>:<Spinner size="sm" animation="border" />}</Accordion.Header>
                         <Accordion.Body>
-                            <Container className="d-flex flex-wrap justify-content-center">{iZettels?iZettels.map(z=>{return <Zettel key={z.id} z={z} />;}):null}</Container></Accordion.Body>
+                            <Container className="d-flex flex-wrap justify-content-center">{iZettels?iZettels.map(z=>{return <IndexBoxZettel key={z.id} z={z} />;}):null}</Container></Accordion.Body>
                     </Accordion.Item>
                     <Accordion.Item eventKey="r">
                         <Accordion.Header>restliche Zettel&nbsp;{rZettels?<span>({rZettels.length})</span>:<Spinner size="sm" animation="border" />}</Accordion.Header>
                         <Accordion.Body>
-                            <Container className="d-flex flex-wrap justify-content-center">{rZettels?rZettels.map(z=>{return <Zettel key={z.id} z={z} />;}):null}</Container></Accordion.Body>
+                            <Container className="d-flex flex-wrap justify-content-center">{rZettels?rZettels.map(z=>{return <IndexBoxZettel key={z.id} z={z} />;}):null}</Container></Accordion.Body>
                     </Accordion.Item>
                 </Accordion>
                 </Col>
