@@ -669,33 +669,40 @@ class Opera extends React.Component{
                 <td key="2" className="c5_min"><span dangerouslySetInnerHTML={parseHTML(o.bibliography)}></span><ul className="noneLst">{editionLst}</ul></td>
             ]});
             } else if(listName==="tll_index"){
+                let classNameTxt = "c0_tll";
                 let leftPad = null;
                 let abbrComponent;
                 if(o.auctor_id!==null&&o.abbr_opus!==null){ // author + work
-                    abbrComponent = <><aut>{o.abbr}</aut> <span style={{color: "green"}}> {o.abbr_opus}</span>{o.citation&&<span style={{color: "red"}}> {o.citation}</span>}</>;
+                    classNameTxt += ` a_${o.auctor_id} o_${o.opus_id} l_${o.locus_id}`;
+                    abbrComponent = <><aut>{o.auctor}</aut> <span style={{color: "green"}}> {o.opus}</span>{o.locus&&<span style={{color: "red"}}> {o.locus}</span>}</>;
                 }else if(o.auctor_id!==null){ // work
-                    if(o.citation){
-                        abbrComponent = <><span>{o.abbr}</span> <span style={{color: "red"}} dangerouslySetInnerHTML={parseHTML(o.citation)}></span></>;
+                    classNameTxt += ` o_${o.opus_id} l_${o.locus_id}`;
+                    if(o.locus){
+                        abbrComponent = <><span>{o.opus}</span> <span style={{color: "red"}} dangerouslySetInnerHTML={parseHTML(o.locus)}></span></>;
                     }else{
-                        abbrComponent = o.abbr;
+                        abbrComponent = o.opus;
                     }
                 }else{ // author
-                    abbrComponent = <aut>{o.abbr}</aut>;
+                    classNameTxt += ` a_${o.auctor_id}`;
+                    abbrComponent = <aut>{o.auctor}</aut>;
                 }
 
                 if(o.in_use===0){
                     abbrComponent = <><span style={{color: "orange"}}>[</span>{abbrComponent}<span style={{color: "orange"}}>]</span></>;
                 }
 
-                if(o.example){leftPad = "4rem"}
+                if(o.opus===null&&o.locus!==null){leftPad = "4rem"}
                 else if(o.auctor_id>0){leftPad = "2rem"}
                 trLst.push({o: o, data: [
-                   <td key="0" className="c0_tll" dangerouslySetInnerHTML={parseHTML(o.ord)}></td>,
+                   <td key="0" className={classNameTxt} dangerouslySetInnerHTML={parseHTML(o.ord)}></td>,
                    <td key="1" className="c1_tll" style={{paddingLeft: leftPad}} dangerouslySetInnerHTML={parseHTML(o.date_display)}></td>,
                    <td key="2" className="c2_tll" style={{paddingLeft: leftPad}}>{abbrComponent}</td>,
-                   <td key="3" className="c3_tll" style={{paddingLeft: leftPad}} dangerouslySetInnerHTML={parseHTML(o.ref_source)}></td>,
-                   <td key="4" className="c4_tll" style={{paddingLeft: leftPad}} dangerouslySetInnerHTML={parseHTML(o.full)}></td>,
-                   <td key="5" className="c5_tll" style={{paddingLeft: leftPad}}><div dangerouslySetInnerHTML={parseHTML(o.bibliography)}></div><ul className="noneLst">{editionLst}</ul></td>,
+                   <td key="3" className="c3_tll" style={{paddingLeft: leftPad}}><span onClick={()=>{
+                    const el = document.querySelector(`.${o.ref_target}`);
+                    if(el){el.scrollIntoView({behavior: "auto", block: "center"})}
+                   }} style={{textDecoration: o.ref_target?"underline":"", cursor: o.ref_target?"pointer":"default"}} dangerouslySetInnerHTML={parseHTML(o.ref_text)}></span></td>,
+                   <td key="4" className="c4_tll" style={{paddingLeft: leftPad}} dangerouslySetInnerHTML={parseHTML(o.explicatio)}></td>,
+                   <td key="5" className="c5_tll" style={{paddingLeft: leftPad}}><div dangerouslySetInnerHTML={parseHTML(o.editiones)}></div><ul className="noneLst">{editionLst}</ul></td>,
                 ]});
             } else {
                 throw new Error("listname unknown!")
