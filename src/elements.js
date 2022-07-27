@@ -67,7 +67,6 @@ class TableView extends React.Component{
         </>;
     }
     async reloadEntry(id){
-        console.log("boom");
         if(id>0){
             let newItem = await arachne[this.props.tblName].get({id: id}); newItem = newItem[0];
             let currentElements = [...this.state.currentElements];
@@ -645,6 +644,7 @@ class AutoComplete extends React.Component{
             currentOptionId: null,
             userSelected: false,
             idCol: props.idCol?props.idCol:"id",
+            selectedId: null,
         };
     }
     render(){
@@ -659,16 +659,23 @@ class AutoComplete extends React.Component{
             let i = -1;
             for(const option of this.state.options){
                 i++;
-                optionsElement.push(<div key={option.id} id={i} data-id={option[this.state.idCol]} data-value={option[this.props.returnCol]} onClick={e=>{this.props.onChange(e.target.dataset.value, e.target.dataset.id);this.setState({userSelected: true})}} style={{cursor: "default", color: this.state.currentOptionId===i?"#2364AA":"inherit"}}>{option[this.props.returnCol]}</div>);
+                optionsElement.push(<div key={option.id} id={i} data-id={option[this.state.idCol]} data-value={option[this.props.returnCol]} onClick={e=>{this.setState({selectedId: e.target.dataset.id});this.props.onChange(e.target.dataset.value, e.target.dataset.id);this.setState({userSelected: true})}} style={{cursor: "default", color: this.state.currentOptionId===i?"#2364AA":"inherit"}}>{option[this.props.returnCol]}</div>);
             }
         }
+        let inputStyle = {...this.props.style};
+        if(this.state.selectedId!==null){
+            //inputStyle.backgroundColor = "lightgreen";
+            inputStyle.border = "2px solid green";
+            inputStyle.borderRadius = "4px";
+        }
         return <div>
-            <input placeholder={this.state.placeholder} className={this.props.classList} style={this.props.style} type="text" value={this.props.value} onBlur={()=>{setTimeout(()=>{this.setState({userSelected: true})},300)}} onChange={e=>{this.changeInputValue(e.target.value)}} onKeyDown={e=>{this.changeSelectedOption(e)}} />
+            <input placeholder={this.state.placeholder} className={this.props.classList} style={inputStyle} type="text" value={this.props.value} onBlur={()=>{setTimeout(()=>{this.setState({userSelected: true})},300)}} onChange={e=>{this.changeInputValue(e.target.value)}} onKeyDown={e=>{this.changeSelectedOption(e)}} />
             {optionsElement.length>0?<div style={optionsBoxStyle} className="mainColors">{optionsElement}</div>:null}
         </div>;
     }
     async changeInputValue(newValue){
         this.props.onChange(newValue, null);
+        this.setState({selectedId: null});
         if(newValue!==""){
             let query = {};
             query[this.props.searchCol] = newValue+"*";
@@ -690,6 +697,7 @@ class AutoComplete extends React.Component{
             // enter
             this.props.onChange(this.state.options[this.state.currentOptionId][this.props.returnCol], this.state.options[this.state.currentOptionId][this.state.idCol]);
             this.setState({userSelected: true});
+            this.setState({selectedId: this.state.options[this.state.currentOptionId][this.state.idCol]});
         }
     }
 }

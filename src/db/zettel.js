@@ -2,7 +2,7 @@ import { Form, Row, Col, Button, Navbar, Modal, Offcanvas, Container, Spinner, A
 import React, { useState, useEffect } from "react";
 
 import { arachne } from "./../arachne.js";
-import { Navigator, parseHTML, SearchBox, SelectMenu, Selector, AutoComplete, ToolKit, SearchHint, StatusButton, CommentBox } from "./../elements.js";
+import { Navigator, parseHTML, SearchBox, SelectMenu, Selector, ToolKit, SearchHint, StatusButton, CommentBox } from "./../elements.js";
 
 let zettelSearchItems;
 let zettelBatchOptions;
@@ -283,7 +283,7 @@ function ZettelAsideSingle(props){
                     </Accordion.Body>
                 </Accordion.Item>
                 <Accordion.Item eventKey={4}>
-                    <Accordion.Header>Fliesstext</Accordion.Header>
+                    <Accordion.Header>Fließtext</Accordion.Header>
                     <Accordion.Body>
                         <p>{props.item.ocr_text_corr}</p>
                         <p>{props.item.scan_id}</p>

@@ -1,11 +1,191 @@
-import { Form, Navbar, Container, Offcanvas, Placeholder, Button, Dropdown } from "react-bootstrap";
+import { Accordion, Form, Navbar, Container, Offcanvas, Placeholder, Button, Dropdown, Row, Col } from "react-bootstrap";
 import React, { useState, useEffect } from "react";
 import { faExternalLinkAlt, faForward, faBackward, faCaretDown } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import { arachne } from "./../arachne.js";
-import { parseHTML, SelectMenu, ToolKit, StatusButton, sleep } from "./../elements.js";
+import { AutoComplete, parseHTML, SelectMenu, ToolKit, StatusButton, sleep } from "./../elements.js";
 
+function OperaAsideTLL(props){
+    const [auctor, setAuctor]=useState(null);
+    const [opus, setOpus]=useState(null);
+    const [locus, setLocus]=useState(null);
+    const [refLst, setRefLst]=useState(null); // tblName, searchCol/ReturnCol
+    const [refName, setRefName]=useState(null);
+    const [sortAuctorAfterValue, setSortAuctorAfterValue]=useState(null);
+    const [sortAuctorAfterId, setSortAuctorAfterId]=useState(null);
+    const [sortAuctorAfterIdInital, setSortAuctorAfterIdInital]=useState(null);
+    const [sortOpusAfterValue, setSortOpusAfterValue]=useState(null);
+    const [sortOpusAfterId, setSortOpusAfterId]=useState(null);
+    const [sortOpusAfterIdInital, setSortOpusAfterIdInital]=useState(null);
+    useEffect(()=>{
+        const fetchAuctor=async()=>{
+            const newAuctor = await arachne.auctores.get({id: props.item.auctor_id});
+            setAuctor(newAuctor[0]);
+            const auctorAbove = await arachne.auctores.search([{c: "sort_nr", o: "=", v: newAuctor[0].sort_nr-1}], {select: ["id", "auctor"]});
+            if(auctorAbove.length>0){
+                setSortAuctorAfterValue(auctorAbove[0].auctor);
+                setSortAuctorAfterId(auctorAbove[0].id);
+                setSortAuctorAfterIdInital(auctorAbove[0].id);
+            }else{
+                setSortAuctorAfterValue(null);
+                setSortAuctorAfterId(null);
+                setSortAuctorAfterIdInital(null);
+            }
+        };
+        const fetchOpus=async()=>{
+            const newOpus = await arachne.opera.get({id: props.item.opus_id});
+            setOpus(newOpus[0]);
+            const opusAbove = await arachne.opera.search([{c: "sort_nr", o: "=", v: newOpus[0].sort_nr-1}], {select: ["id", "opus"]});
+            if(opusAbove.length>0){
+                setSortOpusAfterValue(opusAbove[0].opus);
+                setSortOpusAfterId(opusAbove[0].id);
+                setSortOpusAfterIdInital(opusAbove[0].id);
+            }else{
+                setSortOpusAfterValue(null);
+                setSortOpusAfterId(null);
+                setSortOpusAfterIdInital(null);
+            }
+        };
+        const fetchLocus=async()=>{};
+        if(props.item.auctor_id&&props.item.auctor){fetchAuctor()}else{setAuctor(null)}
+        if(props.item.opus_id&&props.item.opus){fetchOpus()}else{setOpus(null)}
+        if(props.item.locus_id){fetchLocus()}else{setLocus(null)}
+    }, [props.item]);
+    const saveValue=(obj, key, val)=>{
+        if(obj==="a"){
+            let newAuctor = {...auctor};
+            newAuctor[key] = val!==""?val:null;
+            setAuctor(newAuctor);
+        }
+    }
+    const saveValues=(obj, lst)=>{
+        if(obj==="a"){
+            let newAuctor = {...auctor};
+            lst.forEach(k=>{newAuctor[k[0]] = k[1]!==""?k[1]:null});
+            setAuctor(newAuctor);
+        }
+    }
+    return <Offcanvas show={true} placement="end" scroll={true} backdrop={false} onHide={()=>{props.onClose()}}>
+        <Offcanvas.Header closeButton>
+            <Offcanvas.Title></Offcanvas.Title>
+        </Offcanvas.Header>
+        <Offcanvas.Body>
+            <Accordion defaultActiveKey="0">
+                {auctor&&<Accordion.Item eventKey="0">
+                    <Accordion.Header>auctor <span style={{marginLeft: "10px", fontSize: "75%"}}>(ID: {auctor.id})</span></Accordion.Header>
+                    <Accordion.Body>
+                        <Container>
+                            <Row className="mb-2"><Col>Name:</Col><Col><input type="text" value={auctor.auctor?auctor.auctor:""} onChange={e=>{saveValue("a", "auctor", e.target.value)}} /></Col></Row>
+                            <Row className="mb-2"><Col>Ordungs-zahl:</Col><Col><input type="text" value={auctor.ord?auctor.ord:""} onChange={e=>{saveValue("a", "ord", e.target.value)}} /></Col></Row>
+                            <Row className="mb-2"><Col>Sortierung: <small>unterhalb von...</small></Col><Col>
+                                <AutoComplete style={{position: "relative"}} onChange={(value, id)=>{setSortAuctorAfterValue(value);setSortAuctorAfterId(id)}} value={sortAuctorAfterValue?sortAuctorAfterValue:""} tbl="auctores"  searchCol="auctor" returnCol="auctor" />
+                            </Col></Row>
+                            <Row className="mb-2"><Col>Datierung:</Col><Col><input type="text" value={auctor.date_display?auctor.date_display:""} onChange={e=>{saveValue("a", "date_display", e.target.value)}} /></Col></Row>
+                            <Row className="mb-2"><Col><i>explicatio</i>:</Col><Col><input type="text" value={auctor.explicatio?auctor.explicatio:""} onChange={e=>{saveValue("a", "explicatio", e.target.value)}} /></Col></Row>
+                            <Row className="mb-2"><Col><i>editiones</i>:</Col><Col><input type="text" value={auctor.editiones?auctor.editiones:""} onChange={e=>{saveValue("a", "editiones", e.target.value)}} /></Col></Row>
+                            <Row className="mb-2"><Col>In Benutzung:</Col><Col><SelectMenu style={{width: "230px"}} options={[["", "Nein"], [1, "Ja"]]} value={auctor.in_use?auctor.in_use:""} onChange={e=>{saveValue("a", "in_use", e.target.value)}} /></Col></Row>
+                            <Row className="mb-2"><Col>Referenz-Text:</Col><Col><input type="text" value={auctor.ref_text?auctor.ref_text:""} onChange={e=>{
+                                if(e.target.value===""){
+                                    saveValues("a", [
+                                            ["ref_id", null],
+                                            ["ref_type", null],
+                                            ["ref_text", e.target.value]
+                                        ]);
+                                }else{saveValue("a", "ref_text", e.target.value)}
+                            }} /></Col></Row>
+                            {auctor.ref_text&&<Row className="mb-2"><Col>Referenz-Typ:</Col><Col><SelectMenu style={{width: "230px"}} options={[["", ""], [1, "auctor"], [2, "opus"], [3, "locus"]]} value={auctor.ref_type?auctor.ref_type:""} onChange={e=>{
+                                            saveValue("a", "ref_type", e.target.value);
+                                            if(e.target.value==="1"){setRefLst(["auctores", "auctor"])}
+                                            else if(e.target.value==="2"){setRefLst(["opera_ac", "ac_web"])}
+                                            else if(e.target.value==="3"){setRefLst(["loci_ac", "ac_web"])}
+                                            else{setRefLst(null)}
+                                        }} /></Col></Row>}
+                            {auctor.ref_text&&refLst&&<Row><Col>Referenz:</Col><Col><AutoComplete style={{position: "relative"}} onChange={(value, id)=>{setRefName(value);saveValue("a", "ref_id", id)}} value={refName?refName:""} tbl={refLst[0]}  searchCol={refLst[1]} returnCol={refLst[1]} /></Col></Row>}
+                            <Row className="mt-4"><Col><StatusButton onClick={async()=>{
+                                console.log(auctor);
+                                await arachne.auctores.save({...auctor});
+                                if(sortAuctorAfterIdInital!==sortAuctorAfterId&&sortAuctorAfterId!==null){await arachne.exec("SortIndex", false, ["auctores", auctor.id,sortAuctorAfterId])}
+                                return {status: 1};
+                            }} value="speichern" /></Col><Col><Button variant="danger" onClick={async()=>{
+                                if(window.confirm("Soll der auctor wirklich gelöscht werden? Alle verknüpften opera und loci werden ebenfalls gelöscht!")){
+                                    const delOpera = await arachne.opera.get({auctor_id: auctor.id});
+                                    let delLociLst = [];
+                                    for(const delOpus of delOpera){
+                                        const delLoci = await arachne.loci.get({opus_id: delOpus.id}, {select: ["id"]});
+                                        delLociLst = delLociLst.concat(delLoci.map(d=>d.id));
+                                    }
+                                    await arachne.loci.delete(delLociLst);
+                                    await arachne.opera.delete(delOpera.map(o=>o.id));
+                                    await arachne.auctores.delete(auctor.id);
+                                    props.onClose();
+                                    alert("Löschen erfolgreich. Aktualisieren Sie den Index, damit die gelöschten Einträge verschwinden.")
+                                }
+                            }}>löschen</Button></Col></Row>
+                        </Container>
+                    </Accordion.Body>
+                </Accordion.Item>}
+                {opus&&<Accordion.Item eventKey="1">
+                    <Accordion.Header>opus <span style={{fontSize: "75%"}}>(ID: {opus.id})</span></Accordion.Header>
+                    <Accordion.Body>
+                        <Container>
+                            {/*<Row className="mb-2"><Col>Name:</Col><Col><input type="text" value={auctor.auctor?auctor.auctor:""} onChange={e=>{saveValue("a", "auctor", e.target.value)}} /></Col></Row>
+                                                        <Row className="mb-2"><Col>Ordungs-zahl:</Col><Col><input type="text" value={auctor.ord?auctor.ord:""} onChange={e=>{saveValue("a", "ord", e.target.value)}} /></Col></Row>
+                                                        <Row className="mb-2"><Col>Sortierung: <small>unterhalb von...</small></Col><Col>
+                                                            <AutoComplete style={{position: "relative"}} onChange={(value, id)=>{setSortAuctorAfterValue(value);setSortAuctorAfterId(id)}} value={sortAuctorAfterValue?sortAuctorAfterValue:""} tbl="auctores"  searchCol="auctor" returnCol="auctor" />
+                                                        </Col></Row>
+                                                        <Row className="mb-2"><Col>Datierung:</Col><Col><input type="text" value={auctor.date_display?auctor.date_display:""} onChange={e=>{saveValue("a", "date_display", e.target.value)}} /></Col></Row>
+                                                        <Row className="mb-2"><Col><i>explicatio</i>:</Col><Col><input type="text" value={auctor.explicatio?auctor.explicatio:""} onChange={e=>{saveValue("a", "explicatio", e.target.value)}} /></Col></Row>
+                                                        <Row className="mb-2"><Col><i>editiones</i>:</Col><Col><input type="text" value={auctor.editiones?auctor.editiones:""} onChange={e=>{saveValue("a", "editiones", e.target.value)}} /></Col></Row>
+                                                        <Row className="mb-2"><Col>In Benutzung:</Col><Col><SelectMenu style={{width: "230px"}} options={[["", "Nein"], [1, "Ja"]]} value={auctor.in_use?auctor.in_use:""} onChange={e=>{saveValue("a", "in_use", e.target.value)}} /></Col></Row>
+                                                        <Row className="mb-2"><Col>Referenz-Text:</Col><Col><input type="text" value={auctor.ref_text?auctor.ref_text:""} onChange={e=>{
+                                                            if(e.target.value===""){
+                                                                saveValues("a", [
+                                                                        ["ref_id", null],
+                                                                        ["ref_type", null],
+                                                                        ["ref_text", e.target.value]
+                                                                    ]);
+                                                            }else{saveValue("a", "ref_text", e.target.value)}
+                                                        }} /></Col></Row>
+                                                        {auctor.ref_text&&<Row className="mb-2"><Col>Referenz-Typ:</Col><Col><SelectMenu style={{width: "230px"}} options={[["", ""], [1, "auctor"], [2, "opus"], [3, "locus"]]} value={auctor.ref_type?auctor.ref_type:""} onChange={e=>{
+                                                                        saveValue("a", "ref_type", e.target.value);
+                                                                        if(e.target.value==="1"){setRefLst(["auctores", "auctor"])}
+                                                                        else if(e.target.value==="2"){setRefLst(["opera_ac", "ac_web"])}
+                                                                        else if(e.target.value==="3"){setRefLst(["loci_ac", "ac_web"])}
+                                                                        else{setRefLst(null)}
+                                                                    }} /></Col></Row>}
+                                                        {auctor.ref_text&&refLst&&<Row><Col>Referenz:</Col><Col><AutoComplete style={{position: "relative"}} onChange={(value, id)=>{setRefName(value);saveValue("a", "ref_id", id)}} value={refName?refName:""} tbl={refLst[0]}  searchCol={refLst[1]} returnCol={refLst[1]} /></Col></Row>}
+                                                        <Row className="mt-4"><Col><StatusButton onClick={async()=>{
+                                                            console.log(auctor);
+                                                            await arachne.auctores.save({...auctor});
+                                                            if(sortAuctorAfterIdInital!==sortAuctorAfterId&&sortAuctorAfterId!==null){await arachne.exec("SortIndex", false, ["auctores", auctor.id,sortAuctorAfterId])}
+                                                            return {status: 1};
+                                                        }} value="speichern" /></Col><Col><Button variant="danger" onClick={async()=>{
+                                                            if(window.confirm("Soll der auctor wirklich gelöscht werden? Alle verknüpften opera und loci werden ebenfalls gelöscht!")){
+                                                                const delOpera = await arachne.opera.get({auctor_id: auctor.id});
+                                                                let delLociLst = [];
+                                                                for(const delOpus of delOpera){
+                                                                    const delLoci = await arachne.loci.get({opus_id: delOpus.id}, {select: ["id"]});
+                                                                    delLociLst = delLociLst.concat(delLoci.map(d=>d.id));
+                                                                }
+                                                                await arachne.loci.delete(delLociLst);
+                                                                await arachne.opera.delete(delOpera.map(o=>o.id));
+                                                                await arachne.auctores.delete(auctor.id);
+                                                                props.onClose();
+                                                                alert("Löschen erfolgreich. Aktualisieren Sie den Index, damit die gelöschten Einträge verschwinden.")
+                                                            }
+                                                        }}>löschen</Button></Col></Row>*/}
+                        </Container>
+                    </Accordion.Body>
+                </Accordion.Item>}
+                {locus&&<Accordion.Item eventKey="2">
+                                    <Accordion.Header>Accordion Item #1</Accordion.Header>
+                                    <Accordion.Body></Accordion.Body>
+                                </Accordion.Item>}
+            </Accordion>
+        </Offcanvas.Body>
+    </Offcanvas>;
+}
 class OperaAside extends React.Component{
     constructor(props){
         super(props);
@@ -576,7 +756,8 @@ class Opera extends React.Component{
                     }}
                 />
             </Container>
-            {arachne.access("o_edit")&&this.state.item?<OperaAside item={this.state.item} onUpdate={()=>{this.setState({item: null})}} onClose={()=>{this.setState({item: null})}} onReload={async ()=>{this.setState({item: null});await this.getLst()}} />:null}
+            {arachne.project_name==="mlw"&&arachne.access("o_edit")&&this.state.item?<OperaAside item={this.state.item} onUpdate={()=>{this.setState({item: null})}} onClose={()=>{this.setState({item: null})}} onReload={async ()=>{this.setState({item: null});await this.getLst()}} />:null}
+            {arachne.project_name==="tll"&&arachne.access("o_edit")&&this.state.item?<OperaAsideTLL item={this.state.item} onUpdate={()=>{this.setState({item: null})}} onClose={()=>{this.setState({item: null})}} onReload={async ()=>{this.setState({item: null});await this.getLst()}} />:null}
         </>;
     }
     componentDidMount(){this.getLst()}

@@ -7,7 +7,7 @@ import { faSync, faAngleRight, faAngleLeft } from "@fortawesome/free-solid-svg-i
 import 'chart.js/auto';
 import { Bar, Pie } from "react-chartjs-2";
 function arachneTbls(){
-    return ["project", "auctores", "edition", "lemma", "tll_index", "scan", "scan_lnk", "opera", "opera_ac", "zettel", "user", "seklit", "article", "zettel_lnk", "statistics", "scan_paths", "ocr_jobs", "comment", "scan_opera", "fulltext_search_view", "tags", "tag_lnks", "sections"];
+    return ["project", "auctores", "edition", "lemma", "tll_index", "scan", "scan_lnk", "opera", "opera_ac", "loci", "loci_ac", "zettel", "user", "seklit", "article", "zettel_lnk", "statistics", "scan_paths", "ocr_jobs", "comment", "scan_opera", "fulltext_search_view", "tags", "tag_lnks", "sections"];
 }
 /* ************************************************************************************* */
 function LemmaHeader(){
