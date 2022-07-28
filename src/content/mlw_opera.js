@@ -57,6 +57,16 @@ function OperaAsideTLL(props){
             let newAuctor = {...auctor};
             newAuctor[key] = val!==""?val:null;
             setAuctor(newAuctor);
+        }else if(obj==="o"){
+            let newOpus={...opus};
+            newOpus[key] = val!==""?val:null;
+            setOpus(newOpus);
+        }else if(obj==="l"){
+            let newLocus = {...locus};
+            newLocus[key] = val!==""?val:null;
+            setLocus(newLocus);
+        }else{
+            throw new Error(`table ${obj} in saveValue() not found.`);
         }
     }
     const saveValues=(obj, lst)=>{
@@ -64,6 +74,16 @@ function OperaAsideTLL(props){
             let newAuctor = {...auctor};
             lst.forEach(k=>{newAuctor[k[0]] = k[1]!==""?k[1]:null});
             setAuctor(newAuctor);
+        }else if(obj==="o"){
+            let newOpus = {...opus};
+            lst.forEach(k=>{newOpus[k[0]] = k[1]!==""?k[1]:null});
+            setOpus(newOpus);
+        }else if(obj==="l"){
+            let newLocus = {...locus};
+            lst.forEach(k=>{newLocus[k[0]] = k[1]!==""?k[1]:null});
+            setLocus(newLocus);
+        }else{
+            throw new Error(`Table '${obj}' in saveValues() not found.`)
         }
     }
     return <Offcanvas show={true} placement="end" scroll={true} backdrop={false} onHide={()=>{props.onClose()}}>
@@ -85,15 +105,15 @@ function OperaAsideTLL(props){
                             <Row className="mb-2"><Col><i>explicatio</i>:</Col><Col><input type="text" value={auctor.explicatio?auctor.explicatio:""} onChange={e=>{saveValue("a", "explicatio", e.target.value)}} /></Col></Row>
                             <Row className="mb-2"><Col><i>editiones</i>:</Col><Col><input type="text" value={auctor.editiones?auctor.editiones:""} onChange={e=>{saveValue("a", "editiones", e.target.value)}} /></Col></Row>
                             <Row className="mb-2"><Col>In Benutzung:</Col><Col><SelectMenu style={{width: "230px"}} options={[["", "Nein"], [1, "Ja"]]} value={auctor.in_use?auctor.in_use:""} onChange={e=>{saveValue("a", "in_use", e.target.value)}} /></Col></Row>
-                            <Row className="mb-2"><Col>Referenz-Text:</Col><Col><input type="text" value={auctor.ref_text?auctor.ref_text:""} onChange={e=>{
-                                if(e.target.value===""){
-                                    saveValues("a", [
-                                            ["ref_id", null],
-                                            ["ref_type", null],
-                                            ["ref_text", e.target.value]
-                                        ]);
-                                }else{saveValue("a", "ref_text", e.target.value)}
-                            }} /></Col></Row>
+                            {opus===null&&<Row className="mb-2"><Col>Referenz-Text:</Col><Col><input type="text" value={auctor.ref_text?auctor.ref_text:""} onChange={e=>{
+                                    if(e.target.value===""){
+                                        saveValues("a", [
+                                                ["ref_id", null],
+                                                ["ref_type", null],
+                                                ["ref_text", e.target.value]
+                                            ]);
+                                    }else{saveValue("a", "ref_text", e.target.value)}
+                                }} /></Col></Row>}
                             {auctor.ref_text&&<Row className="mb-2"><Col>Referenz-Typ:</Col><Col><SelectMenu style={{width: "230px"}} options={[["", ""], [1, "auctor"], [2, "opus"], [3, "locus"]]} value={auctor.ref_type?auctor.ref_type:""} onChange={e=>{
                                             saveValue("a", "ref_type", e.target.value);
                                             if(e.target.value==="1"){setRefLst(["auctores", "auctor"])}
@@ -129,52 +149,57 @@ function OperaAsideTLL(props){
                     <Accordion.Header>opus <span style={{fontSize: "75%"}}>(ID: {opus.id})</span></Accordion.Header>
                     <Accordion.Body>
                         <Container>
-                            {/*<Row className="mb-2"><Col>Name:</Col><Col><input type="text" value={auctor.auctor?auctor.auctor:""} onChange={e=>{saveValue("a", "auctor", e.target.value)}} /></Col></Row>
-                                                        <Row className="mb-2"><Col>Ordungs-zahl:</Col><Col><input type="text" value={auctor.ord?auctor.ord:""} onChange={e=>{saveValue("a", "ord", e.target.value)}} /></Col></Row>
-                                                        <Row className="mb-2"><Col>Sortierung: <small>unterhalb von...</small></Col><Col>
-                                                            <AutoComplete style={{position: "relative"}} onChange={(value, id)=>{setSortAuctorAfterValue(value);setSortAuctorAfterId(id)}} value={sortAuctorAfterValue?sortAuctorAfterValue:""} tbl="auctores"  searchCol="auctor" returnCol="auctor" />
-                                                        </Col></Row>
-                                                        <Row className="mb-2"><Col>Datierung:</Col><Col><input type="text" value={auctor.date_display?auctor.date_display:""} onChange={e=>{saveValue("a", "date_display", e.target.value)}} /></Col></Row>
-                                                        <Row className="mb-2"><Col><i>explicatio</i>:</Col><Col><input type="text" value={auctor.explicatio?auctor.explicatio:""} onChange={e=>{saveValue("a", "explicatio", e.target.value)}} /></Col></Row>
-                                                        <Row className="mb-2"><Col><i>editiones</i>:</Col><Col><input type="text" value={auctor.editiones?auctor.editiones:""} onChange={e=>{saveValue("a", "editiones", e.target.value)}} /></Col></Row>
-                                                        <Row className="mb-2"><Col>In Benutzung:</Col><Col><SelectMenu style={{width: "230px"}} options={[["", "Nein"], [1, "Ja"]]} value={auctor.in_use?auctor.in_use:""} onChange={e=>{saveValue("a", "in_use", e.target.value)}} /></Col></Row>
-                                                        <Row className="mb-2"><Col>Referenz-Text:</Col><Col><input type="text" value={auctor.ref_text?auctor.ref_text:""} onChange={e=>{
-                                                            if(e.target.value===""){
-                                                                saveValues("a", [
-                                                                        ["ref_id", null],
-                                                                        ["ref_type", null],
-                                                                        ["ref_text", e.target.value]
-                                                                    ]);
-                                                            }else{saveValue("a", "ref_text", e.target.value)}
-                                                        }} /></Col></Row>
-                                                        {auctor.ref_text&&<Row className="mb-2"><Col>Referenz-Typ:</Col><Col><SelectMenu style={{width: "230px"}} options={[["", ""], [1, "auctor"], [2, "opus"], [3, "locus"]]} value={auctor.ref_type?auctor.ref_type:""} onChange={e=>{
-                                                                        saveValue("a", "ref_type", e.target.value);
-                                                                        if(e.target.value==="1"){setRefLst(["auctores", "auctor"])}
-                                                                        else if(e.target.value==="2"){setRefLst(["opera_ac", "ac_web"])}
-                                                                        else if(e.target.value==="3"){setRefLst(["loci_ac", "ac_web"])}
-                                                                        else{setRefLst(null)}
-                                                                    }} /></Col></Row>}
-                                                        {auctor.ref_text&&refLst&&<Row><Col>Referenz:</Col><Col><AutoComplete style={{position: "relative"}} onChange={(value, id)=>{setRefName(value);saveValue("a", "ref_id", id)}} value={refName?refName:""} tbl={refLst[0]}  searchCol={refLst[1]} returnCol={refLst[1]} /></Col></Row>}
-                                                        <Row className="mt-4"><Col><StatusButton onClick={async()=>{
-                                                            console.log(auctor);
-                                                            await arachne.auctores.save({...auctor});
-                                                            if(sortAuctorAfterIdInital!==sortAuctorAfterId&&sortAuctorAfterId!==null){await arachne.exec("SortIndex", false, ["auctores", auctor.id,sortAuctorAfterId])}
-                                                            return {status: 1};
-                                                        }} value="speichern" /></Col><Col><Button variant="danger" onClick={async()=>{
-                                                            if(window.confirm("Soll der auctor wirklich gelöscht werden? Alle verknüpften opera und loci werden ebenfalls gelöscht!")){
-                                                                const delOpera = await arachne.opera.get({auctor_id: auctor.id});
-                                                                let delLociLst = [];
-                                                                for(const delOpus of delOpera){
-                                                                    const delLoci = await arachne.loci.get({opus_id: delOpus.id}, {select: ["id"]});
-                                                                    delLociLst = delLociLst.concat(delLoci.map(d=>d.id));
-                                                                }
-                                                                await arachne.loci.delete(delLociLst);
-                                                                await arachne.opera.delete(delOpera.map(o=>o.id));
-                                                                await arachne.auctores.delete(auctor.id);
-                                                                props.onClose();
-                                                                alert("Löschen erfolgreich. Aktualisieren Sie den Index, damit die gelöschten Einträge verschwinden.")
-                                                            }
-                                                        }}>löschen</Button></Col></Row>*/}
+                        <Row className="mb-2"><Col>Name:</Col><Col><input type="text" value={opus.opus?opus.opus:""} onChange={e=>{saveValue("o", "opus", e.target.value)}} /></Col></Row>
+                        <Row className="mb-2"><Col>Ordungszahl:</Col><Col><input type="text" value={opus.ord?opus.ord:""} onChange={e=>{saveValue("o", "ord", e.target.value)}} /></Col></Row>
+                        <Row className="mb-2">
+                            <Col>Sortierung: <small>unterhalb von...</small></Col>
+                            <Col>
+                                <AutoComplete style={{position: "relative"}} onChange={(value, id)=>{setSortOpusAfterValue(value);setSortOpusAfterId(id)}} value={sortOpusAfterValue?sortOpusAfterValue:""} tbl="opera_ac"  searchCol="ac_web" returnCol="ac_web" />
+                            </Col>
+                        </Row>
+                        <Row className="mb-2"><Col>Datierung:</Col><Col><input type="text" value={opus.date_display?opus.date_display:""} onChange={e=>{saveValue("o", "date_display", e.target.value)}} /></Col></Row>
+                        <Row className="mb-2">
+                                <Col>verknpft. <i>auctor</i>:</Col>
+                                <Col><SelectMenu options={[]} value={opus.auctor_id?opus.auctor_id:""} /></Col>
+                            </Row>
+                            <Row className="mb-2">
+                                <Col>Mit <i>auctor</i> auf einer Zeile?</Col>
+                                <Col><SelectMenu options={[[0, "Nein"], [1, "Ja"]]} value={opus.same_line?opus.same_line:0} onChange={e=>{saveValue("o", "same_line", e.target.value)}} /></Col>
+                            </Row>
+                        <Row className="mb-2"><Col><i>explicatio</i>:</Col><Col><input type="text" value={opus.explicatio?opus.explicatio:""} onChange={e=>{saveValue("o", "explicatio", e.target.value)}} /></Col></Row>
+                        <Row className="mb-2"><Col><i>editiones</i>:</Col><Col><input type="text" value={opus.editiones?opus.editiones:""} onChange={e=>{saveValue("o", "editiones", e.target.value)}} /></Col></Row>
+                        <Row className="mb-2"><Col>In Benutzung:</Col><Col><SelectMenu style={{width: "230px"}} options={[["", "Nein"], [1, "Ja"]]} value={opus.in_use?opus.in_use:""} onChange={e=>{saveValue("o", "in_use", e.target.value)}} /></Col></Row>
+                        <Row className="mb-2"><Col>Referenz-Text:</Col><Col><input type="text" value={opus.ref_text?opus.ref_text:""} onChange={e=>{
+                                    if(e.target.value===""){
+                                        saveValues("o", [
+                                                ["ref_id", null],
+                                                ["ref_type", null],
+                                                ["ref_text", e.target.value]
+                                            ]);
+                                    }else{saveValue("o", "ref_text", e.target.value)}
+                                }} /></Col></Row>
+                        {opus.ref_text&&<Row className="mb-2"><Col>Referenz-Typ:</Col><Col><SelectMenu style={{width: "230px"}} options={[["", ""], [1, "auctor"], [2, "opus"], [3, "locus"]]} value={opus.ref_type?opus.ref_type:""} onChange={e=>{
+                                saveValue("o", "ref_type", e.target.value);
+                                if(e.target.value==="1"){setRefLst(["auctores", "auctor"])}
+                                else if(e.target.value==="2"){setRefLst(["opera_ac", "ac_web"])}
+                                else if(e.target.value==="3"){setRefLst(["loci_ac", "ac_web"])}
+                                else{setRefLst(null)}
+                            }} /></Col></Row>}
+                        {opus.ref_text&&refLst&&<Row><Col>Referenz:</Col><Col><AutoComplete style={{position: "relative"}} onChange={(value, id)=>{setRefName(value);saveValue("a", "ref_id", id)}} value={refName?refName:""} tbl={refLst[0]}  searchCol={refLst[1]} returnCol={refLst[1]} /></Col></Row>}
+                        <Row className="mt-4"><Col><StatusButton onClick={async()=>{
+                            console.log(opus);
+                            await arachne.opera.save({...opus});
+                            if(sortOpusAfterIdInital!==sortOpusAfterId&&sortOpusAfterId!==null){await arachne.exec("SortIndex", false, ["opera", opus.id,sortOpusAfterId])}
+                            return {status: 1};
+                        }} value="speichern" /></Col><Col><Button variant="danger" onClick={async()=>{
+                            if(window.confirm("Soll das opus wirklich gelöscht werden? Alle verknüpften loci werden ebenfalls gelöscht!")){
+                                const delLoci = await arachne.loci.get({opus_id: opus.id}, {select: ["id"]});
+                                await arachne.loci.delete(delLoci.map(l=>l.id));
+                                await arachne.opera.delete(opus.id);
+                                props.onClose();
+                                alert("Löschen erfolgreich. Aktualisieren Sie den Index, damit die gelöschten Einträge verschwinden.")
+                            }
+                        }}>löschen</Button></Col></Row>
                         </Container>
                     </Accordion.Body>
                 </Accordion.Item>}
