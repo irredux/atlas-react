@@ -728,11 +728,11 @@ function GeschichtsquellenImport(props){
             // /geschichtsquellen/<string:type>
             const db_data_autoren = await arachne.gq_autoren.getAll();
             const db_data_werke = await arachne.gq_werke.getAll();
-            //const re_autoren = await fetch("http://www.geschichtsquellen.de/autoren/data");
+            //const re_autoren = await fetch("https://www.geschichtsquellen.de/autoren/data");
             const re_autoren = await fetch(`${arachne.url}/geschichtsquellen/autoren`);
             const gq_autoren = await re_autoren.json();
             const re_werke = await fetch(`${arachne.url}/geschichtsquellen/werke`);
-            //const re_werke = await fetch("http://www.geschichtsquellen.de/werke/data");
+            //const re_werke = await fetch("https://www.geschichtsquellen.de/werke/data");
             const gq_werke = await re_werke.json();
 
             let newAddLst_autoren = [];
@@ -878,7 +878,7 @@ function GeschichtsquellenRow(props){
         <span style={{float: "right"}}><b style={{cursor: "pointer"}} onClick={()=>{setShowDetails(!showDetails)}}>{props.cEl.gq_author}</b> {props.cEl.gq_id?<small>(ID: {props.cEl.gq_id})</small>:null}</span>
         
         {showDetails&&<div style={{margin: "10px 0px", padding: "20px 15rem", borderTop: "1px solid black"}}>
-            <p><small><a href={`http://www.geschichtsquellen.de/autor/${props.cEl.gq_id}`} target="_blank">Autor in den Geschichtsquellen öffnen</a></small></p>
+            <p><small><a href={`https://www.geschichtsquellen.de/autor/${props.cEl.gq_id}`} target="_blank">Autor in den Geschichtsquellen öffnen</a></small></p>
             <table width="100%">
                 <tbody>
                     {workLst.map(w=><tr className="geschichtsquellenRows" key={w.id}><td width="33%">{w.ac_web}</td><td style={{paddingBottom: "10px"}}><SelectMenu style={{background: "none", width: "100%"}} options={gqWorkLst} onChange={async(event)=>{
@@ -889,7 +889,7 @@ function GeschichtsquellenRow(props){
                             }
                             setWorkLst([]);
                             await refreshWorkLst();
-                    }} value={w.gq_id} /></td><td width="10%" style={{textAlign: "right"}}>{w.gq_id&&<small><a href={`http://www.geschichtsquellen.de/werk/${w.gq_id}`} target="_blank">öffnen</a></small>}</td></tr>)}
+                    }} value={w.gq_id} /></td><td width="10%" style={{textAlign: "right"}}>{w.gq_id&&<small><a href={`https://www.geschichtsquellen.de/werk/${w.gq_id}`} target="_blank">öffnen</a></small>}</td></tr>)}
                 </tbody>
             </table>
         </div>}
