@@ -18,6 +18,13 @@ function OperaAsideTLL(props){
     const [sortOpusAfterValue, setSortOpusAfterValue]=useState(null);
     const [sortOpusAfterId, setSortOpusAfterId]=useState(null);
     const [sortOpusAfterIdInital, setSortOpusAfterIdInital]=useState(null);
+    const [sortLocusAfterValue, setSortLocusAfterValue]=useState(null);
+    const [sortLocusAfterId, setSortLocusAfterId]=useState(null);
+    const [sortLocusAfterIdInital, setSortLocusAfterIdInital]=useState(null);
+    const [sameLinePossibleOpus, setSameLinePossibleOpus]=useState(false);
+    const [sameLinePossibleLocus, setSameLinePossibleLocus]=useState(false);
+    const [auctoresSelect, setAuctoresSelect]=useState([]);
+    const [operaSelect, setOperaSelect]=useState([]);
     useEffect(()=>{
         const fetchAuctor=async()=>{
             const newAuctor = await arachne.auctores.get({id: props.item.auctor_id});
@@ -36,6 +43,11 @@ function OperaAsideTLL(props){
         const fetchOpus=async()=>{
             const newOpus = await arachne.opera.get({id: props.item.opus_id});
             setOpus(newOpus[0]);
+            const newAuctoresLst = await arachne.auctores.getAll({select: ["id", "auctor"]});
+            setAuctoresSelect(newAuctoresLst.map(a=>[a.id, a.auctor]));
+            const sameLineOpera = await arachne.opera.get({auctor_id: newOpus[0].auctor_id, same_line: 1}, {select: ["id"]});
+            if(sameLineOpera.length>0&&sameLineOpera[0].id!==props.item.opus_id){setSameLinePossibleOpus(false)}
+            else{setSameLinePossibleOpus(true)}
             const opusAbove = await arachne.opera.search([{c: "sort_nr", o: "=", v: newOpus[0].sort_nr-1}], {select: ["id", "opus"]});
             if(opusAbove.length>0){
                 setSortOpusAfterValue(opusAbove[0].opus);
@@ -47,9 +59,17 @@ function OperaAsideTLL(props){
                 setSortOpusAfterIdInital(null);
             }
         };
-        const fetchLocus=async()=>{};
-        if(props.item.auctor_id&&props.item.auctor){fetchAuctor()}else{setAuctor(null)}
-        if(props.item.opus_id&&props.item.opus){fetchOpus()}else{setOpus(null)}
+        const fetchLocus=async()=>{
+            const newLocus = await arachne.loci.get({id: props.item.locus_id});
+            setLocus(newLocus[0]);
+            const newOperaLst = await arachne.opera_ac.getAll({select: ["id", "ac_web"]});
+            setOperaSelect(newOperaLst.map(o=>[o.id, o.ac_web]));
+            const sameLineLoci = await arachne.loci.get({opus_id: newLocus[0].opus_id, same_line: 1}, {select: ["id"]});
+            if(sameLineLoci.length>0&&sameLineLoci[0].id!==props.item.locus_id){setSameLinePossibleLocus(false)}
+            else{setSameLinePossibleLocus(true)}
+        };
+        if(props.item.auctor_id){fetchAuctor()}else{setAuctor(null)}
+        if(props.item.opus_id){fetchOpus()}else{setOpus(null)}
         if(props.item.locus_id){fetchLocus()}else{setLocus(null)}
     }, [props.item]);
     const saveValue=(obj, key, val)=>{
@@ -146,7 +166,7 @@ function OperaAsideTLL(props){
                     </Accordion.Body>
                 </Accordion.Item>}
                 {opus&&<Accordion.Item eventKey="1">
-                    <Accordion.Header>opus <span style={{fontSize: "75%"}}>(ID: {opus.id})</span></Accordion.Header>
+                    <Accordion.Header>opus <span style={{marginLeft: "10px", fontSize: "75%"}}>(ID: {opus.id})</span></Accordion.Header>
                     <Accordion.Body>
                         <Container>
                         <Row className="mb-2"><Col>Name:</Col><Col><input type="text" value={opus.opus?opus.opus:""} onChange={e=>{saveValue("o", "opus", e.target.value)}} /></Col></Row>
@@ -160,12 +180,12 @@ function OperaAsideTLL(props){
                         <Row className="mb-2"><Col>Datierung:</Col><Col><input type="text" value={opus.date_display?opus.date_display:""} onChange={e=>{saveValue("o", "date_display", e.target.value)}} /></Col></Row>
                         <Row className="mb-2">
                                 <Col>verknpft. <i>auctor</i>:</Col>
-                                <Col><SelectMenu options={[]} value={opus.auctor_id?opus.auctor_id:""} /></Col>
+                                <Col><SelectMenu options={auctoresSelect} value={opus.auctor_id?opus.auctor_id:""} /></Col>
                             </Row>
-                            <Row className="mb-2">
-                                <Col>Mit <i>auctor</i> auf einer Zeile?</Col>
-                                <Col><SelectMenu options={[[0, "Nein"], [1, "Ja"]]} value={opus.same_line?opus.same_line:0} onChange={e=>{saveValue("o", "same_line", e.target.value)}} /></Col>
-                            </Row>
+                        {sameLinePossibleOpus&&<Row className="mb-2">
+                            <Col>Mit <i>auctor</i> auf einer Zeile?</Col>
+                            <Col><SelectMenu options={[[0, "Nein"], [1, "Ja"]]} value={opus.same_line?opus.same_line:0} onChange={e=>{saveValue("o", "same_line", e.target.value)}} /></Col>
+                        </Row>}
                         <Row className="mb-2"><Col><i>explicatio</i>:</Col><Col><input type="text" value={opus.explicatio?opus.explicatio:""} onChange={e=>{saveValue("o", "explicatio", e.target.value)}} /></Col></Row>
                         <Row className="mb-2"><Col><i>editiones</i>:</Col><Col><input type="text" value={opus.editiones?opus.editiones:""} onChange={e=>{saveValue("o", "editiones", e.target.value)}} /></Col></Row>
                         <Row className="mb-2"><Col>In Benutzung:</Col><Col><SelectMenu style={{width: "230px"}} options={[["", "Nein"], [1, "Ja"]]} value={opus.in_use?opus.in_use:""} onChange={e=>{saveValue("o", "in_use", e.target.value)}} /></Col></Row>
@@ -185,7 +205,7 @@ function OperaAsideTLL(props){
                                 else if(e.target.value==="3"){setRefLst(["loci_ac", "ac_web"])}
                                 else{setRefLst(null)}
                             }} /></Col></Row>}
-                        {opus.ref_text&&refLst&&<Row><Col>Referenz:</Col><Col><AutoComplete style={{position: "relative"}} onChange={(value, id)=>{setRefName(value);saveValue("a", "ref_id", id)}} value={refName?refName:""} tbl={refLst[0]}  searchCol={refLst[1]} returnCol={refLst[1]} /></Col></Row>}
+                        {opus.ref_text&&refLst&&<Row><Col>Referenz:</Col><Col><AutoComplete style={{position: "relative"}} onChange={(value, id)=>{setRefName(value);saveValue("o", "ref_id", id)}} value={refName?refName:""} tbl={refLst[0]}  searchCol={refLst[1]} returnCol={refLst[1]} /></Col></Row>}
                         <Row className="mt-4"><Col><StatusButton onClick={async()=>{
                             console.log(opus);
                             await arachne.opera.save({...opus});
@@ -204,9 +224,61 @@ function OperaAsideTLL(props){
                     </Accordion.Body>
                 </Accordion.Item>}
                 {locus&&<Accordion.Item eventKey="2">
-                                    <Accordion.Header>Accordion Item #1</Accordion.Header>
-                                    <Accordion.Body></Accordion.Body>
-                                </Accordion.Item>}
+                    <Accordion.Header>locus <span style={{marginLeft: "10px", fontSize: "75%"}}>(ID: {locus.id})</span></Accordion.Header>
+                    <Accordion.Body>
+                        <Container>
+                            <Row className="mb-2"><Col>Name:</Col><Col><input type="text" value={locus.locus?locus.locus:""} onChange={e=>{saveValue("l", "locus", e.target.value)}} /></Col></Row>
+                            <Row className="mb-2"><Col>Ordungszahl:</Col><Col><input type="text" value={locus.ord?locus.ord:""} onChange={e=>{saveValue("l", "ord", e.target.value)}} /></Col></Row>
+                            <Row className="mb-2">
+                                <Col>Sortierung: <small>unterhalb von...</small></Col>
+                                <Col>
+                                    <AutoComplete style={{position: "relative"}} onChange={(value, id)=>{setSortLocusAfterValue(value);setSortLocusAfterId(id)}} value={sortLocusAfterValue?sortLocusAfterValue:""} tbl="loci"  searchCol="locus" returnCol="locus" />
+                                </Col>
+                            </Row>
+                            <Row className="mb-2"><Col>Datierung:</Col><Col><input type="text" value={locus.date_display?locus.date_display:""} onChange={e=>{saveValue("l", "date_display", e.target.value)}} /></Col></Row>
+                            <Row className="mb-2">
+                                <Col>verknpft. <i>opus</i>:</Col>
+                                <Col><SelectMenu options={operaSelect} value={locus.opus_id?locus.opus_id:""} /></Col>
+                            </Row>
+                            {sameLinePossibleLocus&&<Row className="mb-2">
+                            <Col>Mit <i>opus</i> auf einer Zeile?</Col>
+                            <Col><SelectMenu options={[[0, "Nein"], [1, "Ja"]]} value={locus.same_line?locus.same_line:0} onChange={e=>{saveValue("l", "same_line", e.target.value)}} /></Col>
+                        </Row>}
+                        <Row className="mb-2"><Col><i>explicatio</i>:</Col><Col><input type="text" value={locus.explicatio?locus.explicatio:""} onChange={e=>{saveValue("l", "explicatio", e.target.value)}} /></Col></Row>
+                        <Row className="mb-2"><Col><i>editiones</i>:</Col><Col><input type="text" value={locus.editiones?locus.editiones:""} onChange={e=>{saveValue("l", "editiones", e.target.value)}} /></Col></Row>
+                        <Row className="mb-2"><Col>In Benutzung:</Col><Col><SelectMenu style={{width: "230px"}} options={[["", "Nein"], [1, "Ja"]]} value={locus.in_use?locus.in_use:""} onChange={e=>{saveValue("l", "in_use", e.target.value)}} /></Col></Row>
+                        <Row className="mb-2"><Col>Referenz-Text:</Col><Col><input type="text" value={locus.ref_text?locus.ref_text:""} onChange={e=>{
+                                    if(e.target.value===""){
+                                        saveValues("l", [
+                                                ["ref_id", null],
+                                                ["ref_type", null],
+                                                ["ref_text", e.target.value]
+                                            ]);
+                                    }else{saveValue("l", "ref_text", e.target.value)}
+                                }} /></Col></Row>
+                        {locus.ref_text&&<Row className="mb-2"><Col>Referenz-Typ:</Col><Col><SelectMenu style={{width: "230px"}} options={[["", ""], [1, "auctor"], [2, "opus"], [3, "locus"]]} value={locus.ref_type?locus.ref_type:""} onChange={e=>{
+                                saveValue("l", "ref_type", e.target.value);
+                                if(e.target.value==="1"){setRefLst(["auctores", "auctor"])}
+                                else if(e.target.value==="2"){setRefLst(["opera_ac", "ac_web"])}
+                                else if(e.target.value==="3"){setRefLst(["loci_ac", "ac_web"])}
+                                else{setRefLst(null)}
+                            }} /></Col></Row>}
+                        {locus.ref_text&&refLst&&<Row><Col>Referenz:</Col><Col><AutoComplete style={{position: "relative"}} onChange={(value, id)=>{setRefName(value);saveValue("l", "ref_id", id)}} value={refName?refName:""} tbl={refLst[0]}  searchCol={refLst[1]} returnCol={refLst[1]} /></Col></Row>}
+                        <Row className="mt-4"><Col><StatusButton onClick={async()=>{
+                            console.log(locus);
+                            await arachne.loci.save({...locus});
+                            if(sortLocusAfterIdInital!==sortLocusAfterId&&sortLocusAfterId!==null){await arachne.exec("SortIndex", false, ["loci", locus.id,sortLocusAfterId])}
+                            return {status: 1};
+                        }} value="speichern" /></Col><Col><Button variant="danger" onClick={async()=>{
+                            if(window.confirm("Soll der locus wirklich gelöscht werden?")){
+                                await arachne.loci.delete(locus.id);
+                                props.onClose();
+                                alert("Löschen erfolgreich. Aktualisieren Sie den Index, damit der gelöschte Eintrag verschwindet.")
+                            }
+                        }}>löschen</Button></Col></Row>
+                        </Container>
+                    </Accordion.Body>
+                </Accordion.Item>}
             </Accordion>
         </Offcanvas.Body>
     </Offcanvas>;
@@ -893,7 +965,7 @@ class Opera extends React.Component{
                     abbrComponent = <aut>{o.auctor}</aut>;
                 }
 
-                if(o.in_use===0){
+                if(o.in_use!==1){
                     abbrComponent = <><span style={{color: "orange"}}>[</span>{abbrComponent}<span style={{color: "orange"}}>]</span></>;
                 }
 

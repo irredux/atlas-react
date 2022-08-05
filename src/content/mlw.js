@@ -1,6 +1,6 @@
 import { parseHTML, parseHTMLPreview, SelectMenu, StatusButton, AutoComplete, TableView, useIntersectionObserver } from "./../elements.js";
 import { arachne } from "./../arachne.js";
-import { Accordion, Col, Row, Container, Form, NavDropdown, Card, ListGroup, Spinner } from "react-bootstrap";
+import { Accordion, Button, Col, Row, Container, Form, NavDropdown, Card, ListGroup, Spinner } from "react-bootstrap";
 import { useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSync } from "@fortawesome/free-solid-svg-icons";
@@ -721,7 +721,8 @@ function GeschichtsquellenImport(props){
     const [changeLstWerk, setChangeLstWerk] = useState([]);
     const [deleteLstWerk, setDeleteLstWerk] = useState([]);
     const [importError, setImportError] = useState(null);
-
+    const [loadSpinner, setLoadSpinner] = useState(true);
+    const [showDetails, setShowDetails] = useState(false);
     useEffect(()=>{
         const fetchData=async()=>{
             // /geschichtsquellen/<string:type>
@@ -734,7 +735,6 @@ function GeschichtsquellenImport(props){
             //const re_werke = await fetch("http://www.geschichtsquellen.de/werke/data");
             const gq_werke = await re_werke.json();
 
-
             let newAddLst_autoren = [];
             let newChangeLst_autoren = [];
             let newDeleteLst_autoren = [];
@@ -744,6 +744,8 @@ function GeschichtsquellenImport(props){
 
             const db_werke_ids = db_data_werke.map(d=>d.gq_id);
             const db_autoren_ids = db_data_autoren.map(d=>d.gq_id);
+            const gq_autoren_ids = [];
+            const gq_werke_ids = [];
             // werke
             for(const gq_id in gq_werke.data){
                 const gqWork = {
@@ -752,6 +754,7 @@ function GeschichtsquellenImport(props){
                     werk_lat: gq_werke.data[gq_id][0]["_"].replace(/<.*?>/g, ""),
                     werk_de: gq_werke.data[gq_id][1]["_"],
                 };
+                gq_werke_ids.push(gqWork.gq_id);
                 if(db_werke_ids.includes(parseInt(gqWork.gq_id))){
                     // dataset in db: test if there are changes.
                     const current_db_row = db_data_werke.find(d=>d.gq_id===gqWork.gq_id);
@@ -768,7 +771,9 @@ function GeschichtsquellenImport(props){
                     newAddLst_werke.push(gqWork);
                 }
             }
-            // loop: datasets in db but not in gq!
+            // check: datasets in db but not in gq!
+            newDeleteLst_werke = db_werke_ids.filter(w=>!gq_werke_ids.includes(w));
+
             // autoren
             for(const gq_id in gq_autoren.data){
                 const gqAutor = {
@@ -776,6 +781,7 @@ function GeschichtsquellenImport(props){
                     autor_lat: gq_autoren.data[gq_id][0]["_"].replace(/<.*?>/g, ""),
                     autor_de: gq_autoren.data[gq_id][1]["_"],
                 };
+                gq_autoren_ids.push(gqAutor.gq_id);
                 if(db_autoren_ids.includes(parseInt(gqAutor.gq_id))){
                     // dataset in db: test if there are changes.
                     const current_db_row = db_data_autoren.find(d=>d.gq_id===gqAutor.gq_id);
@@ -791,7 +797,8 @@ function GeschichtsquellenImport(props){
                     newAddLst_autoren.push(gqAutor);
                 }
             }
-            // loop: datasets in db but not in gq!
+            // check: datasets in db but not in gq!
+            newDeleteLst_autoren = db_autoren_ids.filter(a=>!gq_autoren_ids.includes(a));
 
             setData([db_data_werke.length, Object.keys(gq_werke.data).length, db_data_autoren.length, Object.keys(gq_autoren.data).length])
             setAddLstWerk(newAddLst_werke);
@@ -800,29 +807,39 @@ function GeschichtsquellenImport(props){
             setAddLstAutor(newAddLst_autoren);
             setChangeLstAutor(newChangeLst_autoren);
             setDeleteLstAutor(newDeleteLst_autoren);
+            setLoadSpinner(false);
         };
         fetchData();
     }, []);
-    return <>
-        <table width="100%">
-            <tbody>
-            <tr><th></th><th>Autoren</th><th>Werke</th></tr>
-            <tr><td>Datensätze in der Geschichtsquellen/Datenbank:</td><td>{data[3]}/{data[2]}</td><td>{data[1]}/{data[0]}</td></tr>
-            <tr><td>Neue Datensätze erstellen:</td><td>{addLstAutor.length}</td><td>{addLstWerk.length}</td></tr>
-            <tr><td>Datensätze ändern:</td><td>{changeLstAutor.length}</td><td>{changeLstWerk.length}</td></tr>
-            <tr><td>Datensätze löschen:</td><td>{deleteLstAutor.length}</td><td>{deleteLstWerk.length}</td></tr>
-            </tbody>
-        </table>
-        <div>{addLstAutor.length>0||changeLstAutor.length>0||deleteLstAutor.length>0||addLstWerk.length>0||changeLstWerk.length>0||deleteLstWerk.length>0?<StatusButton onClick={async()=>{
-                    if(addLstAutor.length>0){await arachne.gq_autoren.save(addLstAutor)}
-                    if(changeLstAutor.length>0){await arachne.gq_autoren.save(changeLstAutor)}
-                    if(deleteLstAutor.length>0){await arachne.gq_autoren.delete(deleteLstAutor)}
-                    if(addLstWerk.length>0){await arachne.gq_werke.save(addLstWerk)}
-                    if(changeLstWerk.length>0){await arachne.gq_werke.save(changeLstWerk)}
-                    if(deleteLstWerk.length>0){await arachne.gq_werke.delete(deleteLstWerk)}
-                    return {status: 1}
-                }} value="Änderungen übernehmen" />:null}</div>
-    </>;
+    return loadSpinner?<div style={{textAlign: "center"}}><Spinner variant="primary" animation="border" /></div>:<>
+            <table width="100%">
+                <tbody>
+                <tr><th></th><th>Autoren</th><th>Werke</th></tr>
+                <tr><td>Datensätze in der Geschichtsquellen/Datenbank:</td><td>{data[3]}/{data[2]}</td><td>{data[1]}/{data[0]}</td></tr>
+                <tr><td>Neue Datensätze erstellen:</td><td>{addLstAutor.length}</td><td>{addLstWerk.length}</td></tr>
+                <tr><td>Datensätze ändern:</td><td>{changeLstAutor.length}</td><td>{changeLstWerk.length}</td></tr>
+                <tr><td>Datensätze löschen:</td><td>{deleteLstAutor.length}</td><td>{deleteLstWerk.length}</td></tr>
+                </tbody>
+            </table>
+            {showDetails&&(addLstAutor.length>0||addLstWerk.length>0||changeLstAutor.length>0||changeLstWerk.length>0||deleteLstAutor.length>0||deleteLstWerk.length>0)?<div style={{marginTop: "20px"}}>
+                    {addLstAutor.length>0&&<><i>neue Autoren:</i><ul>{addLstAutor.map(a=><li><b>{a.autor_lat}</b>/{a.autor_de} <small>ID: {a.gq_id}</small></li>)}</ul></>}
+                    {changeLstAutor.length>0&&<><i>geänderte Autoren:</i><ul>{changeLstAutor.map(a=><li><b>{a.autor_lat}</b>/{a.autor_de} <small>ID: {a.gq_id}</small></li>)}</ul></>}
+                    {deleteLstAutor.length>0&&<><i>gelöschte Autoren:</i><ul>{deleteLstAutor.map(a=><li><b>{a.autor_lat}</b>/{a.autor_de} <small>ID: {a.gq_id}</small></li>)}</ul></>}
+                    {addLstWerk.length>0&&<><i>neue Werke:</i><ul>{addLstWerk.map(w=><li><b>{w.werk_lat}</b>/{w.werk_de} <small>ID: {w.gq_id} --- {w.gq_autor_id?<>Autor-ID: {w.gq_autor_id}</>:<i>Mit keinem Autor verknüpft</i>}</small></li>)}</ul></>}
+                    {changeLstWerk.length>0&&<><i>geänderte Werke:</i><ul>{changeLstWerk.map(w=><li><b>{w.werk_lat}</b>/{w.werk_de} <small>ID: {w.gq_id} --- {w.gq_autor_id?<>Autor-ID: {w.gq_autor_id}</>:<i>Mit keinem Autor verknüpft</i>}</small></li>)}</ul></>}
+                    {deleteLstWerk.length>0&&<><i>gelöschte Werke:</i><ul>{deleteLstWerk.map(w=><li><b>{w.werk_lat}</b>/{w.werk_de} <small>ID: {w.gq_id} --- {w.gq_autor_id?<>Autor-ID: {w.gq_autor_id}</>:<i>Mit keinem Autor verknüpft</i>}</small></li>)}</ul></>}
+                    
+            </div>:null}
+            <div style={{marginTop: "20px"}}>{addLstAutor.length>0||changeLstAutor.length>0||deleteLstAutor.length>0||addLstWerk.length>0||changeLstWerk.length>0||deleteLstWerk.length>0?<><Button variant="secondary" style={{marginRight: "20px"}} onClick={()=>{setShowDetails(!showDetails)}}>Details {showDetails?"ausblenden":"anzeigen"}</Button><StatusButton onClick={async()=>{
+                        if(addLstAutor.length>0){await arachne.gq_autoren.save(addLstAutor)}
+                        if(changeLstAutor.length>0){await arachne.gq_autoren.save(changeLstAutor)}
+                        if(deleteLstAutor.length>0){await arachne.gq_autoren.delete(deleteLstAutor)}
+                        if(addLstWerk.length>0){await arachne.gq_werke.save(addLstWerk)}
+                        if(changeLstWerk.length>0){await arachne.gq_werke.save(changeLstWerk)}
+                        if(deleteLstWerk.length>0){await arachne.gq_werke.delete(deleteLstWerk)}
+                        return {status: 1}
+                    }} value="Änderungen übernehmen" /></>:null}</div>
+        </>;
 }
 function GeschichtsquellenInterface(props){
     const menuItems = [];
