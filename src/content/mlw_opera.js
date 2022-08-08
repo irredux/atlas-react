@@ -116,16 +116,16 @@ function OperaAsideTLL(props){
                     <Accordion.Header>auctor <span style={{marginLeft: "10px", fontSize: "75%"}}>(ID: {auctor.id})</span></Accordion.Header>
                     <Accordion.Body>
                         <Container>
-                            <Row className="mb-2"><Col>Name:</Col><Col><input type="text" value={auctor.auctor?auctor.auctor:""} onChange={e=>{saveValue("a", "auctor", e.target.value)}} /></Col></Row>
-                            <Row className="mb-2"><Col>Ordungs-zahl:</Col><Col><input type="text" value={auctor.ord?auctor.ord:""} onChange={e=>{saveValue("a", "ord", e.target.value)}} /></Col></Row>
-                            <Row className="mb-2"><Col>Sortierung: <small>unterhalb von...</small></Col><Col>
-                                <AutoComplete style={{position: "relative"}} onChange={(value, id)=>{setSortAuctorAfterValue(value);setSortAuctorAfterId(id)}} value={sortAuctorAfterValue?sortAuctorAfterValue:""} tbl="auctores"  searchCol="auctor" returnCol="auctor" />
-                            </Col></Row>
-                            <Row className="mb-2"><Col>Datierung:</Col><Col><input type="text" value={auctor.date_display?auctor.date_display:""} onChange={e=>{saveValue("a", "date_display", e.target.value)}} /></Col></Row>
-                            <Row className="mb-2"><Col><i>explicatio</i>:</Col><Col><input type="text" value={auctor.explicatio?auctor.explicatio:""} onChange={e=>{saveValue("a", "explicatio", e.target.value)}} /></Col></Row>
-                            <Row className="mb-2"><Col><i>editiones</i>:</Col><Col><input type="text" value={auctor.editiones?auctor.editiones:""} onChange={e=>{saveValue("a", "editiones", e.target.value)}} /></Col></Row>
-                            <Row className="mb-2"><Col>In Benutzung:</Col><Col><SelectMenu style={{width: "230px"}} options={[["", "Nein"], [1, "Ja"]]} value={auctor.in_use?auctor.in_use:""} onChange={e=>{saveValue("a", "in_use", e.target.value)}} /></Col></Row>
-                            {opus===null&&<Row className="mb-2"><Col>Referenz-Text:</Col><Col><input type="text" value={auctor.ref_text?auctor.ref_text:""} onChange={e=>{
+                            <Row>Name:</Row><Row className="mb-2"><input style={{width: "100%"}} type="text" value={auctor.auctor?auctor.auctor:""} onChange={e=>{saveValue("a", "auctor", e.target.value)}} /></Row>
+                            <Row>Ordungszahl:</Row><Row className="mb-2"><input type="text" value={auctor.ord?auctor.ord:""} onChange={e=>{saveValue("a", "ord", e.target.value)}} /></Row>
+                            <Row><span style={{padding: "0"}}>Sortierung: <small>unterhalb von...</small></span></Row><Row className="mb-2">
+                                <AutoComplete style={{left: "-10px", padding: "0", width: "310px", height: "30px", position: "relative"}} onChange={(value, id)=>{setSortAuctorAfterValue(value);setSortAuctorAfterId(id)}} value={sortAuctorAfterValue?sortAuctorAfterValue:""} tbl="auctores"  searchCol="auctor" returnCol="auctor" />
+                            </Row>
+                            <Row>Datierung:</Row><Row className="mb-4"><input type="text" value={auctor.date_display?auctor.date_display:""} onChange={e=>{saveValue("a", "date_display", e.target.value)}} /></Row>
+                            <Row><i style={{padding: "0"}}>explicatio:</i></Row><Row className="mb-2"><textarea onChange={e=>{saveValue("a", "explicatio", e.target.value)}}>{auctor.explicatio?auctor.explicatio:""}</textarea></Row>
+                            <Row><i style={{padding: "0"}}>editiones:</i></Row><Row className="mb-4"><textarea onChange={e=>{saveValue("a", "editiones", e.target.value)}}>{auctor.editiones?auctor.editiones:""}</textarea></Row>
+                            <Row>In Benutzung:</Row><Row className="mb-4"><SelectMenu style={{width: "100%", height: "30px", padding: "0px 10px 0 10px"}} options={[["", "Nein"], [1, "Ja"]]} value={auctor.in_use?auctor.in_use:""} onChange={e=>{saveValue("a", "in_use", e.target.value)}} /></Row>
+                            {opus===null&&<><Row>Referenz-Text:</Row><Row className="mb-2"><input type="text" value={auctor.ref_text?auctor.ref_text:""} onChange={e=>{
                                     if(e.target.value===""){
                                         saveValues("a", [
                                                 ["ref_id", null],
@@ -133,15 +133,15 @@ function OperaAsideTLL(props){
                                                 ["ref_text", e.target.value]
                                             ]);
                                     }else{saveValue("a", "ref_text", e.target.value)}
-                                }} /></Col></Row>}
-                            {auctor.ref_text&&<Row className="mb-2"><Col>Referenz-Typ:</Col><Col><SelectMenu style={{width: "230px"}} options={[["", ""], [1, "auctor"], [2, "opus"], [3, "locus"]]} value={auctor.ref_type?auctor.ref_type:""} onChange={e=>{
+                                }} /></Row></>}
+                            {auctor.ref_text&&<><Row>Referenz-Typ:</Row><Row className="mb-2"><SelectMenu style={{width: "100%", height: "30px", padding: "0px 10px 0 10px"}} options={[["", ""], [1, "auctor"], [2, "opus"], [3, "locus"]]} value={auctor.ref_type?auctor.ref_type:""} onChange={e=>{
                                             saveValue("a", "ref_type", e.target.value);
                                             if(e.target.value==="1"){setRefLst(["auctores", "auctor"])}
                                             else if(e.target.value==="2"){setRefLst(["opera_ac", "ac_web"])}
                                             else if(e.target.value==="3"){setRefLst(["loci_ac", "ac_web"])}
                                             else{setRefLst(null)}
-                                        }} /></Col></Row>}
-                            {auctor.ref_text&&refLst&&<Row><Col>Referenz:</Col><Col><AutoComplete style={{position: "relative"}} onChange={(value, id)=>{setRefName(value);saveValue("a", "ref_id", id)}} value={refName?refName:""} tbl={refLst[0]}  searchCol={refLst[1]} returnCol={refLst[1]} /></Col></Row>}
+                                        }} /></Row></>}
+                            {auctor.ref_text&&refLst&&<><Row>Referenz:</Row><Row className="mb-2"><AutoComplete  style={{left: "-10px", padding: "0", width: "310px", height: "30px", position: "relative"}} onChange={(value, id)=>{setRefName(value);saveValue("a", "ref_id", id)}} value={refName?refName:""} tbl={refLst[0]}  searchCol={refLst[1]} returnCol={refLst[1]} /></Row></>}
                             <Row className="mt-4"><Col><StatusButton onClick={async()=>{
                                 console.log(auctor);
                                 await arachne.auctores.save({...auctor});
@@ -169,27 +169,22 @@ function OperaAsideTLL(props){
                     <Accordion.Header>opus <span style={{marginLeft: "10px", fontSize: "75%"}}>(ID: {opus.id})</span></Accordion.Header>
                     <Accordion.Body>
                         <Container>
-                        <Row className="mb-2"><Col>Name:</Col><Col><input type="text" value={opus.opus?opus.opus:""} onChange={e=>{saveValue("o", "opus", e.target.value)}} /></Col></Row>
-                        <Row className="mb-2"><Col>Ordungszahl:</Col><Col><input type="text" value={opus.ord?opus.ord:""} onChange={e=>{saveValue("o", "ord", e.target.value)}} /></Col></Row>
+                        <Row>Name:</Row><Row className="mb-2"><input style={{width: "100%"}} type="text" value={opus.opus?opus.opus:""} onChange={e=>{saveValue("o", "opus", e.target.value)}} /></Row>
+                        <Row>Ordungszahl:</Row><Row className="mb-2"><input type="text" value={opus.ord?opus.ord:""} onChange={e=>{saveValue("o", "ord", e.target.value)}} /></Row>
                         <Row className="mb-2">
-                            <Col>Sortierung: <small>unterhalb von...</small></Col>
-                            <Col>
-                                <AutoComplete style={{position: "relative"}} onChange={(value, id)=>{setSortOpusAfterValue(value);setSortOpusAfterId(id)}} value={sortOpusAfterValue?sortOpusAfterValue:""} tbl="opera_ac"  searchCol="ac_web" returnCol="ac_web" />
-                            </Col>
+                            <Col style={{padding: "0"}}>Sortierung: <small>unterhalb von...</small></Col></Row><Row className="mb-2">
+                                <AutoComplete style={{left: "-10px", padding: "0", width: "310px", height: "30px", position: "relative"}} onChange={(value, id)=>{setSortOpusAfterValue(value);setSortOpusAfterId(id)}} value={sortOpusAfterValue?sortOpusAfterValue:""} tbl="opera_ac"  searchCol="ac_web" returnCol="ac_web" />
                         </Row>
-                        <Row className="mb-2"><Col>Datierung:</Col><Col><input type="text" value={opus.date_display?opus.date_display:""} onChange={e=>{saveValue("o", "date_display", e.target.value)}} /></Col></Row>
-                        <Row className="mb-2">
-                                <Col>verknpft. <i>auctor</i>:</Col>
-                                <Col><SelectMenu options={auctoresSelect} value={opus.auctor_id?opus.auctor_id:""} /></Col>
+                        <Row>Datierung:</Row><Row className="mb-4"><input type="text" value={opus.date_display?opus.date_display:""} onChange={e=>{saveValue("o", "date_display", e.target.value)}} /></Row>
+                        <Row className="mb-2"><span style={{padding: 0}}><i>auctor</i>:</span></Row>
+                                <Row className="mb-2"><SelectMenu style={{width: "100%", height: "30px", padding: "0px 10px 0 10px"}} options={auctoresSelect} value={opus.auctor_id?opus.auctor_id:""} />
                             </Row>
-                        {sameLinePossibleOpus&&<Row className="mb-2">
-                            <Col>Mit <i>auctor</i> auf einer Zeile?</Col>
-                            <Col><SelectMenu options={[[0, "Nein"], [1, "Ja"]]} value={opus.same_line?opus.same_line:0} onChange={e=>{saveValue("o", "same_line", e.target.value)}} /></Col>
-                        </Row>}
-                        <Row className="mb-2"><Col><i>explicatio</i>:</Col><Col><input type="text" value={opus.explicatio?opus.explicatio:""} onChange={e=>{saveValue("o", "explicatio", e.target.value)}} /></Col></Row>
-                        <Row className="mb-2"><Col><i>editiones</i>:</Col><Col><input type="text" value={opus.editiones?opus.editiones:""} onChange={e=>{saveValue("o", "editiones", e.target.value)}} /></Col></Row>
-                        <Row className="mb-2"><Col>In Benutzung:</Col><Col><SelectMenu style={{width: "230px"}} options={[["", "Nein"], [1, "Ja"]]} value={opus.in_use?opus.in_use:""} onChange={e=>{saveValue("o", "in_use", e.target.value)}} /></Col></Row>
-                        <Row className="mb-2"><Col>Referenz-Text:</Col><Col><input type="text" value={opus.ref_text?opus.ref_text:""} onChange={e=>{
+                        {sameLinePossibleOpus&&<><Row><span style={{padding: 0}}>Mit <i>auctor</i> auf einer Zeile?</span></Row><Row><SelectMenu style={{width: "100%", height: "30px", padding: "0px 10px 0 10px"}} options={[[0, "Nein"], [1, "Ja"]]} value={opus.same_line?opus.same_line:0} onChange={e=>{saveValue("o", "same_line", e.target.value)}} />
+                        </Row></>}
+                        <Row className="mt-4"><span style={{padding: 0}}><i>explicatio</i>:</span></Row><Row className="mb-2"><textarea onChange={e=>{saveValue("o", "explicatio", e.target.value)}}>{opus.explicatio?opus.explicatio:""}</textarea></Row>
+                        <Row><span style={{padding: 0}}><i>editiones</i>:</span></Row><Row className="mb-4"><textarea onChange={e=>{saveValue("o", "editiones", e.target.value)}}>{opus.editiones?opus.editiones:""}</textarea></Row>
+                        <Row><span style={{padding: 0}}>In Benutzung:</span></Row><Row className="mb-4"><SelectMenu style={{width: "100%", height: "30px", padding: "0px 10px 0 10px"}} options={[["", "Nein"], [1, "Ja"]]} value={opus.in_use?opus.in_use:""} onChange={e=>{saveValue("o", "in_use", e.target.value)}} /></Row>
+                        <Row>Referenz-Text:</Row><Row className="mb-2"><input type="text" value={opus.ref_text?opus.ref_text:""} onChange={e=>{
                                     if(e.target.value===""){
                                         saveValues("o", [
                                                 ["ref_id", null],
@@ -197,15 +192,15 @@ function OperaAsideTLL(props){
                                                 ["ref_text", e.target.value]
                                             ]);
                                     }else{saveValue("o", "ref_text", e.target.value)}
-                                }} /></Col></Row>
-                        {opus.ref_text&&<Row className="mb-2"><Col>Referenz-Typ:</Col><Col><SelectMenu style={{width: "230px"}} options={[["", ""], [1, "auctor"], [2, "opus"], [3, "locus"]]} value={opus.ref_type?opus.ref_type:""} onChange={e=>{
+                                }} /></Row>
+                        {opus.ref_text&&<><Row>Referenz-Typ:</Row><Row className="mb-2"><SelectMenu style={{width: "100%", height: "30px", padding: "0px 10px 0 10px"}} options={[["", ""], [1, "auctor"], [2, "opus"], [3, "locus"]]} value={opus.ref_type?opus.ref_type:""} onChange={e=>{
                                 saveValue("o", "ref_type", e.target.value);
                                 if(e.target.value==="1"){setRefLst(["auctores", "auctor"])}
                                 else if(e.target.value==="2"){setRefLst(["opera_ac", "ac_web"])}
                                 else if(e.target.value==="3"){setRefLst(["loci_ac", "ac_web"])}
                                 else{setRefLst(null)}
-                            }} /></Col></Row>}
-                        {opus.ref_text&&refLst&&<Row><Col>Referenz:</Col><Col><AutoComplete style={{position: "relative"}} onChange={(value, id)=>{setRefName(value);saveValue("o", "ref_id", id)}} value={refName?refName:""} tbl={refLst[0]}  searchCol={refLst[1]} returnCol={refLst[1]} /></Col></Row>}
+                            }} /></Row></>}
+                        {opus.ref_text&&refLst&&<><Row>Referenz:</Row><Row className="mb-2"><AutoComplete style={{left: "-10px", padding: "0", width: "310px", height: "30px", position: "relative"}} onChange={(value, id)=>{setRefName(value);saveValue("o", "ref_id", id)}} value={refName?refName:""} tbl={refLst[0]}  searchCol={refLst[1]} returnCol={refLst[1]} /></Row></>}
                         <Row className="mt-4"><Col><StatusButton onClick={async()=>{
                             console.log(opus);
                             await arachne.opera.save({...opus});
@@ -227,55 +222,54 @@ function OperaAsideTLL(props){
                     <Accordion.Header>locus <span style={{marginLeft: "10px", fontSize: "75%"}}>(ID: {locus.id})</span></Accordion.Header>
                     <Accordion.Body>
                         <Container>
-                            <Row className="mb-2"><Col>Name:</Col><Col><input type="text" value={locus.locus?locus.locus:""} onChange={e=>{saveValue("l", "locus", e.target.value)}} /></Col></Row>
-                            <Row className="mb-2"><Col>Ordungszahl:</Col><Col><input type="text" value={locus.ord?locus.ord:""} onChange={e=>{saveValue("l", "ord", e.target.value)}} /></Col></Row>
-                            <Row className="mb-2">
-                                <Col>Sortierung: <small>unterhalb von...</small></Col>
-                                <Col>
-                                    <AutoComplete style={{position: "relative"}} onChange={(value, id)=>{setSortLocusAfterValue(value);setSortLocusAfterId(id)}} value={sortLocusAfterValue?sortLocusAfterValue:""} tbl="loci"  searchCol="locus" returnCol="locus" />
-                                </Col>
+                            <Row>Name:</Row><Row className="mb-2"><input type="text" value={locus.locus?locus.locus:""} onChange={e=>{saveValue("l", "locus", e.target.value)}} /></Row>
+                            <Row>Ordungszahl:</Row><Row className="mb-2"><input type="text" value={locus.ord?locus.ord:""} onChange={e=>{saveValue("l", "ord", e.target.value)}} /></Row>
+                            <Row>
+                                <span style={{padding: 0}}>Sortierung: <small>unterhalb von...</small></span></Row>
+                                <Row className="mb-2">
+                                    <AutoComplete style={{left: "-10px", padding: "0", width: "310px", height: "30px", position: "relative"}} onChange={(value, id)=>{setSortLocusAfterValue(value);setSortLocusAfterId(id)}} value={sortLocusAfterValue?sortLocusAfterValue:""} tbl="loci"  searchCol="locus" returnCol="locus" />
                             </Row>
-                            <Row className="mb-2"><Col>Datierung:</Col><Col><input type="text" value={locus.date_display?locus.date_display:""} onChange={e=>{saveValue("l", "date_display", e.target.value)}} /></Col></Row>
-                            <Row className="mb-2">
-                                <Col>verknpft. <i>opus</i>:</Col>
-                                <Col><SelectMenu options={operaSelect} value={locus.opus_id?locus.opus_id:""} /></Col>
+                            <Row>Datierung:</Row><Row className="mb-4"><input type="text" value={locus.date_display?locus.date_display:""} onChange={e=>{saveValue("l", "date_display", e.target.value)}} /></Row>
+                            <Row>
+                                <span style={{padding: 0}}>verknüpftes <i>opus</i>:</span></Row>
+                                <Row><SelectMenu style={{width: "100%", height: "30px", padding: "0px 10px 0 10px"}} options={operaSelect} value={locus.opus_id?locus.opus_id:""} />
                             </Row>
-                            {sameLinePossibleLocus&&<Row className="mb-2">
-                            <Col>Mit <i>opus</i> auf einer Zeile?</Col>
-                            <Col><SelectMenu options={[[0, "Nein"], [1, "Ja"]]} value={locus.same_line?locus.same_line:0} onChange={e=>{saveValue("l", "same_line", e.target.value)}} /></Col>
-                        </Row>}
-                        <Row className="mb-2"><Col><i>explicatio</i>:</Col><Col><input type="text" value={locus.explicatio?locus.explicatio:""} onChange={e=>{saveValue("l", "explicatio", e.target.value)}} /></Col></Row>
-                        <Row className="mb-2"><Col><i>editiones</i>:</Col><Col><input type="text" value={locus.editiones?locus.editiones:""} onChange={e=>{saveValue("l", "editiones", e.target.value)}} /></Col></Row>
-                        <Row className="mb-2"><Col>In Benutzung:</Col><Col><SelectMenu style={{width: "230px"}} options={[["", "Nein"], [1, "Ja"]]} value={locus.in_use?locus.in_use:""} onChange={e=>{saveValue("l", "in_use", e.target.value)}} /></Col></Row>
-                        <Row className="mb-2"><Col>Referenz-Text:</Col><Col><input type="text" value={locus.ref_text?locus.ref_text:""} onChange={e=>{
-                                    if(e.target.value===""){
-                                        saveValues("l", [
-                                                ["ref_id", null],
-                                                ["ref_type", null],
-                                                ["ref_text", e.target.value]
-                                            ]);
-                                    }else{saveValue("l", "ref_text", e.target.value)}
-                                }} /></Col></Row>
-                        {locus.ref_text&&<Row className="mb-2"><Col>Referenz-Typ:</Col><Col><SelectMenu style={{width: "230px"}} options={[["", ""], [1, "auctor"], [2, "opus"], [3, "locus"]]} value={locus.ref_type?locus.ref_type:""} onChange={e=>{
-                                saveValue("l", "ref_type", e.target.value);
-                                if(e.target.value==="1"){setRefLst(["auctores", "auctor"])}
-                                else if(e.target.value==="2"){setRefLst(["opera_ac", "ac_web"])}
-                                else if(e.target.value==="3"){setRefLst(["loci_ac", "ac_web"])}
-                                else{setRefLst(null)}
-                            }} /></Col></Row>}
-                        {locus.ref_text&&refLst&&<Row><Col>Referenz:</Col><Col><AutoComplete style={{position: "relative"}} onChange={(value, id)=>{setRefName(value);saveValue("l", "ref_id", id)}} value={refName?refName:""} tbl={refLst[0]}  searchCol={refLst[1]} returnCol={refLst[1]} /></Col></Row>}
-                        <Row className="mt-4"><Col><StatusButton onClick={async()=>{
-                            console.log(locus);
-                            await arachne.loci.save({...locus});
-                            if(sortLocusAfterIdInital!==sortLocusAfterId&&sortLocusAfterId!==null){await arachne.exec("SortIndex", false, ["loci", locus.id,sortLocusAfterId])}
-                            return {status: 1};
-                        }} value="speichern" /></Col><Col><Button variant="danger" onClick={async()=>{
-                            if(window.confirm("Soll der locus wirklich gelöscht werden?")){
-                                await arachne.loci.delete(locus.id);
-                                props.onClose();
-                                alert("Löschen erfolgreich. Aktualisieren Sie den Index, damit der gelöschte Eintrag verschwindet.")
-                            }
-                        }}>löschen</Button></Col></Row>
+                            {sameLinePossibleLocus&&<><Row className="mt-2">
+                            <span style={{padding: 0}}>Mit <i>opus</i> auf einer Zeile?</span></Row>
+                            <Row><SelectMenu style={{width: "100%", height: "30px", padding: "0px 10px 0 10px"}} options={[[0, "Nein"], [1, "Ja"]]} value={locus.same_line?locus.same_line:0} onChange={e=>{saveValue("l", "same_line", e.target.value)}} />
+                            </Row></>}
+                            <Row className="mt-4"><span style={{padding: 0}}><i>explicatio</i>:</span></Row><Row className="mb-2"><textarea onChange={e=>{saveValue("l", "explicatio", e.target.value)}}>{locus.explicatio?locus.explicatio:""}</textarea></Row>
+                            <Row><span style={{padding: 0}}><i>editiones</i>:</span></Row><Row className="mb-4"><textarea onChange={e=>{saveValue("l", "editiones", e.target.value)}}>{locus.editiones?locus.editiones:""}</textarea></Row>
+                            <Row>In Benutzung:</Row><Row className="mb-4"><SelectMenu style={{width: "100%", height: "30px", padding: "0px 10px 0 10px"}} options={[["", "Nein"], [1, "Ja"]]} value={locus.in_use?locus.in_use:""} onChange={e=>{saveValue("l", "in_use", e.target.value)}} /></Row>
+                            <Row>Referenz-Text:</Row><Row className="mb-2"><input type="text" value={locus.ref_text?locus.ref_text:""} onChange={e=>{
+                                        if(e.target.value===""){
+                                            saveValues("l", [
+                                                    ["ref_id", null],
+                                                    ["ref_type", null],
+                                                    ["ref_text", e.target.value]
+                                                ]);
+                                        }else{saveValue("l", "ref_text", e.target.value)}
+                                    }} /></Row>
+                            {locus.ref_text&&<><Row>Referenz-Typ:</Row><Row className="mb-2"><SelectMenu style={{width: "100%", height: "30px", padding: "0px 10px 0 10px"}} options={[["", ""], [1, "auctor"], [2, "opus"], [3, "locus"]]} value={locus.ref_type?locus.ref_type:""} onChange={e=>{
+                                    saveValue("l", "ref_type", e.target.value);
+                                    if(e.target.value==="1"){setRefLst(["auctores", "auctor"])}
+                                    else if(e.target.value==="2"){setRefLst(["opera_ac", "ac_web"])}
+                                    else if(e.target.value==="3"){setRefLst(["loci_ac", "ac_web"])}
+                                    else{setRefLst(null)}
+                                }} /></Row></>}
+                            {locus.ref_text&&refLst&&<><Row>Referenz:</Row><Row className="mb-2"><AutoComplete style={{left: "-10px", padding: "0", width: "310px", height: "30px", position: "relative"}} onChange={(value, id)=>{setRefName(value);saveValue("l", "ref_id", id)}} value={refName?refName:""} tbl={refLst[0]}  searchCol={refLst[1]} returnCol={refLst[1]} /></Row></>}
+                            <Row className="mt-4"><Col><StatusButton onClick={async()=>{
+                                console.log(locus);
+                                await arachne.loci.save({...locus});
+                                if(sortLocusAfterIdInital!==sortLocusAfterId&&sortLocusAfterId!==null){await arachne.exec("SortIndex", false, ["loci", locus.id,sortLocusAfterId])}
+                                return {status: 1};
+                            }} value="speichern" /></Col><Col><Button variant="danger" onClick={async()=>{
+                                if(window.confirm("Soll der locus wirklich gelöscht werden?")){
+                                    await arachne.loci.delete(locus.id);
+                                    props.onClose();
+                                    alert("Löschen erfolgreich. Aktualisieren Sie den Index, damit der gelöschte Eintrag verschwindet.")
+                                }
+                            }}>löschen</Button></Col></Row>
                         </Container>
                     </Accordion.Body>
                 </Accordion.Item>}
