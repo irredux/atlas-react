@@ -309,6 +309,7 @@ class OperaAside extends React.Component{
                     <div>Anzeigedatum:</div><div><input type="text" value={this.state.author.date_display} onChange={e=>{let nAuthor = this.state.author;nAuthor.date_display = e.target.value;this.setState({author:nAuthor})}} /></div>
                     <div>Sortierdatum:</div><div><input type="text" value={this.state.author.date_sort} onChange={e=>{let nAuthor = this.state.author;nAuthor.date_sort = e.target.value;this.setState({author:nAuthor})}} /></div>
                     <div>Sortierdatum-Typ:</div><div><input type="text" value={this.state.author.date_type} onChange={e=>{let nAuthor = this.state.author;nAuthor.date_type = e.target.value;this.setState({author:nAuthor})}} /></div>
+                    <div>VIAF-ID:</div><div><input type="text" value={this.state.author.VIAF} onChange={e=>{let nAuthor = this.state.author;nAuthor.VIAF = e.target.value;this.setState({author:nAuthor})}} /></div>
                     <div>in Benutzung:</div><div><SelectMenu style={{width: "86%"}} options={[[0, "Nein"], [1, "Ja"]]} value={this.state.author.in_use} onChange={e=>{let nAuthor = this.state.author;nAuthor.in_use = e.target.value;this.setState({author:nAuthor})}} /></div>
                     <div></div><div>
                         <StatusButton value="speichern" onClick={async ()=>{
