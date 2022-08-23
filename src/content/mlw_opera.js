@@ -908,21 +908,18 @@ class Opera extends React.Component{
             i++;
             if(listName=="opera_maiora"){
                 const abbr = o.work_id>0&&o.author_id===null?`<span>&nbsp;&nbsp;&nbsp;${o.abbr}</span>`:`<aut>${o.abbr}</aut>`;
-                const full =  o.gq_work_id!==null||o.gq_author_id!=null?<Dropdown>
+                const full =  o.viaf_id!==null||o.gq_work_id!==null||o.gq_author_id!=null?<Dropdown>
                     <Dropdown.Toggle as={CustomToggle} id="dropdown-custom-components">
                         <span dangerouslySetInnerHTML={parseHTML(o.work_id>0&&o.author_id===null?`<span>&nbsp;&nbsp;&nbsp;${o.full}</span>`:o.full)}></span>
                     </Dropdown.Toggle>
 
                     <Dropdown.Menu>
                         {o.same_line===1?<>
-                            {o.gq_author_id!==null&&<Dropdown.Item eventKey="1" onClick={()=>{window.open(`https://geschichtsquellen.de/autor/${o.gq_author_id}`, "_blank")}}>Geschichtsquelle <small>(Autor)</small></Dropdown.Item>}
-                            {o.gq_work_id!==null&&<Dropdown.Item eventKey="2" onClick={()=>{window.open(`https://geschichtsquellen.de/werk/${o.gq_work_id}`, "_blank")}}>Geschichtsquelle <small>(Werk)</small></Dropdown.Item>}
-                        </>:<>
-                            {o.work_id===null?
-                                <Dropdown.Item eventKey="3" onClick={()=>{window.open(`https://geschichtsquellen.de/autor/${o.gq_author_id}`, "_blank")}}>Geschichtsquelle</Dropdown.Item>:
-                                <Dropdown.Item eventKey="4" onClick={()=>{window.open(`https://geschichtsquellen.de/werk/${o.gq_work_id}`, "_blank")}}>Geschichtsquelle</Dropdown.Item>
-                            }</>
-                        }
+                            {o.gq_author_id!==null&&o.gq_author_id!==null&&<Dropdown.Item eventKey="1" onClick={()=>{window.open(`https://geschichtsquellen.de/autor/${o.gq_author_id}`, "_blank")}}>Geschichtsquelle <small>(Autor)</small></Dropdown.Item>}
+                            {o.gq_work_id!==null&&o.gq_work_id!==null&&<Dropdown.Item eventKey="2" onClick={()=>{window.open(`https://geschichtsquellen.de/werk/${o.gq_work_id}`, "_blank")}}>Geschichtsquelle <small>(Werk)</small></Dropdown.Item>}
+                        </>:null}
+                        {o.same_line!==1&&o.gq_author_id!==null&&<Dropdown.Item eventKey="3" onClick={()=>{window.open(`https://geschichtsquellen.de/autor/${o.gq_author_id}`, "_blank")}}>Geschichtsquelle</Dropdown.Item>}
+                        {o.same_line!==1&&o.gq_work_id!==null&&<Dropdown.Item eventKey="4" onClick={()=>{window.open(`https://geschichtsquellen.de/werk/${o.gq_work_id}`, "_blank")}}>Geschichtsquelle</Dropdown.Item>}
                         {o.viaf_id!==null?<Dropdown.Item eventKey="5" onClick={()=>{window.open(`https://viaf.org/viaf/${o.viaf_id}`, "_blank")}}>VIAF</Dropdown.Item>:null}
                     </Dropdown.Menu>
                 </Dropdown>:<span dangerouslySetInnerHTML={parseHTML(o.work_id>0&&o.author_id===null?`<span>&nbsp;&nbsp;&nbsp;${o.full}</span>`:o.full)}></span>
