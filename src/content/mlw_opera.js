@@ -10,9 +10,10 @@ function OperaAsideTLL(props){
     const [auctor, setAuctor]=useState(null);
     const [opus, setOpus]=useState(null);
     const [locus, setLocus]=useState(null);
+
     const [refLst, setRefLst]=useState(null); // tblName, searchCol/ReturnCol
     const [refName, setRefName]=useState(null);
-    const [sortAuctorAfterValue, setSortAuctorAfterValue]=useState(null);
+
     const [sortAuctorAfterId, setSortAuctorAfterId]=useState(null);
     const [sortAuctorAfterIdInital, setSortAuctorAfterIdInital]=useState(null);
     const [sortOpusAfterValue, setSortOpusAfterValue]=useState(null);
@@ -21,21 +22,31 @@ function OperaAsideTLL(props){
     const [sortLocusAfterValue, setSortLocusAfterValue]=useState(null);
     const [sortLocusAfterId, setSortLocusAfterId]=useState(null);
     const [sortLocusAfterIdInital, setSortLocusAfterIdInital]=useState(null);
+
     const [sameLinePossibleOpus, setSameLinePossibleOpus]=useState(false);
     const [sameLinePossibleLocus, setSameLinePossibleLocus]=useState(false);
+
     const [auctoresSelect, setAuctoresSelect]=useState([]);
     const [operaSelect, setOperaSelect]=useState([]);
     useEffect(()=>{
+        const fetchSelectLst=async()=>{
+            if(props.item.auctor_id||props.item.opus_id){
+                const newAuctoresLst = await arachne.auctores.getAll({select: ["id", "auctor"], order: ["sort_nr"]});
+                setAuctoresSelect(newAuctoresLst.map(a=>[a.id, a.auctor]));
+            }
+            if(props.item.opus_id||props.item.locus_id){
+                const newOperaLst = await arachne.opera.get({id: props.item.opus_id}, {select: ["id", "opus"]});
+                setOperaSelect(newOperaLst.map(o=>[o.id, o.opus]));
+            }
+        }
         const fetchAuctor=async()=>{
             const newAuctor = await arachne.auctores.get({id: props.item.auctor_id});
             setAuctor(newAuctor[0]);
-            const auctorAbove = await arachne.auctores.search([{c: "sort_nr", o: "=", v: newAuctor[0].sort_nr-1}], {select: ["id", "auctor"]});
+            const auctorAbove = await arachne.auctores.search([{c: "sort_nr", o: "=", v: newAuctor[0].sort_nr-1}], {select: ["id"]});
             if(auctorAbove.length>0){
-                setSortAuctorAfterValue(auctorAbove[0].auctor);
                 setSortAuctorAfterId(auctorAbove[0].id);
                 setSortAuctorAfterIdInital(auctorAbove[0].id);
             }else{
-                setSortAuctorAfterValue(null);
                 setSortAuctorAfterId(null);
                 setSortAuctorAfterIdInital(null);
             }
@@ -43,8 +54,6 @@ function OperaAsideTLL(props){
         const fetchOpus=async()=>{
             const newOpus = await arachne.opera.get({id: props.item.opus_id});
             setOpus(newOpus[0]);
-            const newAuctoresLst = await arachne.auctores.getAll({select: ["id", "auctor"]});
-            setAuctoresSelect(newAuctoresLst.map(a=>[a.id, a.auctor]));
             const sameLineOpera = await arachne.opera.get({auctor_id: newOpus[0].auctor_id, same_line: 1}, {select: ["id"]});
             if(sameLineOpera.length>0&&sameLineOpera[0].id!==props.item.opus_id){setSameLinePossibleOpus(false)}
             else{setSameLinePossibleOpus(true)}
@@ -62,8 +71,6 @@ function OperaAsideTLL(props){
         const fetchLocus=async()=>{
             const newLocus = await arachne.loci.get({id: props.item.locus_id});
             setLocus(newLocus[0]);
-            const newOperaLst = await arachne.opera_ac.getAll({select: ["id", "ac_web"]});
-            setOperaSelect(newOperaLst.map(o=>[o.id, o.ac_web]));
             const sameLineLoci = await arachne.loci.get({opus_id: newLocus[0].opus_id, same_line: 1}, {select: ["id"]});
             if(sameLineLoci.length>0&&sameLineLoci[0].id!==props.item.locus_id){setSameLinePossibleLocus(false)}
             else{setSameLinePossibleLocus(true)}
@@ -71,6 +78,7 @@ function OperaAsideTLL(props){
         if(props.item.auctor_id){fetchAuctor()}else{setAuctor(null)}
         if(props.item.opus_id){fetchOpus()}else{setOpus(null)}
         if(props.item.locus_id){fetchLocus()}else{setLocus(null)}
+        fetchSelectLst();
     }, [props.item]);
     const saveValue=(obj, key, val)=>{
         if(obj==="a"){
@@ -119,11 +127,11 @@ function OperaAsideTLL(props){
                             <Row>Name:</Row><Row className="mb-2"><input style={{width: "100%"}} type="text" value={auctor.auctor?auctor.auctor:""} onChange={e=>{saveValue("a", "auctor", e.target.value)}} /></Row>
                             <Row>Ordungszahl:</Row><Row className="mb-2"><input type="text" value={auctor.ord?auctor.ord:""} onChange={e=>{saveValue("a", "ord", e.target.value)}} /></Row>
                             <Row><span style={{padding: "0"}}>Sortierung: <small>unterhalb von...</small></span></Row><Row className="mb-2">
-                                <AutoComplete style={{left: "-10px", padding: "0", width: "310px", height: "30px", position: "relative"}} onChange={(value, id)=>{setSortAuctorAfterValue(value);setSortAuctorAfterId(id)}} value={sortAuctorAfterValue?sortAuctorAfterValue:""} tbl="auctores"  searchCol="auctor" returnCol="auctor" />
+                                <SelectMenu style={{width: "100%", height: "30px", padding: "0px 10px 0 10px"}} options={auctoresSelect} value={sortAuctorAfterId?sortAuctorAfterId:""} onChange={e=>{setSortAuctorAfterId(e.target.value)}} />
                             </Row>
                             <Row>Datierung:</Row><Row className="mb-4"><input type="text" value={auctor.date_display?auctor.date_display:""} onChange={e=>{saveValue("a", "date_display", e.target.value)}} /></Row>
-                            <Row><i style={{padding: "0"}}>explicatio:</i></Row><Row className="mb-2"><textarea onChange={e=>{saveValue("a", "explicatio", e.target.value)}}>{auctor.explicatio?auctor.explicatio:""}</textarea></Row>
-                            <Row><i style={{padding: "0"}}>editiones:</i></Row><Row className="mb-4"><textarea onChange={e=>{saveValue("a", "editiones", e.target.value)}}>{auctor.editiones?auctor.editiones:""}</textarea></Row>
+                            <Row><i style={{padding: "0"}}>explicatio:</i></Row><Row className="mb-2"><textarea onChange={e=>{saveValue("a", "explicatio", e.target.value)}} value={auctor.explicatio?auctor.explicatio:""}></textarea></Row>
+                            <Row><i style={{padding: "0"}}>editiones:</i></Row><Row className="mb-4"><textarea onChange={e=>{saveValue("a", "editiones", e.target.value)}} value={auctor.editiones?auctor.editiones:""}></textarea></Row>
                             <Row>In Benutzung:</Row><Row className="mb-4"><SelectMenu style={{width: "100%", height: "30px", padding: "0px 10px 0 10px"}} options={[["", "Nein"], [1, "Ja"]]} value={auctor.in_use?auctor.in_use:""} onChange={e=>{saveValue("a", "in_use", e.target.value)}} /></Row>
                             {opus===null&&<><Row>Referenz-Text:</Row><Row className="mb-2"><input type="text" value={auctor.ref_text?auctor.ref_text:""} onChange={e=>{
                                     if(e.target.value===""){
@@ -181,8 +189,8 @@ function OperaAsideTLL(props){
                             </Row>
                         {sameLinePossibleOpus&&<><Row><span style={{padding: 0}}>Mit <i>auctor</i> auf einer Zeile?</span></Row><Row><SelectMenu style={{width: "100%", height: "30px", padding: "0px 10px 0 10px"}} options={[[0, "Nein"], [1, "Ja"]]} value={opus.same_line?opus.same_line:0} onChange={e=>{saveValue("o", "same_line", e.target.value)}} />
                         </Row></>}
-                        <Row className="mt-4"><span style={{padding: 0}}><i>explicatio</i>:</span></Row><Row className="mb-2"><textarea onChange={e=>{saveValue("o", "explicatio", e.target.value)}}>{opus.explicatio?opus.explicatio:""}</textarea></Row>
-                        <Row><span style={{padding: 0}}><i>editiones</i>:</span></Row><Row className="mb-4"><textarea onChange={e=>{saveValue("o", "editiones", e.target.value)}}>{opus.editiones?opus.editiones:""}</textarea></Row>
+                        <Row className="mt-4"><span style={{padding: 0}}><i>explicatio</i>:</span></Row><Row className="mb-2"><textarea onChange={e=>{saveValue("o", "explicatio", e.target.value)}} value={opus.explicatio?opus.explicatio:""}></textarea></Row>
+                        <Row><span style={{padding: 0}}><i>editiones</i>:</span></Row><Row className="mb-4"><textarea onChange={e=>{saveValue("o", "editiones", e.target.value)}} value={opus.editiones?opus.editiones:""}></textarea></Row>
                         <Row><span style={{padding: 0}}>In Benutzung:</span></Row><Row className="mb-4"><SelectMenu style={{width: "100%", height: "30px", padding: "0px 10px 0 10px"}} options={[["", "Nein"], [1, "Ja"]]} value={opus.in_use?opus.in_use:""} onChange={e=>{saveValue("o", "in_use", e.target.value)}} /></Row>
                         <Row>Referenz-Text:</Row><Row className="mb-2"><input type="text" value={opus.ref_text?opus.ref_text:""} onChange={e=>{
                                     if(e.target.value===""){
@@ -238,8 +246,8 @@ function OperaAsideTLL(props){
                             <span style={{padding: 0}}>Mit <i>opus</i> auf einer Zeile?</span></Row>
                             <Row><SelectMenu style={{width: "100%", height: "30px", padding: "0px 10px 0 10px"}} options={[[0, "Nein"], [1, "Ja"]]} value={locus.same_line?locus.same_line:0} onChange={e=>{saveValue("l", "same_line", e.target.value)}} />
                             </Row></>}
-                            <Row className="mt-4"><span style={{padding: 0}}><i>explicatio</i>:</span></Row><Row className="mb-2"><textarea onChange={e=>{saveValue("l", "explicatio", e.target.value)}}>{locus.explicatio?locus.explicatio:""}</textarea></Row>
-                            <Row><span style={{padding: 0}}><i>editiones</i>:</span></Row><Row className="mb-4"><textarea onChange={e=>{saveValue("l", "editiones", e.target.value)}}>{locus.editiones?locus.editiones:""}</textarea></Row>
+                            <Row className="mt-4"><span style={{padding: 0}}><i>explicatio</i>:</span></Row><Row className="mb-2"><textarea onChange={e=>{saveValue("l", "explicatio", e.target.value)}} value={locus.explicatio?locus.explicatio:""}></textarea></Row>
+                            <Row><span style={{padding: 0}}><i>editiones</i>:</span></Row><Row className="mb-4"><textarea onChange={e=>{saveValue("l", "editiones", e.target.value)}} value={locus.editiones?locus.editiones:""}></textarea></Row>
                             <Row>In Benutzung:</Row><Row className="mb-4"><SelectMenu style={{width: "100%", height: "30px", padding: "0px 10px 0 10px"}} options={[["", "Nein"], [1, "Ja"]]} value={locus.in_use?locus.in_use:""} onChange={e=>{saveValue("l", "in_use", e.target.value)}} /></Row>
                             <Row>Referenz-Text:</Row><Row className="mb-2"><input type="text" value={locus.ref_text?locus.ref_text:""} onChange={e=>{
                                         if(e.target.value===""){
@@ -691,7 +699,7 @@ class OperaBox extends React.Component{
         </table>;
         }
         let toolKitMenu = [
-            ["opera-Listen aktualisieren", async ()=>{  
+            [`${this.props.listName==="tll_index"?"Index":"opera-Listen"} aktualisieren`, async ()=>{  
                 if(window.confirm("Soll die opera-Liste aktualisiert werden? Der Prozess dauert ca. 30 Sekunden.")){
                     await arachne.exec("opera_update");
                     await this.props.getLst();
@@ -907,14 +915,15 @@ class Opera extends React.Component{
 
                     <Dropdown.Menu>
                         {o.same_line===1?<>
-                            {o.gq_author_id!==null&&<Dropdown.Item eventKey="1" onClick={()=>{window.open(`http://geschichtsquellen.de/autor/${o.gq_author_id}`, "_blank")}}>Geschichtsquelle <small>(Autor)</small></Dropdown.Item>}
-                            {o.gq_work_id!==null&&<Dropdown.Item eventKey="2" onClick={()=>{window.open(`http://geschichtsquellen.de/werk/${o.gq_work_id}`, "_blank")}}>Geschichtsquelle <small>(Werk)</small></Dropdown.Item>}
+                            {o.gq_author_id!==null&&<Dropdown.Item eventKey="1" onClick={()=>{window.open(`https://geschichtsquellen.de/autor/${o.gq_author_id}`, "_blank")}}>Geschichtsquelle <small>(Autor)</small></Dropdown.Item>}
+                            {o.gq_work_id!==null&&<Dropdown.Item eventKey="2" onClick={()=>{window.open(`https://geschichtsquellen.de/werk/${o.gq_work_id}`, "_blank")}}>Geschichtsquelle <small>(Werk)</small></Dropdown.Item>}
                         </>:<>
                             {o.work_id===null?
-                                <Dropdown.Item eventKey="3" onClick={()=>{window.open(`http://geschichtsquellen.de/autor/${o.gq_author_id}`, "_blank")}}>Geschichtsquelle</Dropdown.Item>:
-                                <Dropdown.Item eventKey="4" onClick={()=>{window.open(`http://geschichtsquellen.de/werk/${o.gq_work_id}`, "_blank")}}>Geschichtsquelle</Dropdown.Item>
+                                <Dropdown.Item eventKey="3" onClick={()=>{window.open(`https://geschichtsquellen.de/autor/${o.gq_author_id}`, "_blank")}}>Geschichtsquelle</Dropdown.Item>:
+                                <Dropdown.Item eventKey="4" onClick={()=>{window.open(`https://geschichtsquellen.de/werk/${o.gq_work_id}`, "_blank")}}>Geschichtsquelle</Dropdown.Item>
                             }</>
                         }
+                        {o.viaf_id!==null?<Dropdown.Item eventKey="5" onClick={()=>{window.open(`https://viaf.org/viaf/${o.viaf_id}`, "_blank")}}>VIAF</Dropdown.Item>:null}
                     </Dropdown.Menu>
                 </Dropdown>:<span dangerouslySetInnerHTML={parseHTML(o.work_id>0&&o.author_id===null?`<span>&nbsp;&nbsp;&nbsp;${o.full}</span>`:o.full)}></span>
                 trLst.push({o: o, data: [
@@ -931,8 +940,8 @@ class Opera extends React.Component{
                     </Dropdown.Toggle>
 
                     <Dropdown.Menu>
-                        {o.gq_author_id!==null&&<Dropdown.Item eventKey="1" onClick={()=>{window.open(`http://geschichtsquellen.de/autor/${o.gq_author_id}`, "_blank")}}>Geschichtsquelle <small>(Autor)</small></Dropdown.Item>}
-                        {o.gq_work_id!==null&&<Dropdown.Item eventKey="2" onClick={()=>{window.open(`http://geschichtsquellen.de/werk/${o.gq_work_id}`, "_blank")}}>Geschichtsquelle <small>(Werk)</small></Dropdown.Item>}
+                        {o.gq_author_id!==null&&<Dropdown.Item eventKey="1" onClick={()=>{window.open(`https://geschichtsquellen.de/autor/${o.gq_author_id}`, "_blank")}}>Geschichtsquelle <small>(Autor)</small></Dropdown.Item>}
+                        {o.gq_work_id!==null&&<Dropdown.Item eventKey="2" onClick={()=>{window.open(`https://geschichtsquellen.de/werk/${o.gq_work_id}`, "_blank")}}>Geschichtsquelle <small>(Werk)</small></Dropdown.Item>}
                     </Dropdown.Menu>
                 </Dropdown>:<span dangerouslySetInnerHTML={parseHTML(o.citation)}></span>
                 trLst.push({o: o, data: [
@@ -943,28 +952,26 @@ class Opera extends React.Component{
             } else if(listName==="tll_index"){
                 let classNameTxt = "c0_tll";
                 let leftPad = null;
-                let abbrComponent;
-                if(o.auctor_id!==null&&o.abbr_opus!==null){ // author + work
-                    classNameTxt += ` a_${o.auctor_id} o_${o.opus_id} l_${o.locus_id}`;
-                    abbrComponent = <><aut>{o.auctor}</aut> <span style={{color: "green"}}> {o.opus}</span>{o.locus&&<span style={{color: "red"}}> {o.locus}</span>}</>;
-                }else if(o.auctor_id!==null){ // work
-                    classNameTxt += ` o_${o.opus_id} l_${o.locus_id}`;
-                    if(o.locus){
-                        abbrComponent = <><span>{o.opus}</span> <span style={{color: "red"}} dangerouslySetInnerHTML={parseHTML(o.locus)}></span></>;
-                    }else{
-                        abbrComponent = o.opus;
-                    }
-                }else{ // author
+                let abbrComponent=null;
+                if(o.auctor_id!==null){
                     classNameTxt += ` a_${o.auctor_id}`;
-                    abbrComponent = <aut>{o.auctor}</aut>;
+                    abbrComponent = <aut style={{color: "blue"}}>{o.auctor}</aut>;
                 }
-
+                if(o.opus_id!==null){
+                    classNameTxt += ` o_${o.opus_id}`;
+                    abbrComponent = <>{abbrComponent!==null?<>{abbrComponent} </>:null}<span style={{color: "green"}}>{o.opus}</span></>;
+                    leftPad = o.auctor_id!==null?leftPad:"2rem";
+                }
+                if(o.locus_id!=null){
+                    classNameTxt += ` l_${o.locus_id}`;
+                    if(o.locus!==""&&o.locus!==null){ // opera always have loci.
+                       abbrComponent = <>{abbrComponent!==null?<>{abbrComponent} </>:null}<span style={{color: "red"}}> {o.locus}</span></>;
+                        leftPad = o.opus_id!==null?leftPad:"4rem"; 
+                    }
+                }
                 if(o.in_use!==1){
                     abbrComponent = <><span style={{color: "orange"}}>[</span>{abbrComponent}<span style={{color: "orange"}}>]</span></>;
                 }
-
-                if(o.opus===null&&o.locus!==null){leftPad = "4rem"}
-                else if(o.auctor_id>0){leftPad = "2rem"}
                 trLst.push({o: o, data: [
                    <td key="0" className={classNameTxt} dangerouslySetInnerHTML={parseHTML(o.ord)}></td>,
                    <td key="1" className="c1_tll" style={{paddingLeft: leftPad}} dangerouslySetInnerHTML={parseHTML(o.date_display)}></td>,
