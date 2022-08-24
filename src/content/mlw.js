@@ -383,6 +383,7 @@ function MainMenuContent(props){
         <NavDropdown.Item onClick={e => {props.loadMain(e, "ressources")}}>Ressourcen</NavDropdown.Item>
         {arachne.access("geschichtsquellen")&&<NavDropdown.Item onClick={e => {props.loadMain(e, "geschichtsquellen")}}>Geschichtsquellen</NavDropdown.Item>}
         {arachne.access("geschichtsquellen")&&<NavDropdown.Item onClick={e => {props.loadMain(e, "externalConnectionAuthor")}}>Datenbankverknüpfung (Autoren)</NavDropdown.Item>}
+        {arachne.access("geschichtsquellen")&&<NavDropdown.Item onClick={e => {props.loadMain(e, "externalConnectionWork")}}>Datenbankverknüpfung (Werke)</NavDropdown.Item>}
     </>;
 }
 /* ************************************************************************************* */
@@ -1096,6 +1097,37 @@ function ExternalConnectionAuthorRow(props){
         <td>{props.cEl.wikidata_id?<a target="_blank" href={"https://www.wikidata.org/wiki/"+props.cEl.wikidata_id}>{props.cEl.wikidata_id}</a>:null}</td>
     </>;
 }
+function ExternalConnectionWorkInterface(props){
+    const menuItems = [
+        /*["neuer Eintrag", async(that)=>{
+            if(window.confirm("Soll ein neuer Eintrag erstellt werden?")){
+                const newId = await arachne.konkordanz.save({zettel_sigel: "neuer Verweis"});
+                that.setState({newItemCreated: [{id: 0, c: "id", o: "=", v:newId}]});
+            }
+        }]*/
+    ];
+    const asideContent = [ // caption; type: t(ext-input), (text)a(rea), (auto)c(omplete); col names as array
+        {caption: "Fach", type: "text", col: "subject"},
+        {caption: "Geschichtsqu.", type: "text", col: "gq_id"},
+        {caption: "Corpus Corporum", type: "text", col: "cc_idno"}
+    ];
+    return <TableView
+        tblName="author"
+        searchOptions={[["id", "ID"], ["subject", "Fach"], ["gq_id", "Geschichtsquellen"], ["cc_idno", "Corpus Corporum"]]}
+        sortOptions={[['["id"]', "ID"], ['["abbr"]', "Autorname"]]}
+        menuItems={menuItems}
+        tblRow={ExternalConnectionWorkRow}
+        tblHeader={<><th>Werk</th><th>Fach</th><th>Geschichtsquellen</th><th>Corpus Corporum</th></>}
+        asideContent={asideContent}
+    />;
+}
+function ExternalConnectionWorkRow(props){
+    return <><td style={{color: props.cEl.in_use!==1?"lightgray":"inherit"}} title={"ID: "+props.cEl.id}>{props.cEl.in_use!==1?"[":null}<span dangerouslySetInnerHTML={parseHTML(props.cEl.opus)}></span>{props.cEl.in_use!==1?"]":null}</td>
+        <td>{props.cEl.subject}</td>
+        <td>{props.cEl.gq_id?<a target="_blank" href={"https://geschichtsquellen.de/autor/"+props.cEl.gq_id}>{props.cEl.gq_id}</a>:null}</td>
+        <td>{props.cEl.cc_idno?<a target="_blank" href={"https://www.mlat.uzh.ch/browser?path="+props.cEl.cc_idno}>{props.cEl.cc_idno}</a>:null}</td>
+    </>;
+}
 /* ************************************************************************************* */
 export {
     arachneTbls,
@@ -1103,7 +1135,7 @@ export {
     zettelSearchItems, ZettelCard, zettelBatchOptions, BatchInputType, ZettelAddLemmaContent, ZettelSingleContent, newZettelObject, exportZettelObject, zettelPresetOptions, zettelSortOptions,
     MainMenuContent,
     fetchIndexBoxData, IndexBoxDetail,
-    GeschichtsquellenImport, GeschichtsquellenInterface, ExternalConnectionAuthorInterface,
+    GeschichtsquellenImport, GeschichtsquellenInterface, ExternalConnectionAuthorInterface, ExternalConnectionWorkInterface
     StatisticsChart,
     MLWImportRessource, MLWImportZettel,
 }
