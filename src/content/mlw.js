@@ -1122,10 +1122,18 @@ function ExternalConnectionWorkInterface(props){
     />;
 }
 function ExternalConnectionWorkRow(props){
-    return <><td style={{color: props.cEl.in_use!==1?"lightgray":"inherit"}} title={"ID: "+props.cEl.id}>{props.cEl.in_use!==1?"[":null}<span dangerouslySetInnerHTML={parseHTML(props.cEl.opus)}></span>{props.cEl.in_use!==1?"]":null}</td>
+    const [author, setAuthor] = useState(null);
+    useEffect(()=>{
+        const fetchData=async()=>{
+            const newAuthor = await arachne.author.get({id: props.author_id}, {select: ["gq_id", "cc_idno", "mirabile_id"]});
+            if(newAuthor.length>0){setAuthor(newAuctor[0])};
+        };
+        fetchData();
+    },[]);
+    return <><td style={{color: props.cEl.in_use!==1?"lightgray":"inherit"}} title={"ID: "+props.cEl.id}><span dangerouslySetInnerHTML={parseHTML(props.cEl.opus)}></span></td>
         <td>{props.cEl.subject}</td>
-        <td>{props.cEl.gq_id?<a target="_blank" href={"https://geschichtsquellen.de/autor/"+props.cEl.gq_id}>{props.cEl.gq_id}</a>:null}</td>
-        <td>{props.cEl.cc_idno?<a target="_blank" href={"https://www.mlat.uzh.ch/browser?path="+props.cEl.cc_idno}>{props.cEl.cc_idno}</a>:null}</td>
+        <td>{props.cEl.gq_id?<a target="_blank" href={"https://geschichtsquellen.de/werk/"+props.cEl.gq_id}>{props.cEl.gq_id}</a>:author&&author.gq_id?<small><a href={"https://geschichtsquellen.de/autor/"+author.gq_id}>Autor-Link</a></small>:null}</td>
+        <td>{props.cEl.cc_idno?<a target="_blank" href={"https://www.mlat.uzh.ch/browser?path="+props.cEl.cc_idno}>{props.cEl.cc_idno}</a>:author&&author.cc_idno?<small><a href={"https://www.mlat.uzh.ch/browser?path="+author.cc_idno}>Autor-Link</a></small>:null}</td>
     </>;
 }
 /* ************************************************************************************* */
