@@ -1068,7 +1068,7 @@ function ExternalConnectionAuthorInterface(props){
         }]*/
     ];
     const tblRow=(props)=>{
-        return <><td title={"ID: "+props.cEl.id}><span dangerouslySetInnerHTML={parseHTML(props.cEl.full)}></span></td><td>{props.cEl.GND}</td><td>{props.cEl.VIAF}</td></>;
+        return <><td title={"ID: "+props.cEl.id}><aut>{props.cEl.abbr}</aut> <small dangerouslySetInnerHTML={parseHTML(props.cEl.full)}></small></td><td>{props.cEl.GND}</td><td>{props.cEl.VIAF}</td><td>{props.cEl.gq_id}</td><td>{props.cEl.cc_idno}</td><td>{props.cEl.miarbile_id}</td><td>{props.cEl.wikidata_id}</td></>;
     };
     const asideContent = [ // caption; type: t(ext-input), (text)a(rea), (auto)c(omplete); col names as array
         {caption: "Zettel-Sigel", type: "text", col: "zettel_sigel"},
@@ -1077,11 +1077,11 @@ function ExternalConnectionAuthorInterface(props){
     ];
     return <TableView
         tblName="author"
-        searchOptions={[["id", "ID"], ["GND", "GND"], ["VIAF", "VIAF"]]}
+        searchOptions={[["id", "ID"], ["GND", "GND"], ["VIAF", "VIAF"], ["gq_id", "Geschichtsquellen"], ["cc_idno", "Corpus Corporum"], ["mirabile_id", "Mirabile"], ["wikidata_id", "Wikidata"]]}
         sortOptions={[['["id"]', "ID"], ['["abbr"]', "Autorname"]]}
         menuItems={menuItems}
         tblRow={tblRow}
-        tblHeader={<><th>Autor</th><th>GND</th><th>VIAF</th></>}
+        tblHeader={<><th>Autor</th><th>GND</th><th>VIAF</th><th>Geschichtsquellen</th><th>Corpus Corporum</th><th>Mirabile</th><th>Wikidata</th></>}
         asideContent={asideContent}
     />;
 }
