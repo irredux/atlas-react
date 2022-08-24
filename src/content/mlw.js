@@ -1125,7 +1125,7 @@ function ExternalConnectionWorkRow(props){
     const [author, setAuthor] = useState(null);
     useEffect(()=>{
         const fetchData=async()=>{
-            const newAuthor = await arachne.author.get({id: props.author_id}, {select: ["gq_id", "cc_idno", "mirabile_id"]});
+            const newAuthor = await arachne.author.get({id: props.cEl.author_id}, {select: ["gq_id", "cc_idno", "mirabile_id"]});
             if(newAuthor.length>0){setAuthor(newAuthor[0])};
         };
         fetchData();
