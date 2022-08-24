@@ -1089,7 +1089,7 @@ function ExternalConnectionAuthorRow(props){
     const [works, setWorks] = useState([]);
     useEffect(()=>{
         const fetchData=async()=>{
-            arachne.work.get({author_id: props.cEl.id}, {select: ["id", "opus"]});
+            setWorks(await arachne.work.get({author_id: props.cEl.id}, {select: ["id", "opus"]}));
         };
         fetchData();
     },[]);
