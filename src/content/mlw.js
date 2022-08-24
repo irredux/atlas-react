@@ -1112,7 +1112,7 @@ function ExternalConnectionWorkInterface(props){
         {caption: "Corpus Corporum", type: "text", col: "cc_idno"}
     ];
     return <TableView
-        tblName="author"
+        tblName="work"
         searchOptions={[["id", "ID"], ["subject", "Fach"], ["gq_id", "Geschichtsquellen"], ["cc_idno", "Corpus Corporum"]]}
         sortOptions={[['["id"]', "ID"], ['["abbr"]', "Autorname"]]}
         menuItems={menuItems}
