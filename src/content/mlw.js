@@ -1070,7 +1070,7 @@ function ExternalConnectionAuthorInterface(props){
     const asideContent = [ // caption; type: t(ext-input), (text)a(rea), (auto)c(omplete); col names as array
         {caption: "GND", type: "text", col: "GND"},
         {caption: "VIAF", type: "text", col: "VIAF"},
-        {caption: "Geschichtsquellen", type: "text", col: "gq_id"},
+        {caption: "Geschichtsqu.", type: "text", col: "gq_id"},
         {caption: "Corpus Corporum", type: "text", col: "cc_idno"},
         {caption: "Mirabile", type: "text", col: "mirabile_id"},
         {caption: "Wikidata", type: "text", col: "wikidata_id"},
@@ -1087,13 +1087,7 @@ function ExternalConnectionAuthorInterface(props){
 }
 function ExternalConnectionAuthorRow(props){
     const [works, setWorks] = useState([]);
-    useEffect(()=>{
-        const fetchData=async()=>{
-            setWorks(await arachne.work.get({author_id: props.cEl.id}, {select: ["id", "opus"]}));
-        };
-        fetchData();
-    },[]);
-    return <><td style={{color: props.cEl.in_use!==1?"lightgray":"inherit"}} title={"ID: "+props.cEl.id}>{props.cEl.in_use!==1?"[":null}<aut>{props.cEl.abbr}</aut> <small dangerouslySetInnerHTML={parseHTML(props.cEl.full)}></small>{works.length>0?<ul>{works.map(w=><li dangerouslySetInnerHTML={parseHTML(w.opus)}></li>)}</ul>:null}</td>
+    return <><td style={{color: props.cEl.in_use!==1?"lightgray":"inherit"}} title={"ID: "+props.cEl.id}>{props.cEl.in_use!==1?"[":null}<aut>{props.cEl.abbr}</aut> <small dangerouslySetInnerHTML={parseHTML(props.cEl.full)}></small>{props.cEl.in_use!==1?"]":null}<br /><span dangerouslySetInnerHTML={parseHTML(w.date_display)}></span>{works.length>0?<ul>{works.map(w=><li><span dangerouslySetInnerHTML={parseHTML(w.opus)}></span dangerouslySetInnerHTML={parseHTML(w.date_display)}><small></small></li>)}</ul>:<small style={{marginLeft: "10px"}} onClick=async(){setWorks(await arachne.work.get({author_id: props.cEl.id}, {select: ["id", "opus", "date_display"]}))}>Werke laden...</small>}</td>
         <td>{props.cEl.GND?<a target="_blank" href={"https://d-nb.info/gnd/"+props.cEl.GND}>{props.cEl.GND}</a>:null}</td>
         <td>{props.cEl.VIAF?<a target="_blank" href={"https://viaf.org/viaf/"+props.cEl.VIAF}>{props.cEl.VIAF}</a>:null}</td>
         <td>{props.cEl.gq_id?<a target="_blank" href={"https://geschichtsquellen.de/autor/"+props.cEl.gq_id}>{props.cEl.gq_id}</a>:null}</td>
