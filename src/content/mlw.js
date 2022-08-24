@@ -1067,23 +1067,6 @@ function ExternalConnectionAuthorInterface(props){
             }
         }]*/
     ];
-    const tblRow=(props)=>{
-        const [works, setWorks] = useState([]);
-        useEffect(()=>{
-            const fetchData=async()=>{
-                arachne.work.get({author_id: props.cEl.id}, {select: ["id", "opus"]});
-            };
-            fetchData();
-        },[]);
-        return <><td style={{color: props.cEl.in_use!==1?"lightgray":"inherit"}} title={"ID: "+props.cEl.id}>{props.cEl.in_use!==1?"[":null}<aut>{props.cEl.abbr}</aut> <small dangerouslySetInnerHTML={parseHTML(props.cEl.full)}></small>{works.length>0?<ul>{works.map(w=><li dangerouslySetInnerHTML={parseHTML(w.opus)}></li>)}</ul>:null}</td>
-            <td>{props.cEl.GND?<a target="_blank" href={"https://d-nb.info/gnd/"+props.cEl.GND}>{props.cEl.GND}</a>:null}</td>
-            <td>{props.cEl.VIAF?<a target="_blank" href={"https://viaf.org/viaf/"+props.cEl.VIAF}>{props.cEl.VIAF}</a>:null}</td>
-            <td>{props.cEl.gq_id?<a target="_blank" href={"https://geschichtsquellen.de/autor/"+props.cEl.gq_id}>{props.cEl.gq_id}</a>:null}</td>
-            <td>{props.cEl.cc_idno?<a target="_blank" href={"https://www.mlat.uzh.ch/browser?path="+props.cEl.cc_idno}>{props.cEl.cc_idno}</a>:null}</td>
-            <td>{props.cEl.miarbile_id?<a target="_blank" href="">{props.cEl.miarbile_id}</a>:null}</td>
-            <td>{props.cEl.wikidata_id?<a target="_blank" href={"https://www.wikidata.org/wiki/"+props.cEl.wikidata_id}>{props.cEl.wikidata_id}</a>:null}</td>
-        </>;
-    };
     const asideContent = [ // caption; type: t(ext-input), (text)a(rea), (auto)c(omplete); col names as array
         {caption: "GND", type: "text", col: "GND"},
         {caption: "VIAF", type: "text", col: "VIAF"},
@@ -1097,10 +1080,27 @@ function ExternalConnectionAuthorInterface(props){
         searchOptions={[["id", "ID"], ["GND", "GND"], ["VIAF", "VIAF"], ["gq_id", "Geschichtsquellen"], ["cc_idno", "Corpus Corporum"], ["mirabile_id", "Mirabile"], ["wikidata_id", "Wikidata"]]}
         sortOptions={[['["id"]', "ID"], ['["abbr"]', "Autorname"]]}
         menuItems={menuItems}
-        tblRow={tblRow}
+        tblRow={ExternalConnectionAuthorRow}
         tblHeader={<><th>Autor</th><th>GND</th><th>VIAF</th><th>Geschichtsquellen</th><th>Corpus Corporum</th><th>Mirabile</th><th>Wikidata</th></>}
         asideContent={asideContent}
     />;
+}
+function ExternalConnectionAuthorRow(props){
+    const [works, setWorks] = useState([]);
+    useEffect(()=>{
+        const fetchData=async()=>{
+            arachne.work.get({author_id: props.cEl.id}, {select: ["id", "opus"]});
+        };
+        fetchData();
+    },[]);
+    return <><td style={{color: props.cEl.in_use!==1?"lightgray":"inherit"}} title={"ID: "+props.cEl.id}>{props.cEl.in_use!==1?"[":null}<aut>{props.cEl.abbr}</aut> <small dangerouslySetInnerHTML={parseHTML(props.cEl.full)}></small>{works.length>0?<ul>{works.map(w=><li dangerouslySetInnerHTML={parseHTML(w.opus)}></li>)}</ul>:null}</td>
+        <td>{props.cEl.GND?<a target="_blank" href={"https://d-nb.info/gnd/"+props.cEl.GND}>{props.cEl.GND}</a>:null}</td>
+        <td>{props.cEl.VIAF?<a target="_blank" href={"https://viaf.org/viaf/"+props.cEl.VIAF}>{props.cEl.VIAF}</a>:null}</td>
+        <td>{props.cEl.gq_id?<a target="_blank" href={"https://geschichtsquellen.de/autor/"+props.cEl.gq_id}>{props.cEl.gq_id}</a>:null}</td>
+        <td>{props.cEl.cc_idno?<a target="_blank" href={"https://www.mlat.uzh.ch/browser?path="+props.cEl.cc_idno}>{props.cEl.cc_idno}</a>:null}</td>
+        <td>{props.cEl.miarbile_id?<a target="_blank" href="">{props.cEl.miarbile_id}</a>:null}</td>
+        <td>{props.cEl.wikidata_id?<a target="_blank" href={"https://www.wikidata.org/wiki/"+props.cEl.wikidata_id}>{props.cEl.wikidata_id}</a>:null}</td>
+    </>;
 }
 /* ************************************************************************************* */
 export {
