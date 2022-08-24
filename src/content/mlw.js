@@ -1135,7 +1135,7 @@ export {
     zettelSearchItems, ZettelCard, zettelBatchOptions, BatchInputType, ZettelAddLemmaContent, ZettelSingleContent, newZettelObject, exportZettelObject, zettelPresetOptions, zettelSortOptions,
     MainMenuContent,
     fetchIndexBoxData, IndexBoxDetail,
-    GeschichtsquellenImport, GeschichtsquellenInterface, ExternalConnectionAuthorInterface, ExternalConnectionWorkInterface
+    GeschichtsquellenImport, GeschichtsquellenInterface, ExternalConnectionAuthorInterface, ExternalConnectionWorkInterface,
     StatisticsChart,
     MLWImportRessource, MLWImportZettel,
 }
