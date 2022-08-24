@@ -1068,7 +1068,14 @@ function ExternalConnectionAuthorInterface(props){
         }]*/
     ];
     const tblRow=(props)=>{
-        return <><td style={{color: props.cEl.in_use!==1?"lightgray":"inherit"}} title={"ID: "+props.cEl.id}>{props.cEl.in_use!==1?"[":null}<aut>{props.cEl.abbr}</aut> <small dangerouslySetInnerHTML={parseHTML(props.cEl.full)}></small>{props.cEl.is_maior!==1?<small>minora Werk</small>:null}{props.cEl.in_use!==1?"]":null}</td>
+        const [works, setWorks] = useState([]);
+        useEffect(()=>{
+            const fetchData=async()=>{
+                arachne.work.get({author_id: props.cEl.id}, {select: ["id", "opus"]});
+            };
+            fetchData();
+        },[]);
+        return <><td style={{color: props.cEl.in_use!==1?"lightgray":"inherit"}} title={"ID: "+props.cEl.id}>{props.cEl.in_use!==1?"[":null}<aut>{props.cEl.abbr}</aut> <small dangerouslySetInnerHTML={parseHTML(props.cEl.full)}></small>{works.length>0?<ul>{works.map(w=><li dangerouslySetInnerHTML={parseHTML(w.opus)}></li>)}</ul>:null}</td>
             <td>{props.cEl.GND?<a target="_blank" href={"https://d-nb.info/gnd/"+props.cEl.GND}>{props.cEl.GND}</a>:null}</td>
             <td>{props.cEl.VIAF?<a target="_blank" href={"https://viaf.org/viaf/"+props.cEl.VIAF}>{props.cEl.VIAF}</a>:null}</td>
             <td>{props.cEl.gq_id?<a target="_blank" href={"https://geschichtsquellen.de/autor/"+props.cEl.gq_id}>{props.cEl.gq_id}</a>:null}</td>
