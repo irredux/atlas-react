@@ -1068,7 +1068,14 @@ function ExternalConnectionAuthorInterface(props){
         }]*/
     ];
     const tblRow=(props)=>{
-        return <><td title={"ID: "+props.cEl.id}><aut>{props.cEl.abbr}</aut> <small dangerouslySetInnerHTML={parseHTML(props.cEl.full)}></small></td><td>{props.cEl.GND}</td><td>{props.cEl.VIAF}</td><td>{props.cEl.gq_id}</td><td>{props.cEl.cc_idno}</td><td>{props.cEl.miarbile_id}</td><td>{props.cEl.wikidata_id}</td></>;
+        return <><td style={{color: props.cEl.in_use!==1?"lightgray":"inherit"}} title={"ID: "+props.cEl.id}><aut>{props.cEl.abbr}</aut> <small dangerouslySetInnerHTML={parseHTML(props.cEl.full)}></small></td>
+            <td>{props.cEl.GND?<a href={"https://d-nb.info/gnd/"+props.cEl.GND}>{props.cEl.GND}</a>:null}</td>
+            <td>{props.cEl.VIAF?<a href={"https://viaf.org/viaf/"+props.cEl.VIAF}>{props.cEl.VIAF}</a>:null}</td>
+            <td>{props.cEl.gq_id?<a href={"https://geschichtsquellen.de/autor/"+props.cEl.gq_id}>{props.cEl.gq_id}</a>:null}</td>
+            <td>{props.cEl.cc_idno?<a href={"https://www.mlat.uzh.ch/browser?path="+props.cEl.cc_idno}>{props.cEl.cc_idno}</a>:null}</td>
+            <td>{props.cEl.miarbile_id?<a href="">{props.cEl.miarbile_id}</a>:null}</td>
+            <td>{props.cEl.wikidata_id?<a href="">{props.cEl.wikidata_id}</a>:null}</td>
+        </>;
     };
     const asideContent = [ // caption; type: t(ext-input), (text)a(rea), (auto)c(omplete); col names as array
         {caption: "Zettel-Sigel", type: "text", col: "zettel_sigel"},
