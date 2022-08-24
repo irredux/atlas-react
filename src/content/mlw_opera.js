@@ -311,7 +311,7 @@ class OperaAside extends React.Component{
                     <div>Sortierdatum-Typ:</div><div><input type="text" value={this.state.author.date_type} onChange={e=>{let nAuthor = this.state.author;nAuthor.date_type = e.target.value;this.setState({author:nAuthor})}} /></div>
                     <div>VIAF-ID:</div><div><input type="text" value={this.state.author.VIAF} onChange={e=>{let nAuthor = this.state.author;nAuthor.VIAF = e.target.value;this.setState({author:nAuthor})}} /></div>
                     <div>GND-ID:</div><div><input type="text" value={this.state.author.GND} onChange={e=>{let nAuthor = this.state.author;nAuthor.GND = e.target.value;this.setState({author:nAuthor})}} /></div>
-                    <div>Geschichts-quellen-ID:</div><div><input type="text" value={this.state.author.gq_id} onChange={e=>{let nAuthor = this.state.author;nAuthor.gq_id = e.target.value;this.setState({author:nAuthor})}} /></div>
+                    <div><small>Geschichtsquellen-ID:</small></div><div><input type="text" value={this.state.author.gq_id} onChange={e=>{let nAuthor = this.state.author;nAuthor.gq_id = e.target.value;this.setState({author:nAuthor})}} /></div>
                     <div>in Benutzung:</div><div><SelectMenu style={{width: "86%"}} options={[[0, "Nein"], [1, "Ja"]]} value={this.state.author.in_use} onChange={e=>{let nAuthor = this.state.author;nAuthor.in_use = e.target.value;this.setState({author:nAuthor})}} /></div>
                     <div></div><div>
                         <StatusButton value="speichern" onClick={async ()=>{

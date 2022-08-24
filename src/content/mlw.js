@@ -382,6 +382,7 @@ function MainMenuContent(props){
         <NavDropdown.Item onClick={e => {props.loadMain(e, "seklit")}}>Sekundärliteratur</NavDropdown.Item>
         <NavDropdown.Item onClick={e => {props.loadMain(e, "ressources")}}>Ressourcen</NavDropdown.Item>
         {arachne.access("geschichtsquellen")&&<NavDropdown.Item onClick={e => {props.loadMain(e, "geschichtsquellen")}}>Geschichtsquellen</NavDropdown.Item>}
+        {arachne.access("geschichtsquellen")&&<NavDropdown.Item onClick={e => {props.loadMain(e, "externalConnectionAuthor")}}>Datenbankverknüpfung (Autoren)</NavDropdown.Item>}
     </>;
 }
 /* ************************************************************************************* */
@@ -1057,13 +1058,41 @@ function MLWImportZettel(props){
     </>;
 }
 /* ************************************************************************************* */
+function ExternalConnectionAuthorInterface(props){
+    const menuItems = [
+        /*["neuer Eintrag", async(that)=>{
+            if(window.confirm("Soll ein neuer Eintrag erstellt werden?")){
+                const newId = await arachne.konkordanz.save({zettel_sigel: "neuer Verweis"});
+                that.setState({newItemCreated: [{id: 0, c: "id", o: "=", v:newId}]});
+            }
+        }]*/
+    ];
+    const tblRow=(props)=>{
+        return <><td title={"ID: "+props.cEl.id}><span dangerouslySetInnerHTML={parseHTML(props.cEl.full)}></span></td><td>{props.cEl.GND}</td><td>{props.cEl.VIAF}</td></>;
+    };
+    const asideContent = [ // caption; type: t(ext-input), (text)a(rea), (auto)c(omplete); col names as array
+        {caption: "Zettel-Sigel", type: "text", col: "zettel_sigel"},
+        {caption: "verknpft. Quelle", type: "auto", col: ["sigel", "opera_id"], search: {tbl: "opera", sCol: "sigel", rCol: "sigel"}},
+        {caption: "Kommentar", type: "area", col: "comment"},
+    ];
+    return <TableView
+        tblName="author"
+        searchOptions={[["id", "ID"], ["GND", "GND"], ["VIAF", "VIAF"]]}
+        sortOptions={[['["id"]', "ID"], ['["abbr"]', "Autorname"]]}
+        menuItems={menuItems}
+        tblRow={tblRow}
+        tblHeader={<><th>Autor</th><th>GND</th><th>VIAF</th></>}
+        asideContent={asideContent}
+    />;
+}
+/* ************************************************************************************* */
 export {
     arachneTbls,
     LemmaRow, LemmaHeader, lemmaSearchItems, LemmaAsideContent,
     zettelSearchItems, ZettelCard, zettelBatchOptions, BatchInputType, ZettelAddLemmaContent, ZettelSingleContent, newZettelObject, exportZettelObject, zettelPresetOptions, zettelSortOptions,
     MainMenuContent,
     fetchIndexBoxData, IndexBoxDetail,
-    GeschichtsquellenImport, GeschichtsquellenInterface,
+    GeschichtsquellenImport, GeschichtsquellenInterface, ExternalConnectionAuthorInterface,
     StatisticsChart,
     MLWImportRessource, MLWImportZettel,
 }
