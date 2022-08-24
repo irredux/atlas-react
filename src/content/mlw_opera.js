@@ -310,6 +310,8 @@ class OperaAside extends React.Component{
                     <div>Sortierdatum:</div><div><input type="text" value={this.state.author.date_sort} onChange={e=>{let nAuthor = this.state.author;nAuthor.date_sort = e.target.value;this.setState({author:nAuthor})}} /></div>
                     <div>Sortierdatum-Typ:</div><div><input type="text" value={this.state.author.date_type} onChange={e=>{let nAuthor = this.state.author;nAuthor.date_type = e.target.value;this.setState({author:nAuthor})}} /></div>
                     <div>VIAF-ID:</div><div><input type="text" value={this.state.author.VIAF} onChange={e=>{let nAuthor = this.state.author;nAuthor.VIAF = e.target.value;this.setState({author:nAuthor})}} /></div>
+                    <div>GND-ID:</div><div><input type="text" value={this.state.author.GND} onChange={e=>{let nAuthor = this.state.author;nAuthor.GND = e.target.value;this.setState({author:nAuthor})}} /></div>
+                    <div>Geschichts-quellen-ID:</div><div><input type="text" value={this.state.author.gq_id} onChange={e=>{let nAuthor = this.state.author;nAuthor.gq_id = e.target.value;this.setState({author:nAuthor})}} /></div>
                     <div>in Benutzung:</div><div><SelectMenu style={{width: "86%"}} options={[[0, "Nein"], [1, "Ja"]]} value={this.state.author.in_use} onChange={e=>{let nAuthor = this.state.author;nAuthor.in_use = e.target.value;this.setState({author:nAuthor})}} /></div>
                     <div></div><div>
                         <StatusButton value="speichern" onClick={async ()=>{
@@ -909,19 +911,16 @@ class Opera extends React.Component{
             i++;
             if(listName=="opera_maiora"){
                 const abbr = o.work_id>0&&o.author_id===null?`<span>&nbsp;&nbsp;&nbsp;${o.abbr}</span>`:`<aut>${o.abbr}</aut>`;
-                const full =  o.viaf_id!==null||o.gq_work_id!==null||o.gq_author_id!=null?<Dropdown>
+                const full =  o.gnd_id!==null||o.viaf_id!==null||o.gq_work_id!==null||o.gq_author_id!=null?<Dropdown>
                     <Dropdown.Toggle as={CustomToggle} id="dropdown-custom-components">
                         <span dangerouslySetInnerHTML={parseHTML(o.work_id>0&&o.author_id===null?`<span>&nbsp;&nbsp;&nbsp;${o.full}</span>`:o.full)}></span>
                     </Dropdown.Toggle>
 
                     <Dropdown.Menu>
-                        {o.same_line===1?<>
-                            {o.gq_author_id!==null&&o.gq_author_id!==null&&<Dropdown.Item eventKey="1" onClick={()=>{window.open(`https://geschichtsquellen.de/autor/${o.gq_author_id}`, "_blank")}}>Geschichtsquelle <small>(Autor)</small></Dropdown.Item>}
-                            {o.gq_work_id!==null&&o.gq_work_id!==null&&<Dropdown.Item eventKey="2" onClick={()=>{window.open(`https://geschichtsquellen.de/werk/${o.gq_work_id}`, "_blank")}}>Geschichtsquelle <small>(Werk)</small></Dropdown.Item>}
-                        </>:null}
-                        {o.same_line!==1&&o.gq_author_id!==null&&<Dropdown.Item eventKey="3" onClick={()=>{window.open(`https://geschichtsquellen.de/autor/${o.gq_author_id}`, "_blank")}}>Geschichtsquelle</Dropdown.Item>}
-                        {o.same_line!==1&&o.gq_work_id!==null&&<Dropdown.Item eventKey="4" onClick={()=>{window.open(`https://geschichtsquellen.de/werk/${o.gq_work_id}`, "_blank")}}>Geschichtsquelle</Dropdown.Item>}
-                        {o.viaf_id!==null?<Dropdown.Item eventKey="5" onClick={()=>{window.open(`https://viaf.org/viaf/${o.viaf_id}`, "_blank")}}>VIAF</Dropdown.Item>:null}
+                        {o.gq_author_id!==null&&<Dropdown.Item eventKey="1" onClick={()=>{window.open(`https://geschichtsquellen.de/autor/${o.gq_author_id}`, "_blank")}}>Geschichtsquelle <small>(Autor)</small></Dropdown.Item>}
+                        {o.gq_work_id!==null&&<Dropdown.Item eventKey="2" onClick={()=>{window.open(`https://geschichtsquellen.de/werk/${o.gq_work_id}`, "_blank")}}>Geschichtsquelle <small>(Werk)</small></Dropdown.Item>}
+                        {o.viaf_id!==null?<Dropdown.Item eventKey="3" onClick={()=>{window.open(`https://viaf.org/viaf/${o.viaf_id}`, "_blank")}}>VIAF</Dropdown.Item>:null}
+                        {o.gnd_id!==null?<Dropdown.Item eventKey="4" onClick={()=>{window.open(`https://d-nb.info/gnd/${o.gnd_id}`, "_blank")}}>DNB</Dropdown.Item>:null}
                     </Dropdown.Menu>
                 </Dropdown>:<span dangerouslySetInnerHTML={parseHTML(o.work_id>0&&o.author_id===null?`<span>&nbsp;&nbsp;&nbsp;${o.full}</span>`:o.full)}></span>
                 trLst.push({o: o, data: [
@@ -932,7 +931,7 @@ class Opera extends React.Component{
                 <td key="4" className="c5" dangerouslySetInnerHTML={parseHTML(o.comment)}></td>
             ]});
             } else if(listName==="opera_minora"){
-                const cit =  o.gq_work_id!==null||o.gq_author_id!=null?<Dropdown>
+                const cit =  o.viaf_id!==null||o.gnd_id!==null||o.gq_work_id!==null||o.gq_author_id!=null?<Dropdown>
                     <Dropdown.Toggle as={CustomToggle} id="dropdown-custom-components">
                         <span dangerouslySetInnerHTML={parseHTML(o.citation)}></span>
                     </Dropdown.Toggle>
@@ -940,6 +939,8 @@ class Opera extends React.Component{
                     <Dropdown.Menu>
                         {o.gq_author_id!==null&&<Dropdown.Item eventKey="1" onClick={()=>{window.open(`https://geschichtsquellen.de/autor/${o.gq_author_id}`, "_blank")}}>Geschichtsquelle <small>(Autor)</small></Dropdown.Item>}
                         {o.gq_work_id!==null&&<Dropdown.Item eventKey="2" onClick={()=>{window.open(`https://geschichtsquellen.de/werk/${o.gq_work_id}`, "_blank")}}>Geschichtsquelle <small>(Werk)</small></Dropdown.Item>}
+                        {o.viaf_id!==null?<Dropdown.Item eventKey="3" onClick={()=>{window.open(`https://viaf.org/viaf/${o.viaf_id}`, "_blank")}}>VIAF</Dropdown.Item>:null}
+                        {o.gnd_id!==null?<Dropdown.Item eventKey="4" onClick={()=>{window.open(`https://d-nb.info/gnd/${o.gnd_id}`, "_blank")}}>DNB</Dropdown.Item>:null}
                     </Dropdown.Menu>
                 </Dropdown>:<span dangerouslySetInnerHTML={parseHTML(o.citation)}></span>
                 trLst.push({o: o, data: [
