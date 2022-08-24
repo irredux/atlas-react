@@ -1068,19 +1068,22 @@ function ExternalConnectionAuthorInterface(props){
         }]*/
     ];
     const tblRow=(props)=>{
-        return <><td style={{color: props.cEl.in_use!==1?"lightgray":"inherit"}} title={"ID: "+props.cEl.id}><aut>{props.cEl.abbr}</aut> <small dangerouslySetInnerHTML={parseHTML(props.cEl.full)}></small></td>
-            <td>{props.cEl.GND?<a href={"https://d-nb.info/gnd/"+props.cEl.GND}>{props.cEl.GND}</a>:null}</td>
-            <td>{props.cEl.VIAF?<a href={"https://viaf.org/viaf/"+props.cEl.VIAF}>{props.cEl.VIAF}</a>:null}</td>
-            <td>{props.cEl.gq_id?<a href={"https://geschichtsquellen.de/autor/"+props.cEl.gq_id}>{props.cEl.gq_id}</a>:null}</td>
-            <td>{props.cEl.cc_idno?<a href={"https://www.mlat.uzh.ch/browser?path="+props.cEl.cc_idno}>{props.cEl.cc_idno}</a>:null}</td>
-            <td>{props.cEl.miarbile_id?<a href="">{props.cEl.miarbile_id}</a>:null}</td>
-            <td>{props.cEl.wikidata_id?<a href="">{props.cEl.wikidata_id}</a>:null}</td>
+        return <><td style={{color: props.cEl.in_use!==1?"lightgray":"inherit"}} title={"ID: "+props.cEl.id}>{props.cEl.in_use!==1?"[":null}<aut>{props.cEl.abbr}</aut> <small dangerouslySetInnerHTML={parseHTML(props.cEl.full)}></small>{props.cEl.is_maior!==1?<small>minora Werk</small>:null}{props.cEl.in_use!==1?"]":null}</td>
+            <td>{props.cEl.GND?<a target="_blank" href={"https://d-nb.info/gnd/"+props.cEl.GND}>{props.cEl.GND}</a>:null}</td>
+            <td>{props.cEl.VIAF?<a target="_blank" href={"https://viaf.org/viaf/"+props.cEl.VIAF}>{props.cEl.VIAF}</a>:null}</td>
+            <td>{props.cEl.gq_id?<a target="_blank" href={"https://geschichtsquellen.de/autor/"+props.cEl.gq_id}>{props.cEl.gq_id}</a>:null}</td>
+            <td>{props.cEl.cc_idno?<a target="_blank" href={"https://www.mlat.uzh.ch/browser?path="+props.cEl.cc_idno}>{props.cEl.cc_idno}</a>:null}</td>
+            <td>{props.cEl.miarbile_id?<a target="_blank" href="">{props.cEl.miarbile_id}</a>:null}</td>
+            <td>{props.cEl.wikidata_id?<a target="_blank" href={"https://www.wikidata.org/wiki/"+props.cEl.wikidata_id}>{props.cEl.wikidata_id}</a>:null}</td>
         </>;
     };
     const asideContent = [ // caption; type: t(ext-input), (text)a(rea), (auto)c(omplete); col names as array
-        {caption: "Zettel-Sigel", type: "text", col: "zettel_sigel"},
-        {caption: "verknpft. Quelle", type: "auto", col: ["sigel", "opera_id"], search: {tbl: "opera", sCol: "sigel", rCol: "sigel"}},
-        {caption: "Kommentar", type: "area", col: "comment"},
+        {caption: "GND", type: "text", col: "GND"},
+        {caption: "VIAF", type: "text", col: "VIAF"},
+        {caption: "Geschichtsquellen", type: "text", col: "gq_id"},
+        {caption: "Corpus Corporum", type: "text", col: "cc_idno"},
+        {caption: "Mirabile", type: "text", col: "mirabile_id"},
+        {caption: "Wikidata", type: "text", col: "wikidata_id"},
     ];
     return <TableView
         tblName="author"
