@@ -1132,8 +1132,8 @@ function ExternalConnectionWorkRow(props){
     },[]);
     return <><td style={{color: props.cEl.in_use!==1?"lightgray":"inherit"}} title={"ID: "+props.cEl.id}><span dangerouslySetInnerHTML={parseHTML(props.cEl.opus)}></span></td>
         <td>{props.cEl.subject}</td>
-        <td>{props.cEl.gq_id?<a target="_blank" href={"https://geschichtsquellen.de/werk/"+props.cEl.gq_id}>{props.cEl.gq_id}</a>:author&&author.gq_id?<small><a href={"https://geschichtsquellen.de/autor/"+author.gq_id}>Autor-Link</a></small>:null}</td>
-        <td>{props.cEl.cc_idno?<a target="_blank" href={"https://www.mlat.uzh.ch/browser?path="+props.cEl.cc_idno}>{props.cEl.cc_idno}</a>:author&&author.cc_idno?<small><a href={"https://www.mlat.uzh.ch/browser?path="+author.cc_idno}>Autor-Link</a></small>:null}</td>
+        <td>{props.cEl.gq_id?<a target="_blank" href={"https://geschichtsquellen.de/werk/"+props.cEl.gq_id}>{props.cEl.gq_id}</a>:author&&author.gq_id?<small><a target="_blank" href={"https://geschichtsquellen.de/autor/"+author.gq_id}>Autor-Link</a></small>:null}</td>
+        <td>{props.cEl.cc_idno?<a target="_blank" href={"https://www.mlat.uzh.ch/browser?path="+props.cEl.cc_idno}>{props.cEl.cc_idno}</a>:author&&author.cc_idno?<small><a target="_blank" href={"https://www.mlat.uzh.ch/browser?path="+author.cc_idno}>Autor-Link</a></small>:null}</td>
     </>;
 }
 /* ************************************************************************************* */

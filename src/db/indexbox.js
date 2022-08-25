@@ -67,8 +67,12 @@ function IndexBox(props){
             const after = getWordsAfter();
             setWords(words.concat(after))
         }else if(e.target.scrollTop<SCROLL_BOUND){
-            const before = getWordsBefore()            
+            console.log("add new elments to top");
+            const before = getWordsBefore()
+            const els = document.getElementsByClassName("indexBoxLstResultBox");
+            els[0].style.overflow = "hidden";
             setWords(before.concat(words));
+            setTimeout(()=>{els[0].style.overflow="scroll"}, 500);
         }
     }
     const getWordsBefore = ()=>{
