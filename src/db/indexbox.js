@@ -19,6 +19,8 @@ function IndexBox(props){
     const [detailId, setDetailId] = useState(null);
     const [resultLst, setResultLst]=useState([]);
     const [resultCurrentId, setResultCurrentId] = useState(0);
+    const [scrollLoadTopActive, setScrollLoadTopActive] = useState(false);
+    const [scrollLoadBottomActive, setScrollLoadBottomActive] = useState(false);
 
     const [wordLst, setWordLst] = useState([]); // contains all words
     useEffect(()=>{
@@ -51,23 +53,27 @@ function IndexBox(props){
             const wordsAfter = wordLst.slice(cIndex, cIndex+WORD_COUNT);
             setWords(wordsBefore.concat(wordsAfter));
             //setDetailId(resultCurrentId);
+            setScrollLoadTopActive(cIndex>0?true:false);
+            setScrollLoadBottomActive(cIndex+WORD_COUNT>=(wordLst.length-1)?false:true);
             const scrollToHit = async()=>{
                 await sleep(200);
                 const hit = document.querySelector(".indexBox_result_hit");
                 if(hit){hit.scrollIntoView({block: "center", behavior: "auto"})}
             }
             scrollToHit();
-        }else{
+        }else{ // beginning of list
             setWords(wordLst.slice(0,WORD_COUNT));
+            const els = document.getElementsByClassName("indexBoxLstResultBox");
+            if(els.length>0){els[0].scroll(0,0)};
+            setScrollLoadBottomActive(true);
         }
     }, [resultLst,resultCurrentId]);
 
     const loadMoreWords=(e)=>{
-        if(e.target.scrollHeight-e.target.scrollTop-e.target.offsetHeight<SCROLL_BOUND){//bottom
+        if(scrollLoadBottomActive&&e.target.scrollHeight-e.target.scrollTop-e.target.offsetHeight<SCROLL_BOUND){//bottom
             const after = getWordsAfter();
             setWords(words.concat(after))
-        }else if(e.target.scrollTop<SCROLL_BOUND){
-            console.log("add new elments to top");
+        }else if(scrollLoadTopActive&&e.target.scrollTop<SCROLL_BOUND){ // top
             const before = getWordsBefore()
             const els = document.getElementsByClassName("indexBoxLstResultBox");
             els[0].style.overflow = "hidden";
@@ -77,10 +83,12 @@ function IndexBox(props){
     }
     const getWordsBefore = ()=>{
         const firstId = wordLst.findIndex(w=>w.id===words[0].id);
+        setScrollLoadTopActive(firstId-WORD_COUNT>=0?true:false);
         return wordLst.slice(firstId-WORD_COUNT>=0?firstId-WORD_COUNT:0, firstId);
     };
     const getWordsAfter=()=>{
         const lastId = wordLst.findIndex(w=>w.id===words[words.length-1].id);
+        setScrollLoadBottomActive(lastId+1+WORD_COUNT>=(wordLst.length-1)?false:true);
         return wordLst.slice(lastId+1, lastId+1+WORD_COUNT);
     };
     if(wordLst.length>0){
@@ -97,7 +105,7 @@ function IndexBox(props){
                     }else if(e.keyCode===13){
                         const lastIndex = resultLst.findIndex(r=>r.id===resultCurrentId);
                         if(lastIndex+1<resultLst.length){setResultCurrentId(resultLst[lastIndex+1].id)}
-                        else{setResultCurrentId(resultLst[0].id)}
+                        else if(resultLst.length>0){setResultCurrentId(resultLst[0].id)}
                     }else if(e.keyCode===27){
                         setQuery("");
                     }
