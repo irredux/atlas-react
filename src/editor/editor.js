@@ -142,7 +142,8 @@ function Editor(props){
     };
 
     const updateSections = async () => {
-        let foundSections = await arachne.sections.get({project_id: props.resId}, {select: ["id"]});
+        let foundSections = await arachne.sections.get({project_id: props.resId}, {select: ["id"], order: ["date_sort"]});
+        console.log(foundSections)
         if(filterTags.length === 0){
             setFilterLst(foundSections.map(s=>s.id));
         } else {

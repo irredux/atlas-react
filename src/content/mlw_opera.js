@@ -922,6 +922,7 @@ class Opera extends React.Component{
                         {o.viaf_id!==null?<Dropdown.Item eventKey="3" onClick={()=>{window.open(`https://viaf.org/viaf/${o.viaf_id}`, "_blank")}}>VIAF</Dropdown.Item>:null}
                         {o.gnd_id!==null?<Dropdown.Item eventKey="4" onClick={()=>{window.open(`https://d-nb.info/gnd/${o.gnd_id}`, "_blank")}}>DNB</Dropdown.Item>:null}
                         {o.cc_idno!==null?<Dropdown.Item eventKey="5" onClick={()=>{window.open(`https://www.mlat.uzh.ch/browser?path=${o.cc_idno}`, "_blank")}}>Corpus Corporum</Dropdown.Item>:null}
+                        {o.mirabile_link!==null?<Dropdown.Item eventKey="6" onClick={()=>{window.open(o.mirabile_link, "_blank")}}>Mirabile</Dropdown.Item>:null}
                         {o.wikidata_id!==null?<Dropdown.Item eventKey="6" onClick={()=>{window.open(`https://www.wikidata.org/wiki/${o.wikidata_id}`, "_blank")}}>Wikidata</Dropdown.Item>:null}
                     </Dropdown.Menu>
                 </Dropdown>:<span dangerouslySetInnerHTML={parseHTML(o.work_id>0&&o.author_id===null?`<span>&nbsp;&nbsp;&nbsp;${o.full}</span>`:o.full)}></span>
@@ -943,6 +944,9 @@ class Opera extends React.Component{
                         {o.gq_work_id!==null&&<Dropdown.Item eventKey="2" onClick={()=>{window.open(`https://geschichtsquellen.de/werk/${o.gq_work_id}`, "_blank")}}>Geschichtsquelle <small>(Werk)</small></Dropdown.Item>}
                         {o.viaf_id!==null?<Dropdown.Item eventKey="3" onClick={()=>{window.open(`https://viaf.org/viaf/${o.viaf_id}`, "_blank")}}>VIAF</Dropdown.Item>:null}
                         {o.gnd_id!==null?<Dropdown.Item eventKey="4" onClick={()=>{window.open(`https://d-nb.info/gnd/${o.gnd_id}`, "_blank")}}>DNB</Dropdown.Item>:null}
+                        {o.cc_idno!==null?<Dropdown.Item eventKey="5" onClick={()=>{window.open(`https://www.mlat.uzh.ch/browser?path=${o.cc_idno}`, "_blank")}}>Corpus Corporum</Dropdown.Item>:null}
+                        {o.mirabile_link!==null?<Dropdown.Item eventKey="6" onClick={()=>{window.open(o.mirabile_link, "_blank")}}>Mirabile</Dropdown.Item>:null}
+                        {o.wikidata_id!==null?<Dropdown.Item eventKey="6" onClick={()=>{window.open(`https://www.wikidata.org/wiki/${o.wikidata_id}`, "_blank")}}>Wikidata</Dropdown.Item>:null}
                     </Dropdown.Menu>
                 </Dropdown>:<span dangerouslySetInnerHTML={parseHTML(o.citation)}></span>
                 trLst.push({o: o, data: [

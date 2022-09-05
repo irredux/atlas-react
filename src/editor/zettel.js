@@ -1,10 +1,10 @@
 import { useEffect, useState, useRef } from "react";
-import { Button, ButtonGroup, Dropdown, Table, Badge, Card, Col, Form, Container, Navbar, Nav, Row, Modal, Accordion, Stack, Offcanvas, Tabs, Tab } from "react-bootstrap";
+import { Button, ButtonGroup, Dropdown, Table, Badge, Card, Col, Form, Container, Row, Modal, Accordion, Stack, Offcanvas, Tabs, Tab } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGear, faPlusCircle, faMinusCircle, faTimesCircle, faRotate, faPenToSquare, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faGear, faPlusCircle, faMinusCircle, faTimesCircle, faPenToSquare, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 
 import { arachne } from "./../arachne.js";
-import { AutoComplete, SearchInput, StatusButton, ToolKit, useIntersectionObserver, Message, useShortcuts, sleep } from "./../elements.js"
+import { AutoComplete, SearchInput, StatusButton, useIntersectionObserver, Message, sleep } from "./../elements.js"
 
 function ZettelBox(props){
     const [currentZettel, setCurrentZettel] = useState("?")
@@ -665,7 +665,7 @@ function ImportZettel(props){
                         ref: z.ac_web,
                         text: z.txt?z.txt:(z.ocr_text_corr&&importZettelText)?z.ocr_text_corr:(z.ocr_text&&importZettelText)?z.ocr_text:null,
                         comment: cmnts.length>0?cmnts.map(c=>`${c.user}:\n${c.comment}\n`).join("\n\n"):null,
-                        date_sort: z.date_sort,
+                        date_sort: z.date_sort===0?9999:z.date_sort,
                         img: z.img_path,
                         user_id: props.project.user_id,
                         shared_id: props.project.shared_id,

@@ -314,6 +314,9 @@ function ZettelAsideSingle(props){
                     </Accordion.Body>
                 </Accordion.Item>}
             </Accordion>
+            {props.item.editor&&<Row className="mt-2">
+                <Col><small className="text-secondary" style={{float: "right"}}>{props.item.editor} am {props.item.u_date?props.item.u_date.substring(0,16):null}</small></Col>
+            </Row>}
         </Offcanvas.Body>
     </>;
 }

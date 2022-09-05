@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Container, Row, Col, Form, FloatingLabel } from "react-bootstrap";
 
 import { arachne } from "./arachne.js";
-import { StatusButton, sleep } from "./elements.js";
+import { StatusButton, sleep, Link } from "./elements.js";
 
 function LoginScreen(props){
     const [email, setEmail] = useState(null);
@@ -26,7 +26,7 @@ function LoginScreen(props){
                 </Form.Group>
             </Row>
             <Row className="mt-3">
-                <Col><small>Noch kein Konto? Klicken Sie <a className="text-primary" onClick={()=>{props.setMode("create")}}>hier</a>.</small></Col>
+                <Col><small>Noch kein Konto? Klicken Sie <Link onClick={()=>{props.setMode("create")}}>hier</Link>.</small></Col>
 
                 <Col className="col-sm-5 d-flex justify-content-end">
                     <StatusButton variant="primary" type="submit" value="anmelden" onClick={async()=>{
@@ -79,7 +79,7 @@ function AccountCreate(props){
             </Row>
             <Row>
                 <Col sm={6}></Col>
-                <Col sm={2}style={{marginTop: "8px"}} ><a className="text-secondary" onClick={()=>{props.setMode("login")}}>zurück</a></Col>
+                <Col sm={2}style={{marginTop: "8px"}} ><Link className="text-secondary" onClick={()=>{props.setMode("login")}}>zurück</Link></Col>
                 <Col><StatusButton value="registrieren" onClick={async ()=>{
     if(firstName&&lastName&&email&&password){
         const status = await arachne.createAccount({
@@ -92,13 +92,10 @@ function AccountCreate(props){
             case 201:
                 sleep(2000).then(()=>{props.setMode("login")});
                 return {status: 1, success: "Der Account wurde erfolgreich erstellt."};
-                break;
             case 409:
                 return {status: -1, error: "Die Email-Adresse wird bereits verwendet."};
-                break;
             case 406:
-                return {status: -1, error: "Bitte füllen Sie alle Felder aus."}
-                break;
+                return {status: -1, error: "Bitte füllen Sie alle Felder aus."};
             default:
                 return {status: -1, error: "Die Registrierung is fehlgeschlagen. Versuchen Sie es erneut."};
         }

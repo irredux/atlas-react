@@ -5,6 +5,10 @@ import { Navbar, Container, Table, Row, Col, Offcanvas, Alert, ButtonGroup, Butt
 import DOMPurify from "dompurify";
 import { arachne } from "./arachne.js";
 
+function Link(props){
+    return <span tabindex="0" className={props.className?props.className:"text-primary"} style={{cursor: "pointer", textDecoration: "underline"}} onClick={props.onClick}>{props.children}</span>;
+}
+
 class TableView extends React.Component{
     constructor(props){
         super(props);
@@ -914,4 +918,4 @@ function useShortcuts(callback, debug=false){
         return () => {window.removeEventListener("keyup", handleKeyUp)};
     }, [handleKeyUp]);
 }
-export { CommentBox, Navigator, parseHTML, parseHTMLPreview, SearchBox, SearchInput, SelectMenu, Selector, ToolKit, AutoComplete, Aside, SearchHint, StatusButton, sleep, sqlDate, Message, useIntersectionObserver, useShortcuts, TableView };
+export { Link, CommentBox, Navigator, parseHTML, parseHTMLPreview, SearchBox, SearchInput, SelectMenu, Selector, ToolKit, AutoComplete, Aside, SearchHint, StatusButton, sleep, sqlDate, Message, useIntersectionObserver, useShortcuts, TableView };
