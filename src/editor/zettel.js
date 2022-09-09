@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Button, ButtonGroup, Dropdown, Table, Badge, Card, Col, Form, Container, Row, Modal, Accordion, Stack, Offcanvas, Tabs, Tab } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGear, faPlusCircle, faMinusCircle, faTimesCircle, faPenToSquare, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faGear, faPlusCircle, faMinusCircle, faTimesCircle, faPenToSquare, faTrashCan, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 
 import { arachne } from "./../arachne.js";
 import { AutoComplete, SearchInput, StatusButton, useIntersectionObserver, Message, sleep } from "./../elements.js"
@@ -122,6 +122,7 @@ function MenuLeft(props){
                             /></td>
                             <td><b style={{marginLeft: "10px", color: t.color, cursor: "pointer"}} onClick={()=>{props.setFilterTags([t]);props.setActiveTabKey("filter")}}>{t.name}</b></td>
                             <td>{t.sections}</td>
+                            <td onClick={async()=>{await arachne.tags.save({id: t.id, display: t.display===1?0:1});await loadTags()}}>{t.display===1?<FontAwesomeIcon className="text-success" icon={faEye} />:<FontAwesomeIcon className="text-secondary" icon={faEyeSlash} />}</td>
                             <td><FontAwesomeIcon icon={faPenToSquare} style={{cursor: "pointer", color: "var(--bs-primary)"}} onClick={()=>{setRenameName(t.name);setRenameId(t.id)}} /></td>
                             <td><FontAwesomeIcon icon={faTrashCan} style={{cursor: "pointer", color: "var(--bs-primary)"}} onClick={()=>{deleteTag(t)}} /></td>
                         </tr>)}
@@ -493,6 +494,7 @@ function TagBoxInput(props){
                         project_id: props.project.id,
                         user_id: props.project.user_id,
                         shared_id: props.project.shared_id,
+                        display: 1,
                     });
                     tagId = newTagId;
                     await arachne.tag_lnks.save({tag_id: newTagId, section_id: props.sectionId, project_id: props.project.id});
@@ -681,6 +683,7 @@ function ImportZettel(props){
                     if(z.type===1){typeTag="verzettelt"}
                     else if(z.type===2){typeTag="Exzerpt"}
                     else if(z.type===3){typeTag="Index"}
+                    else if(z.type===4){typeTag="Literatur"}
                     else if(z.type===6){typeTag="Index (unkl. Werk)"}
                     else if(z.type===7){typeTag="Notiz"}
                     if(typeTag){
@@ -691,6 +694,7 @@ function ImportZettel(props){
                                 project_id: props.project.id,
                                 user_id: props.project.user_id,
                                 shared_id: props.project.shared_id,
+                                display: 0,
                             });
                             tagObj[typeTag] = newTagId;
                         }

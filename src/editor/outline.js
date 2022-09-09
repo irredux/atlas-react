@@ -233,7 +233,7 @@ function ArticleBoxSections(props){
                     return {id: a.id, type: "section", name: `${a.ref}; ${a.text!==null?a.text.substring(0, 10):""}...`, articleName: inputMode===2&&a.article_id!==props.articleId?props.articles.find(a=>a.id===props.articleId).name:null}
                 });
                 const currentTags = tagLst.map(t=>t.id) // could be moved outside loop
-                let allTags = await arachne.tags.get({project_id: props.project.id});
+                let allTags = await arachne.tags.get({project_id: props.project.id, display: 1});
                 allTags = allTags.filter(a=>((inputMode===0&&currentTags.indexOf(a.id)===-1)||(inputMode===1&&currentTags.indexOf(a.id)>-1)||(inputMode===2))&&a.name.toLowerCase().indexOf(inputValue.toLowerCase())>-1);
                 allTags = allTags.map(t=>{return {id: t.id, type: "tag", name: t.name}});
                 allSections = allSections.concat(allTags);
@@ -400,8 +400,8 @@ function SectionBox(props){
             const tagLnks = await arachne.tag_lnks.get({section_id: props.s.id}, {select: ["tag_id"]});
             let newTags = [];
             for (const tl of tagLnks){
-                const t = await arachne.tags.get({id: tl.tag_id});
-                newTags.push(t[0]);
+                const t = await arachne.tags.get({id: tl.tag_id, display: 1});
+                if(t.length>0){newTags.push(t[0])}
             }
             newTags.sort((a,b)=>a.name.toLowerCase()>b.name.toLowerCase());
             setTagLst(newTags);
