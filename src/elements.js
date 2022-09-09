@@ -6,7 +6,7 @@ import DOMPurify from "dompurify";
 import { arachne } from "./arachne.js";
 
 function Link(props){
-    return <span tabindex="0" className={props.className?props.className:"text-primary"} style={{cursor: "pointer", textDecoration: "underline"}} onClick={props.onClick}>{props.children}</span>;
+    return <span tabIndex="0" className={props.className?props.className:"text-primary"} style={{cursor: "pointer", textDecoration: "underline"}} onClick={props.onClick}>{props.children}</span>;
 }
 
 class TableView extends React.Component{
@@ -353,7 +353,7 @@ function ToolKit(props){
                     document.body.click();
                 }
             }} action>
-                {item[0]}{active===cKey?<Spinner size="sm" style={{marginLeft: "5px"}} animation="border" />:null}
+                <span dangerouslySetInnerHTML={parseHTML(item[0])}></span>{active===cKey?<Spinner size="sm" style={{marginLeft: "5px"}} animation="border" />:null}
             </ListGroup.Item>);
         }    
     return <OverlayTrigger

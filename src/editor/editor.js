@@ -36,12 +36,15 @@ function Editor(props){
     useShortcuts(scSetup, false);
     useEffect(()=>{
         if(mode==="zettel"){setToolKitItems([
-            [`Zettel importieren (${arachne.options.action_key.toUpperCase()}+I)`, ()=>{setShowImport(true)}],
-            [`Seitenleiste einblenden (${arachne.options.action_key.toUpperCase()}+F/T)`, ()=>{setSectionsMenuActiveTabKey("filter")}],
-            [`Filter neu laden (${arachne.options.action_key.toUpperCase()}+R)`, ()=>{setFilterLst([]);updateSections()}],
-            [`Neue Stelle erstellen (${arachne.options.action_key.toUpperCase()}+N)`, ()=>{setChangeZettelWork({value: "", id: 0, section_id: 0})}],
-        ])}
-        else{setToolKitItems([])}
+            [`Zettel importieren <small>(${arachne.options.action_key.toUpperCase()}+I)</small>`, ()=>{setShowImport(true)}],
+            [`Seitenleiste einblenden <small>(${arachne.options.action_key.toUpperCase()}+F/T)</small>`, ()=>{setSectionsMenuActiveTabKey("filter")}],
+            [`Filter neu laden <small>(${arachne.options.action_key.toUpperCase()}+R)</small>`, ()=>{setFilterLst([]);updateSections()}],
+            [`Neue Stelle erstellen <small>(${arachne.options.action_key.toUpperCase()}+N)</small>`, ()=>{setChangeZettelWork({value: "", id: 0, section_id: 0})}],
+        ])}else if(mode==="outline"){
+            setToolKitItems([
+                [`Neue Bedeutung hinzufügen <small>(${arachne.options.action_key.toUpperCase()}+N)</small>`, ()=>{createNewArticle()}],
+            ]);
+        }else{setToolKitItems([])}
     },[mode])
     const updateArticles = inArticles => {
         setArticles(inArticles);
@@ -73,7 +76,7 @@ function Editor(props){
         updateSections();
     }, []);
     const deleteArticle = async(id)=>{
-        if(window.confirm("Soll die Gruppe wirklich gelöscht werden? Alle Untergruppen werden ebenfalls gelöscht.")){
+        if(window.confirm("Soll die Bedeutung wirklich gelöscht werden? Alle Unterbedeutungen werden ebenfalls gelöscht.")){
             const getChildIds = id=>{
                 let returnIds = [id];
                 const childIds = articles.filter(a=>a.parent_id===id).map(a=>a.id);
@@ -95,10 +98,10 @@ function Editor(props){
     }
     const createNewArticle = async (newArt={}) =>{
         let newArticle = newArt;
-        newArticle.type = 0;
+        newArticle.type = newArticle.type?newArticle.type:0;
         newArticle.project_id = project.id;
         newArticle.parent_id = 0;
-        newArticle.name = newArticle.name?newArticle.name:"Neue Gruppe";
+        newArticle.name = newArticle.name?newArticle.name:"Neue Bedeutung";
         newArticle.sort_nr = newArticle.sort_nr?newArticle.sort_nr:articles.length>0?Math.max(...articles.filter(a=>a.parent_id===0).map(a=>a.sort_nr))+1:1;
         const newId=await arachne.article.save(newArticle);
         newArticle.id = newId;
@@ -143,7 +146,6 @@ function Editor(props){
 
     const updateSections = async () => {
         let foundSections = await arachne.sections.get({project_id: props.resId}, {select: ["id"], order: ["date_sort"]});
-        console.log(foundSections)
         if(filterTags.length === 0){
             setFilterLst(foundSections.map(s=>s.id));
         } else {

@@ -116,9 +116,9 @@ function OutlineBox(props){
                 </Col>
                 <Col></Col>
             </Row>
-            <Row className="mt-4"><Col></Col><Col>
-                <Alert tabIndex="0" variant="secondary" style={{padding: "8px 16px", fontSize: "90%", textAlign: "center", cursor: "pointer"}} onKeyDown={e=>{if(e.keyCode===13){props.createNewArticle()}}} onClick={()=>{props.createNewArticle()}}>Eine neue Gruppe hinzufügen <small>({arachne.options.action_key.toUpperCase()}+N)</small></Alert>
-            </Col><Col></Col></Row>
+            {props.articles.filter(a=>a.type<900).length===0&&<Row className="mt-4"><Col></Col><Col>
+                            <Alert tabIndex="0" variant="secondary" style={{padding: "8px 16px", fontSize: "90%", textAlign: "center", cursor: "pointer"}} onKeyDown={e=>{if(e.keyCode===13){props.createNewArticle()}}} onClick={()=>{props.createNewArticle()}}>Eine neue Bedeutung hinzufügen <small>({arachne.options.action_key.toUpperCase()}+N)</small></Alert>
+                        </Col><Col></Col></Row>}
             </>:null}
         </Container>;
 }
@@ -232,7 +232,7 @@ function ArticleBoxSections(props){
     const [hasFocus, setHasFocus] = useState(false);
     const [loading, setLoading] = useState(false);
     useEffect(()=>{loadSections()}, []);
-    useEffect(()=>{loadACLst()},[inputValue, inputMode, hasFocus]);
+    useEffect(()=>{loadACLst()},[inputValue, inputMode, hasFocus, tagLst]);
     const loadACLst=async()=>{
         if(hasFocus){
             if(inputMode<3){
@@ -241,8 +241,9 @@ function ArticleBoxSections(props){
                 allSections = allSections.map(a=>{
                     return {id: a.id, type: "section", name: `${a.ref}; ${a.text!==null?a.text.substring(0, 10):""}...`, articleName: inputMode===2&&a.article_id!==props.articleId?props.articles.find(a=>a.id===props.articleId).name:null}
                 });
+                const currentTags = tagLst.map(t=>t.id) // could be moved outside loop
                 let allTags = await arachne.tags.get({project_id: props.project.id});
-                allTags = allTags.filter(a=>a.name.toLowerCase().indexOf(inputValue.toLowerCase())>-1);
+                allTags = allTags.filter(a=>((inputMode===0&&currentTags.indexOf(a.id)===-1)||(inputMode===1&&currentTags.indexOf(a.id)>-1)||(inputMode===2))&&a.name.toLowerCase().indexOf(inputValue.toLowerCase())>-1);
                 allTags = allTags.map(t=>{return {id: t.id, type: "tag", name: t.name}});
                 allSections = allSections.concat(allTags);
                 allSections.sort((a,b)=>a.name.toLowerCase()>b.name.toLowerCase());
@@ -276,11 +277,17 @@ function ArticleBoxSections(props){
     }
     const addSections=async(item)=>{
         // also: removes section if inputMode === 1
-        const articleId = inputMode===1?null:props.articleId;
         if(item.type==="tag"){
-            // add tag
-            const tagLnks = await arachne.tag_lnks.get({tag_id: item.id});
-            await arachne.sections.save(tagLnks.map(t=>{return {id: t.section_id, article_id: articleId}})); 
+            if(inputMode===0||(inputMode===2&&tagLst.map(t=>t.id).indexOf(item.id)===-1)){
+                await arachne.tag_lnks.save({tag_id: item.id, article_id: props.articleId});
+                const sectionLst = await arachne.tag_lnks.search([{c: "tag_id", o: "=", v: item.id}, {c: "section_id", o: ">", v: 0}], {select: ["section_id"]});
+                await arachne.sections.save(sectionLst.map(s=>{return {id: s.section_id, article_id: props.articleId}}));
+            }else if(inputMode===1){
+                const tagLnk = await arachne.tag_lnks.get({tag_id: item.id, article_id: props.articleId}, {select: ["id"]});
+                await arachne.tag_lnks.delete(tagLnk[0].id);
+                const sectionLst = await arachne.tag_lnks.search([{c: "tag_id", o: "=", v: item.id}, {c: "section_id", o: ">", v: 0}], {select: ["section_id"]});
+                await arachne.sections.save(sectionLst.map(s=>{return {id: s.section_id, article_id: null}}));
+            }
         } else if(item.type==="full_text"){
             // add full-text
             const edition = await arachne.edition.get({id: item.edition_id}, {select: ["work_id"]});
@@ -293,31 +300,41 @@ function ArticleBoxSections(props){
                 user_id: props.project.user_id,
                 shared_id: props.project.shared_id,
                 work_id: edition[0].work_id,
-                article_id: articleId
+                article_id: props.articleId
             });
             setACLst([]);
         }else{
             // add section
-            await arachne.sections.save({id: item.id, article_id: articleId});
+            let saveValue = true;
+            if(inputMode===2&&item.articleName!==null){
+                const allSectionTags = await arachne.tag_lnks.get({section_id: item.id}, {select: ["tag_id"]});
+                for(const sectionTag of allSectionTags){
+                    const articleTag = await arachne.tag_lnks.search([{c: "tag_id", o: "=", v: sectionTag.tag_id}, {c: "article_id", o: ">", v: 0}]);
+                    if(articleTag.length>0){
+                        alert("Achtung: Die Stelle wurde durch ein Schlagwort automatisch zugewiesen. Entfernen Sie es von der Stelle, um sie dieser Bedeutung zuweisen zu können.");
+                        saveValue = false;
+                        break;
+                    }
+                }
+            }
+            //if(saveValue){await arachne.sections.save({id: item.id, article_id: inputMode===1?null:props.articleId})}
         }
         await loadSections();
         await loadACLst();
     };
     const loadSections=async()=>{
         const articleSections = await arachne.sections.get({article_id: props.articleId}, {order: ["date_sort"]});
+        const articleSectionsTags = await arachne.sec
         setSections(articleSections);
         props.setSectionCount(articleSections.length);
-        const tagLnkLst = [];
-        for(const s of articleSections){
-            const tagLnks = await arachne.tag_lnks.get({section_id: s.id});
-            tagLnks.forEach(t=>{if(!tagLnkLst.includes(t.tag_id)){tagLnkLst.push(t.tag_id)}});
+        const articleTagLnkLst = await arachne.tag_lnks.get({article_id: props.articleId}, {select: ["tag_id"]});
+        let articleTagLst = [];
+        for(const atl of articleTagLnkLst){
+            const newTag=await arachne.tags.get({id: atl.tag_id});
+            articleTagLst.push(newTag[0]);
         }
-        const newTags = [];
-        for (const tl of tagLnkLst){
-            const newTag = await arachne.tags.get({id: tl});
-            if(newTag[0]){newTags.push(newTag[0])}
-        }
-        setTagLst(newTags);
+
+        setTagLst(articleTagLst.sort((a,b)=>a.name>b.name));
     };
     const onKeyDown=e=>{
         if(e.keyCode===9&&acLst.length===1){

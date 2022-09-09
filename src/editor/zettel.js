@@ -478,13 +478,14 @@ function TagBoxInput(props){
             }
         }
     };
-    const createNewTag = async (newTag, exitInput=false) =>{
+    const createNewTag = async (newTag, exitInput=false) =>{ //also: removes tag!
         if(props.inputMode){ // save new tag
             if(!props.tags.find(t=>t.name.toLowerCase()===newTag.toLowerCase())){
                 const inTags = acTags.find(t=>t.name.toLowerCase()===newTag.toLowerCase());
+                let tagId = 0;
                 if(inTags){ // create new tag_lnk
+                    tagId = inTags.id;
                     await arachne.tag_lnks.save({tag_id: inTags.id, section_id: props.sectionId, project_id: props.project.id});
-                    await props.loadTags();
                 }else{ // create new
                     const newTagId = await arachne.tags.save({
                         name: newTag,
@@ -493,15 +494,20 @@ function TagBoxInput(props){
                         user_id: props.project.user_id,
                         shared_id: props.project.shared_id,
                     });
+                    tagId = newTagId;
                     await arachne.tag_lnks.save({tag_id: newTagId, section_id: props.sectionId, project_id: props.project.id});
-                    await props.loadTags();
                 }
+                const articleWithTag = await arachne.tag_lnks.search([{c: "tag_id", o: "=", v: tagId}, {c: "article_id", o: ">", v: 0}],{select: ["article_id"]})
+                if(articleWithTag.length>0){await arachne.sections.save({id: props.sectionId, article_id: articleWithTag[0].article_id})}
+                await props.loadTags();
             }
         }else{ // remove existing tag
             const existingTag = props.tags.find(t=>t.name.toLowerCase()===newTag.toLowerCase());
             if(existingTag){
                 const currentTagLnk = await arachne.tag_lnks.get({tag_id: existingTag.id, section_id: props.sectionId});
                 await arachne.tag_lnks.delete(currentTagLnk[0].id)
+                const articleWithTag = await arachne.tag_lnks.search([{c: "tag_id", o: "=", v: existingTag.id}, {c: "article_id", o: ">", v: 0}],{select: ["article_id"]})
+                if(articleWithTag.length>0){await arachne.sections.save({id: props.sectionId, article_id: null})}
                 await props.loadTags();
                 props.setInputMode();
             }
