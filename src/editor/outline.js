@@ -61,15 +61,6 @@ function OutlineBox(props){
                         <input value={a.name} onChange={e=>{props.changeArticle({id: a.id, name: e.target.value})}}
                             onBlur={async(e)=>{await arachne.article.save({id: a.id, name: e.target.value})}} style={{width: "100%", outline: "none", border: "none", borderBottom: "1px solid var(--bs-gray-500)"}} type="text" />
                     </div>
-
-
-                    {/*<InputGroup className="mb-3">
-                                        <InputGroup.Text style={{width: "165px"}}></InputGroup.Text>
-                                        <FormControl
-                                          
-                                          
-                                        />
-                                  </InputGroup>*/}
                   </Col>
                     <Col></Col>
                 </Row>)}
@@ -317,14 +308,13 @@ function ArticleBoxSections(props){
                     }
                 }
             }
-            //if(saveValue){await arachne.sections.save({id: item.id, article_id: inputMode===1?null:props.articleId})}
+            if(saveValue){await arachne.sections.save({id: item.id, article_id: inputMode===1?null:props.articleId})}
         }
         await loadSections();
         await loadACLst();
     };
     const loadSections=async()=>{
         const articleSections = await arachne.sections.get({article_id: props.articleId}, {order: ["date_sort"]});
-        const articleSectionsTags = await arachne.sec
         setSections(articleSections);
         props.setSectionCount(articleSections.length);
         const articleTagLnkLst = await arachne.tag_lnks.get({article_id: props.articleId}, {select: ["tag_id"]});
@@ -388,7 +378,7 @@ function ArticleBoxSections(props){
     <SectionDetailEdit project={props.project} handleClose={()=>{loadSections();setSectionDetailId(0)}} sectionDetailId={sectionDetailId} />
     <div className="ArticleBoxSections">
         <div className="outlineSectionTagBox">{tagLst.map(t=><div key={t.id} className="outlineSectionTags" style={{backgroundColor: t.color}}>{t.name}</div>)}</div>
-        <div>{sections.map(s=><SectionBox key={s.id} s={s} setSectionDetailId={setSectionDetailId} />)}</div>
+        <div>{sections.map(s=><SectionBox key={s.id} s={s} setSectionDetailId={setSectionDetailId} loadSections={loadSections} articleTagLst={tagLst} />)}</div>
         <div style={{width:"100%", position: "relative", display: "inline-block"}}>
             <input className="tagBoxOutlineSection" value={inputValue} onChange={e=>{setInputValue(e.target.value)}} onFocus={()=>{setHasFocus(true)}} onBlur={()=>{setHasFocus(false);setInputValue("");setACLst([]);/*if(!props.inputMode){props.setInputMode()}*/}} type="text" onKeyDown={e=>{onKeyDown(e)}} />{loading?<Spinner style={{position: "absolute", top: "12px", right: "4px"}} variant="primary" animation="border" size="sm" />:null}
             {acLst.length>0&&<div className="autocomplete-items" style={{border: borderStyle}}>
@@ -421,7 +411,16 @@ function SectionBox(props){
     return <div key={props.s.id} className="sectionBox" tabIndex="0" onClick={e=>{
             e.target.closest(".sectionBox").focus();
         }} onKeyDown={e=>{
-            if(e.keyCode===38){ // up
+            if(e.keyCode===8||e.keyCode===46){ // remove from article
+                // check if section is connected by tag!
+                const tagNameLst = tagLst.map(t=>t.name);
+                if(props.articleTagLst.filter(a=>tagNameLst.includes(a.name)).length>0){
+                    alert("Diese Stelle kann nicht einzeln entfernt werden. Entfernen Sie das Schlagwort, um die Stelle zu entfernen.")
+                } else if(window.confirm("Soll die Stelle von der Bedeutung entfernt werden?")){
+                    arachne.sections.save({id: props.s.id, article_id: null});
+                    props.loadSections();
+                }
+            }else if(e.keyCode===38){ // up
                 e.preventDefault();
                 if(e.target.previousSibling){e.target.previousSibling.focus()}
                 else(e.target.parentNode.parentNode.lastChild.lastChild.focus())
