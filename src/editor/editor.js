@@ -16,6 +16,7 @@ function Editor(props){
     const [collapsedArticlesLst, setCollapsedArticlesLst] = useState([])
     const [filterLst, setFilterLst] = useState([]);
     const [filterTags, setFilterTags] = useState([]);
+    const [filterSearchIds, setFilterSearchIds] = useState([]);
     const [toolKitItems, setToolKitItems] = useState([]);
     const [limitFilterResults,setLimitFilterResults] = useState(false);
     //const [showMenuLeft, setShowMenuLeft] = useState(false);
@@ -26,6 +27,7 @@ function Editor(props){
         ["ACTION+ESC", ()=>{props.loadMain(null, null)}],
         ["ACTION+f", ()=>{if(mode==="zettel"){setSectionsMenuActiveTabKey("filter")}}],
         ["ACTION+t", ()=>{if(mode==="zettel"){setSectionsMenuActiveTabKey("tags")}}],
+        ["ACTION+q", ()=>{if(mode==="zettel"){setSectionsMenuActiveTabKey("search")}}],
         ["ACTION+i", ()=>{if(mode==="zettel"){setShowImport(!showImport)}}],
         ["ACTION+r", ()=>{if(mode==="zettel"){setFilterLst([]);updateSections()}}],
         ["ACTION+1", ()=>{setMode("zettel")}],
@@ -37,7 +39,7 @@ function Editor(props){
     useEffect(()=>{
         if(mode==="zettel"){setToolKitItems([
             [`Zettel importieren <small>(${arachne.options.action_key.toUpperCase()}+I)</small>`, ()=>{setShowImport(true)}],
-            [`Seitenleiste einblenden <small>(${arachne.options.action_key.toUpperCase()}+F/T)</small>`, ()=>{setSectionsMenuActiveTabKey("filter")}],
+            [`Seitenleiste einblenden <small>(${arachne.options.action_key.toUpperCase()}+Q/F/T)</small>`, ()=>{setSectionsMenuActiveTabKey("filter")}],
             [`Filter neu laden <small>(${arachne.options.action_key.toUpperCase()}+R)</small>`, ()=>{setFilterLst([]);updateSections()}],
             [`Neue Stelle erstellen <small>(${arachne.options.action_key.toUpperCase()}+N)</small>`, ()=>{setChangeZettelWork({value: "", id: 0, section_id: 0})}],
         ])}else if(mode==="outline"){
@@ -146,7 +148,9 @@ function Editor(props){
 
     const updateSections = async () => {
         let foundSections = await arachne.sections.get({project_id: props.resId}, {select: ["id"], order: ["date_sort"]});
-        if(filterTags.length === 0){
+        if(filterSearchIds.length>0){
+            setFilterLst(filterSearchIds);
+        }else if(filterTags.length === 0){
             setFilterLst(foundSections.map(s=>s.id));
         } else {
             const allTags = await arachne.tags.get({project_id: props.resId}, {select: ["id"]});
@@ -165,7 +169,7 @@ function Editor(props){
     let modeBox = null;
     switch(mode){
         case "zettel":
-            modeBox = <ZettelBox updateArticles={updateArticles} changeZettelWork={changeZettelWork} setChangeZettelWork={setChangeZettelWork} setLimitFilterResults={v=>{setLimitFilterResults(v)}} showImport={showImport} sectionsMenuActiveTabKey={sectionsMenuActiveTabKey} filterTags={filterTags} setFilterTags={newTags=>{setFilterTags(newTags)}} setSectionsMenuActiveTabKey={m=>{setSectionsMenuActiveTabKey(m)}} setShowImport={v=>{setShowImport(v)}} project={project} filterLst={filterLst} updateSections={(force=false)=>{if(force){setFilterLst([])};updateSections()}} />;
+            modeBox = <ZettelBox filterSearchIds={filterSearchIds} setFilterSearchIds={setFilterSearchIds} updateArticles={updateArticles} changeZettelWork={changeZettelWork} setChangeZettelWork={setChangeZettelWork} setLimitFilterResults={v=>{setLimitFilterResults(v)}} showImport={showImport} sectionsMenuActiveTabKey={sectionsMenuActiveTabKey} filterTags={filterTags} setFilterTags={newTags=>{setFilterTags(newTags)}} setSectionsMenuActiveTabKey={m=>{setSectionsMenuActiveTabKey(m)}} setShowImport={v=>{setShowImport(v)}} project={project} filterLst={filterLst} updateSections={(force=false)=>{if(force){setFilterLst([])};updateSections()}} />;
             break;
         case "outline":
             modeBox = <OutlineBox deleteArticle={deleteArticle} createNewArticle={createNewArticle} changeArticle={changeArticle} project={project} dropArticle={(a,b,c)=>{dropArticle(a,b,c)}} articlesLst={articlesLst} articles={articles} collapsedArticlesLst={collapsedArticlesLst} toggleCollapse={a=>{toggleCollapse(a)}} />;

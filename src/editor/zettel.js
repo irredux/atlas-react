@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGear, faPlusCircle, faMinusCircle, faTimesCircle, faPenToSquare, faTrashCan, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 
 import { arachne } from "./../arachne.js";
-import { AutoComplete, SearchInput, StatusButton, useIntersectionObserver, Message, sleep } from "./../elements.js"
+import { AutoComplete, SearchInput, StatusButton, useIntersectionObserver, Message, sleep, parseHTML } from "./../elements.js"
 
 function ZettelBox(props){
     const [currentZettel, setCurrentZettel] = useState("?")
@@ -45,15 +45,15 @@ function ZettelBox(props){
             </Col>:null}
         </Row>
     </Container>
-    {<MenuLeft setLimitFilterResults={v=>{props.setLimitFilterResults(v)}} setActiveTabKey={props.setSectionsMenuActiveTabKey} activeTabKey={props.sectionsMenuActiveTabKey} project={props.project} filterTags={props.filterTags} setFilterTags={newTags=>{props.setFilterTags(newTags)}} tagLst={props.tagLst} show={props.sectionsMenuActiveTabKey!=null} onHide={()=>{props.setSectionsMenuActiveTabKey(null)}} updateSections={()=>{props.updateSections()}} />}
+    {<MenuLeft setFilterSearchIds={props.setFilterSearchIds} setLimitFilterResults={v=>{props.setLimitFilterResults(v)}} setActiveTabKey={props.setSectionsMenuActiveTabKey} activeTabKey={props.sectionsMenuActiveTabKey} project={props.project} filterTags={props.filterTags} setFilterTags={newTags=>{props.setFilterTags(newTags)}} tagLst={props.tagLst} show={props.sectionsMenuActiveTabKey!=null} onHide={()=>{props.setSectionsMenuActiveTabKey(null)}} updateSections={()=>{props.updateSections()}} />}
     <div style={{fontSize: "95%", position: "fixed", display: "flex", justifyContent:"space-between", bottom: "0px", left: 0, right: 0, backgroundColor: "#f8f9fa", padding: "5px 20px"}}>
-        <div style={{display: "flex", justifyContent:"space-around", gap: "10px"}}>{props.filterTags&&props.filterTags.length>0?props.filterTags.map(t=><div style={{cursor: "default", backgroundColor: t.exclude?"rgb(248,248,248)":t.color, fontWeight: "bold", color: t.exclude?t.color:"rgba(255,255,255, 0.8)", border: `1px solid ${t.color}`, margin: "1px 2px", padding: "1px 10px 1px 13px", borderRadius: "18px"}}>{t.name}</div>):<div style={{color: "gray"}}><small><i>kein Filter</i></small></div>}</div>
+        <div style={{display: "flex", justifyContent:"space-around", gap: "10px"}}>{props.filterSearchIds.length===0&&props.filterTags&&props.filterTags.length>0?props.filterTags.map(t=><div style={{cursor: "default", backgroundColor: t.exclude?"rgb(248,248,248)":t.color, fontWeight: "bold", color: t.exclude?t.color:"rgba(255,255,255, 0.8)", border: `1px solid ${t.color}`, margin: "1px 2px", padding: "1px 10px 1px 13px", borderRadius: "18px"}}>{t.name}</div>):props.filterSearchIds.length?<div><small><i>Suchergebnisse</i></small></div>:<div style={{color: "gray"}}><small><i>kein Filter</i></small></div>}</div>
         <div><input style={{background: "none", border: "none", outline: "none", width: "60px", textAlign: "right"}} id="editor_zettel_current_active" value={currentZettel} onChange={e=>{setCurrentZettel(e.target.value)}} onKeyUp={e=>{
             if(e.keyCode===13){
                 const els = document.getElementsByClassName("editor_zettel_card");
                 if(els[parseInt(currentZettel)-1]){els[parseInt(currentZettel)-1].scrollIntoView({behavior: "auto", block: "center"})}
             }
-        }} /> / {props.filterLst.length}</div>
+        }} /> / {props.filterSearchIds.length>0?props.filterSearchIds.length:props.filterLst.length}</div>
     </div>
     </>;
 }
@@ -61,6 +61,10 @@ function MenuLeft(props){
     const [tags, setTags] = useState([]);
     const [renameId, setRenameId] = useState(0);
     const [renameName, setRenameName] = useState("");
+    const [query, setQuery] = useState("");
+    const [resultLst, setResultLst] = useState([]);
+    const [queryRef, setQueryRef] = useState(true);
+    const [queryText, setQueryText] = useState(false);
 
     useEffect(()=>{
         if(props.show){loadTags()}
@@ -83,7 +87,7 @@ function MenuLeft(props){
             await loadTags();
         }
     };
-    return <Offcanvas show={props.show} backdrop={false} scroll={true} onHide={()=>{props.onHide()}}>
+    return <Offcanvas show={props.show} onHide={()=>{props.updateSections();props.onHide()}}>
     <Offcanvas.Header closeButton>
       <Offcanvas.Title></Offcanvas.Title>
     </Offcanvas.Header>
@@ -101,10 +105,40 @@ function MenuLeft(props){
             setRenameId(0);
         }} />
         <Tabs defaultActiveKey="filter" className="mb-3" activeKey={props.activeTabKey} onSelect={k=>{props.setActiveTabKey(k)}}>
+            <Tab eventKey="search" title="Suche">
+                <Container>
+                    <Row><Col>
+                        <div style={{display: "flex", gap: "5px"}}>
+                            <Form.Control placeholder="Suche..." size="sm" type="text" value={query} onChange={async(e)=>{
+                                setQuery(e.target.value);
+                                if(e.target.value===""){setResultLst([])}
+                                else{
+                                    let searchArray = [{c: "project_id", o: "=", v: props.project.id}];
+                                    if(queryRef){searchArray.push({c: "ref", o: "LIKE", v: `*${e.target.value}*`})}
+                                    if(queryText){searchArray.push({c: "text", o: "LIKE", v: `*${e.target.value}*`})}
+                                    setResultLst(await arachne.sections.search(searchArray, {select: ["id", "ref", "text"]}));
+                                }
+                            }} />
+                            <Dropdown autoClose="outside">
+                                <Dropdown.Toggle size="sm" tabIndex="-1" variant="outline-secondary">
+                                    <FontAwesomeIcon icon={faGear} />
+                                </Dropdown.Toggle>
+                                <Dropdown.Menu>
+                                    <Dropdown.Header>Suchen in:</Dropdown.Header>
+                                    <Dropdown.Item className={queryRef?"text-primary":null} onClick={()=>{setQueryRef(!queryRef)}}>Zitiertitel</Dropdown.Item>
+                                    <Dropdown.Item className={queryText?"text-primary":null} onClick={()=>{setQueryText(!queryText)}}>Belegtext</Dropdown.Item>
+                                </Dropdown.Menu>
+                            </Dropdown>
+                        </div>
+                    </Col></Row>
+                    {resultLst.length>0?<Row className="mt-1"><Col style={{textAlign: "right"}}><small className="text-primary" style={{cursor: "pointer"}} onClick={()=>{props.setFilterSearchIds([]);props.setFilterSearchIds(resultLst.map(r=>r.id))}}>Auswahl anzeigen</small></Col></Row>:null}
+                    {resultLst.map(s=><Row><Col><hr /><span dangerouslySetInnerHTML={parseHTML(queryRef?s.ref.replace(new RegExp(`(${query})`, "gi"), "<strong>$1</strong>"):s.ref)}></span><p><small dangerouslySetInnerHTML={parseHTML(queryText?s.text.replace(new RegExp(`(${query})`, "gi"), "<strong>$1</strong>"):s.text)}></small></p></Col></Row>)}
+                </Container>
+            </Tab>
             <Tab eventKey="filter" title="Filter">
                 <Container>
                     <Row className="mb-3"><Col><FilterBox filterTags={props.filterTags} setFilterTags={newTags=>{props.setFilterTags(newTags)}} project={props.project} /></Col></Row>
-                    <Row className="mb-4"><Col></Col><Col><Button style={{width: "100%"}} onClick={()=>{props.updateSections()}}>Zettel filtern</Button></Col></Row>
+                    <Row className="mb-4"><Col></Col><Col><Button style={{width: "100%"}} onClick={()=>{props.updateSections()}}>Stellen filtern</Button></Col></Row>
                 </Container>
             </Tab>
             <Tab eventKey="tags" title="Schlagworte">
@@ -122,7 +156,7 @@ function MenuLeft(props){
                             /></td>
                             <td><b style={{marginLeft: "10px", color: t.color, cursor: "pointer"}} onClick={()=>{props.setFilterTags([t]);props.setActiveTabKey("filter")}}>{t.name}</b></td>
                             <td>{t.sections}</td>
-                            <td onClick={async()=>{await arachne.tags.save({id: t.id, display: t.display===1?0:1});await loadTags()}}>{t.display===1?<FontAwesomeIcon className="text-success" icon={faEye} />:<FontAwesomeIcon className="text-secondary" icon={faEyeSlash} />}</td>
+                            <td onClick={async()=>{await arachne.tags.save({id: t.id, display: t.display===1?0:1});await loadTags()}}>{t.display===1?<FontAwesomeIcon className="text-primary" style={{cursor: "pointer"}} icon={faEye} />:<FontAwesomeIcon className="text-secondary" style={{cursor: "pointer"}} icon={faEyeSlash} />}</td>
                             <td><FontAwesomeIcon icon={faPenToSquare} style={{cursor: "pointer", color: "var(--bs-primary)"}} onClick={()=>{setRenameName(t.name);setRenameId(t.id)}} /></td>
                             <td><FontAwesomeIcon icon={faTrashCan} style={{cursor: "pointer", color: "var(--bs-primary)"}} onClick={()=>{deleteTag(t)}} /></td>
                         </tr>)}
