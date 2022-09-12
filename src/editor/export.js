@@ -91,7 +91,7 @@ function ExportBox(props){
 			</Tab>
 			{loadPreview>0&&<Tab eventKey="preview" title={<span>Vorschau{loadPreview===1?<Spinner style={{marginLeft: "10px"}} variant="primary" animation="border" size="sm" />:null}</span>}>
 				<Row><Col><div>
-					<iframe style={{width: "100%", height: "500px"}} srcdoc={preview?preview.replace("MLW_kompakt.css", "/static/css/MLW_kompakt.css"):null}></iframe>
+					<iframe style={{width: "100%", height: "500px"}} srcdoc={preview?preview.replace("MLW_kompakt.css", "/static/mlw_preview/MLW_kompakt.css"):null}></iframe>
 				</div></Col></Row>
 			</Tab>}
 		</Tabs>
