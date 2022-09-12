@@ -1,0 +1,555 @@
+/* MLW.css - stylesheet for the HTML-preview of the MLW
+             (medieval latin dictionary)
+
+Author: Eckhart Arnold <arnold@badw.de>
+
+Copyright 2017 Bavarian Academy of Sciences and Humanities
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+/* margin:50px 50px 50px 50px; padding: 50px 50px 50px 50px; border: 2px solid black; box-shadow:10px 10px 5px grey; background-color:ivory; */
+
+
+page {
+    size: A4;
+    margin-right:9.5cm;
+    margin-left:1cm;
+    padding-right:0.5cm;
+    padding-left:0.5cm;
+}
+
+body { background-color: white; color: black; }
+
+@font-face {
+	font-family:"MLW";
+	font-style:normal;
+	font-weight:normal;
+	src:url("linbiolinum_r-w.woff2") format("woff2");
+	unicode-range:U+0000-A721;
+}
+
+@font-face {
+	font-family:"MLW";
+	font-style:normal;
+	font-weight:normal;
+	src:url("Cardo-Regular.ttf");
+	unicode-range:U+10000-1FFFF;
+}
+
+@font-face {
+	font-family:"MLW";
+	font-style:italic;
+	src:url("linbiolinum_ri-w.woff2") format("woff2");
+	unicode-range:U+0000-A721;
+}
+@font-face {
+	font-family:"MLW";
+	font-weight:bold;
+	src:url("linbiolinum_rb-w.woff2") format("woff2");
+	unicode-range:U+0000-A721;
+}
+
+Fehlermeldung {
+    color: red;
+    font-weight: bold;
+    border: 5px solid red;
+    padding: 5px 5px 5px 5px;
+    margin-bottom: 10px;
+    background-color: yellow;
+    font-family: sans-serif;
+    display: block;
+}
+
+Artikel {
+    font-family:"MLW";
+    margin: 1em 1em 1em 1em;
+    padding: 1em 1em 1em 1em;
+    border: 1px solid lightgrey;
+    box-shadow: 0.2em 0.2em 0.2em grey;
+    background-color: #FFFDF9; /* FloralWhite; */
+    display: block;
+    font-size:120%;
+    line-height: 135%;
+}
+
+@media print {
+    Artikel {
+        font-family:"MLW";            
+        background-color:white;
+        border: none;
+        margin: 0em 0em 0em 0em;
+        padding: 0em 0em 0em 0em;
+        box-shadow: none;
+        font-size: 85%;
+        line-height: 150%;
+    }
+}
+
+
+NachtragsPosition {
+    font-style:italic;
+}
+
+NachtragsLemma {
+    font-weight:bold;
+    font-style:normal;
+}
+
+Lemma {
+    font-weight:bold;
+    font-size:120%;
+    margin-bottom:0.5rem;
+}
+
+LemmaWort, LemmaNr {
+}
+
+LemmaVarianten {
+    /* display:block; */
+    color:dimgrey;
+}
+
+vel {
+    font-style:italic;
+}
+
+EtymologieSprache {
+    font-style: italic;
+}
+
+EtymologieAngabe>Sekundärliteratur {
+    font-style: italic;
+}
+
+UnterArtikel {
+    margin-top:2.0em;
+    display:block;
+}
+
+genus {
+    font-style: italic;
+}
+
+WortartAnzeige {
+    font-style: italic;
+}
+
+GrammatikPosition, SchreibweisenPosition, StrukturPosition, GebrauchsPosition,
+MetrikPosition, VerwechselungsPosition, BedeutungsPosition, VerweisPosition {
+    display:block;
+    margin-top:1.0em;
+}
+
+PseudoVerweise {
+    color: darkblue;
+}
+
+Kategorie {
+    display:block;
+}
+
+a {
+    color:Blue;
+    /* text-decoration:None; */
+}
+
+a:visted {
+    color:MidnightBlue;
+    text-decoration:None;
+}
+
+@keyframes fadebg {
+    from {background-color: #FF4020;}
+    to {background-color: white;}
+}
+.animation {
+    position: relative;
+    animation: fadebg 8s ease;
+}
+
+Besonderheit {
+    padding-left: 0em;
+    display: block;
+}
+
+Besonderheit>Beschreibung {
+    font-style: italic;
+}
+
+Kategorie {
+    padding-left: 1.0em;
+    display: block;
+}
+
+Unterkategorie {
+    padding-left: 1.0em;
+    display: block;
+}
+
+Kategorie>Beschreibung {
+    font-style: italic;
+}
+
+Unterkategorie>Beschreibung {
+    font-style: italic;
+}
+
+Variante {
+    padding-left: 1.0em;
+    display: block;
+}
+
+Variante>Beschreibung {
+    font-style: normal;
+}
+
+Grammatik {
+    display: block;
+    margin-bottom:0.5rem;
+}
+
+GrammatikVariante {
+
+}
+
+Bedeutung {
+    padding-top:1.6em;
+    display:block;
+}
+
+Bedeutungsangabe {
+    font-style: italic;
+}
+
+.abgesetzt {
+    display: block;
+}
+
+U1Bedeutung {
+    padding-top:0.8em;
+    display:block;
+    margin-left:1em;
+}
+
+U2Bedeutung {
+    padding-top:0.4em;
+    display:block;
+    margin-left:1em;
+}
+
+U3Bedeutung {
+    padding-top:0.2em;
+    display:block;
+    margin-left:1em;
+}
+
+U4Bedeutung {
+    padding-top:0.1em;
+    display:block;
+    margin-left:1em;
+}
+
+U5Bedeutung {
+    padding-top:0.05em;
+    display:block;
+    margin-left:1em;
+}
+
+Interpretamente {
+    display: inline;
+    font-weight:bold;
+    /* margin-right:0.75rem; */
+}
+
+LateinischerAusdruck, DeutscherAusdruck {
+    /* font-weight: bold; */
+}
+
+/* LateinischerAusdruck + LateinischerAusdruck:before,
+DeutscherAusdruck + DeutscherAusdruck:before {
+    content: ", "
+}
+
+LateinischeBedeutung + DeutscheBedeutung:before {
+    content: " — "
+} */
+
+
+Klassifikation {
+    display:inline;
+    font-weight:bold;
+    /* margin-right:0.75rem; */
+}
+
+
+Anhänger {
+    margin-left:0.75rem;
+}
+
+Quellenangabe {
+    margin-right:0.5rem;
+}
+
+BelegQuelle {
+    font-variant:small-caps;
+}
+
+Autor {
+    font-variant: small-caps;
+}
+
+Derselbe {
+    font-style: italic;
+}
+
+Stelle {
+    display:inline;
+}
+
+BelegText {
+    margin-left: 0.25rem;
+    color: dimgrey;
+    font-style: normal;
+}
+
+Zusatz > BelegtText {
+    font-style: normal;
+}
+
+FesterZusatz > BelegtText {
+    font-style: normal;
+}
+
+FreierZusatz > BelegtText {
+    font-style: normal;
+}
+
+VariaLectioZusatz > BelegtText {
+    font-style: normal;
+}
+
+BelegLemma {
+    color: maroon;
+    white-space: nowrap;
+}
+
+Abkuerzung {
+    color: darkslategrey;
+}
+
+Einschub > BelegText {
+    margin-left: 0.0rem;
+}
+
+BelegKern {
+
+}
+
+Einschub {
+    display:inline;
+}
+
+Sonderbelege {
+    font-style: italic;
+}
+
+Zusatz, FesterZusatz, FreierZusatz, VariaLectioZusatz {
+    font-style: italic;
+}
+
+Sperrung {
+    display:inline;
+    /* font-stretch: expanded; */
+    letter-spacing: 0.2em;
+}
+
+Kursiv {
+    display: inline;
+    font-style: italic;
+}
+
+
+Fett {
+    display: inline;
+    font-weight: bold;
+}
+
+
+Grade {
+    display: inline;
+    font-style: normal;
+}
+
+
+/* Zusatz > Kursiv {
+    font-style: normal;
+} */
+
+.kursiv {
+    font-style: italic;
+}
+
+.grade {
+    font-style: normal;
+}
+
+.fett {
+    font-weight: bold;
+}
+
+.normal {
+    font-weight: normal;
+}
+
+.versal {
+    font-feature-settings: "lnum" 1;
+}
+
+.mediaeval {
+    font-feature-settings: "onum" 1;
+}
+
+Junktur {
+	display:inline;
+}
+
+/* Junktur:before {
+	content: "˻";
+}
+
+Junktur:after {
+	content: "˼";
+} */
+
+Verweis {
+    color: blue;
+    text-decoration: underline;
+}
+
+/* pfad:after {
+    content: "/"
+} */
+
+Stellenverzeichnis {
+    display:none;
+}
+
+ArtikelVerfasser {
+    display:block;
+    text-align:right;
+    font-style:italic;
+}
+
+/* Anker {
+    background-color:red;
+} */
+
+HOCHGESTELLT {
+    vertical-align: 4px;
+    font-size: 80%;
+}
+
+
+
+[davor]:before {
+    content: attr(davor);
+}
+
+[danach]:after {
+    content: attr(danach);
+}
+
+.kein_linker_rand {
+    margin-left: 0em;
+}
+
+.kein_linker_platz {
+    /* padding-left: 0em; */
+}
+
+.kein_rechter_rand {
+    margin-right:0em;
+}
+
+.kein_rechter_platz {
+    padding-right:0em;
+}
+
+.followup {
+    padding-left: 0.75em;
+}
+
+.versteckt {
+    display: none;
+}
+
+.warning {
+    color: orange;
+}
+
+.error {
+    color: red;
+}
+
+.notice {
+    color: darkorange;
+}
+
+L { display: inline; }
+
+.spatium_1 { padding-left: 0.25em }
+.spatium_2 { padding-left: 0.50em }
+.spatium_3 { padding-left: 0.75em }
+.spatium_3_1 { /* padding-left: 1.0em */ }
+.spatium_4 { padding-left: 1.00em }
+.spatium_8 { display:block }
+
+ZOMBIE__ {
+    white-space: pre;
+    font-family: monospace;
+    color: red;
+    line-height:normal;
+}
+
+GRI_WORT {
+    font-style: normal;
+}
+
+
+
+Ausgabe {
+    display: block;
+}
+
+Quellcode {
+    display: block;
+    background-color: ghostwhite;
+    line-height:100%;
+}
+
+Datenbaum {
+    display: block;
+    background-color: cornsilk;
+    line-height:100%;
+}
+
+indeclinabile {
+    font-style: italic;
+}
+
+LB { display:block; }
+
+.verborgen {
+    color: lightgrey;
+}

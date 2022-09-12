@@ -2,12 +2,14 @@ import { useState, useEffect } from "react";
 import { arachne } from "./../arachne";
 import { defaultArticleHeadFields } from "./outline.js";
 import { Button, ButtonGroup, Dropdown, Table, Badge, Card, Col, Form, Container, Navbar, Nav, Row, Modal, Accordion, Stack, Spinner, Offcanvas, Tabs, Tab } from "react-bootstrap";
+import { parseHTML } from "./../elements";
 
 function ExportBox(props){
 	const [exportTxt, setExportTxt] = useState("");
 	const [exportComment, setExportComment] = useState(true);
 	const [exportTags, setExportTags] = useState(true);
 	const [preview, setPreview] = useState(null);
+	const [loadPreview, setLoadPreview] = useState(0); // 0 = not jet loaded; 1 = loading; 2 = loaded.
 	useEffect(()=>{
 		const fetchData=async()=>{
 			let exportLst = [];
@@ -46,39 +48,53 @@ function ExportBox(props){
 			setExportTxt(exportLst.join("\n"));
 
 			//get preview
+			setLoadPreview(1);
 			const exportTxt = exportLst.join("\n");
-			console.log(await arachne.exec("mlw_preview", true, exportTxt));
-			//setPreview();
+			const previewResponse = await arachne.exec("mlw_preview", true, exportTxt);
+			//console.log(previewResponse[0].html)
+			setPreview(previewResponse);
+			setLoadPreview(2);
 		};
 		fetchData();
 	}, [exportComment, exportTags]);
 	return <Container>
-		<Row>
-			<Col>
-				<Form.Check
-                    type="switch"
-                    id="custom-switch"
-                    label="Kommentare in Export aufnehmen."
-                    checked={exportComment}
-                    value={exportComment}
-                    onChange={e=>{setExportComment(!exportComment)}}
-                />
-                <Form.Check
-                    type="switch"
-                    id="custom-switch"
-                    label="Tags in Export aufnehmen."
-                    checked={exportTags}
-                    value={exportTags}
-                    onChange={e=>{setExportTags(!exportTags)}}
-                />
-			</Col>
-		</Row>
-		<Row>{preview}</Row>
-		<Row>
-			<Col></Col>
-			<Col xs={11}><textarea className="exportTextBox" value={exportTxt} onChange={()=>{}}></textarea></Col>
-			<Col></Col>
-		</Row>
+		<Tabs defaultActiveKey="text" className="mb-4">
+			<Tab eventKey="text" title="Exporttext">
+				<Row className="mb-4">
+					<Col style={{padding: "0 10em 0 10em"}}>
+						<Form.Check
+		                    type="switch"
+		                    id="custom-switch"
+		                    label="Kommentare in Export aufnehmen."
+		                    checked={exportComment}
+		                    value={exportComment}
+		                    onChange={e=>{setExportComment(!exportComment)}}
+		                />
+		                <Form.Check
+		                    type="switch"
+		                    id="custom-switch"
+		                    label="Tags in Export aufnehmen."
+		                    checked={exportTags}
+		                    value={exportTags}
+		                    onChange={e=>{setExportTags(!exportTags)}}
+		                />
+					</Col>
+					<Col>
+						<Button>.mlw-Datei herunterladen</Button>
+					</Col>
+				</Row>
+				<Row>
+					<Col></Col>
+					<Col xs={11}><textarea className="exportTextBox" value={exportTxt} onChange={()=>{}}></textarea></Col>
+					<Col></Col>
+				</Row>
+			</Tab>
+			{loadPreview>0&&<Tab eventKey="preview" title={<span>Vorschau{loadPreview===1?<Spinner style={{marginLeft: "10px"}} variant="primary" animation="border" size="sm" />:null}</span>}>
+				<Row><Col><div>
+					<iframe style={{width: "100%", height: "500px"}} srcdoc={preview?preview.replace("MLW_kompakt.css", "/static/css/MLW_kompakt.css"):null}></iframe>
+				</div></Col></Row>
+			</Tab>}
+		</Tabs>
 	</Container>;
 }
 
