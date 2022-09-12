@@ -51,8 +51,8 @@ function ExportBox(props){
 			setLoadPreview(1);
 			const exportTxt = exportLst.join("\n");
 			const previewResponse = await arachne.exec("mlw_preview", true, exportTxt);
-			//console.log(previewResponse[0].html)
-			setPreview(previewResponse);
+			//console.log(previewResponse.html)
+			setPreview(previewResponse.html);
 			setLoadPreview(2);
 		};
 		fetchData();
