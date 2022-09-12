@@ -328,6 +328,8 @@ mark{
   left: 0;
   right: 0;
   font-size: 90%;
+  max-height: 200px;
+  overflow: scroll;
 }
 .autocomplete-items div {
   padding: 3px;
@@ -362,6 +364,21 @@ mark{
 
 
 //////////////////////// Editor
+.articleBox:focus .EditArticleDropdown, .articleBox:focus-within .EditArticleDropdown{
+    display: block;
+}
+.EditArticleDropdown{
+    display: none;
+    top: -3px;
+}
+
+.removeTagButton{
+    cursor: pointer;
+    margin: 6px 0px 0 6px;
+}
+.removeTagButton:hover{
+    color: rgb(150,100,100);
+}
 .editor_zettel_CardBox{
     position: relative;
 }

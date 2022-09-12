@@ -3,7 +3,7 @@ import { Alert, Spinner, Modal, Card, Col, Container, Form, Row, FormControl, In
 import { arachne } from "./../arachne";
 import { parseHTML } from "./../elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faRotate, faAngleDown } from "@fortawesome/free-solid-svg-icons";
+import { faGear, faRotate, faAngleDown, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { RessourcesButtons, TagBox } from "./zettel.js";
 
 const defaultArticleHeadFields = [
@@ -208,7 +208,18 @@ function ArticleBox(props){
                 e.target.blur();
             }
         }}
-    >{props.a.name}</span> {sectionCount>0?<small className="text-primary" style={{marginLeft: "20px"}}>{sectionCount}</small>:null}{props.collapsed?<span className="text-primary" style={{marginLeft: "15px"}}>...</span>:null}</div>
+    >{props.a.name}</span> {sectionCount>0?<small className="text-primary" style={{marginLeft: "20px"}}>{sectionCount}</small>:null}{props.collapsed?<span className="text-primary" style={{marginLeft: "15px"}}>...</span>:null}
+        <Dropdown style={{float: "right"}} className="EditArticleDropdown">
+            <Dropdown.Toggle size="sm" tabIndex="-1" variant="outline-secondary">
+                <FontAwesomeIcon icon={faGear} />
+            </Dropdown.Toggle>
+            <Dropdown.Menu>
+                <Dropdown.Item onClick={()=>{}}>bearbeiten</Dropdown.Item>
+                <Dropdown.Item onClick={()=>{}}>ausklappen</Dropdown.Item>
+                <Dropdown.Item onClick={()=>{}}>löschen</Dropdown.Item>
+            </Dropdown.Menu>
+        </Dropdown>
+    </div>
     {displaySections?<ArticleBoxSections articles={props.articles} setSectionCount={setSectionCount} setSectionDetailId={id=>{props.setSectionDetailId(id)}} inputMode={1} project={props.project} articleId={props.a.id} />:null}
     </>;
 }
@@ -274,10 +285,7 @@ function ArticleBoxSections(props){
                 const sectionLst = await arachne.tag_lnks.search([{c: "tag_id", o: "=", v: item.id}, {c: "section_id", o: ">", v: 0}], {select: ["section_id"]});
                 await arachne.sections.save(sectionLst.map(s=>{return {id: s.section_id, article_id: props.articleId}}));
             }else if(inputMode===1){
-                const tagLnk = await arachne.tag_lnks.get({tag_id: item.id, article_id: props.articleId}, {select: ["id"]});
-                await arachne.tag_lnks.delete(tagLnk[0].id);
-                const sectionLst = await arachne.tag_lnks.search([{c: "tag_id", o: "=", v: item.id}, {c: "section_id", o: ">", v: 0}], {select: ["section_id"]});
-                await arachne.sections.save(sectionLst.map(s=>{return {id: s.section_id, article_id: null}}));
+                await removeTagFromArticle(props.articleId, item.id);
             }
         } else if(item.type==="full_text"){
             // add full-text
@@ -325,6 +333,12 @@ function ArticleBoxSections(props){
         }
 
         setTagLst(articleTagLst.sort((a,b)=>a.name>b.name));
+    };
+    const removeTagFromArticle=async(article_id, tag_id)=>{
+        const cTagLnk = await arachne.tag_lnks.get({tag_id: tag_id, article_id: article_id}, {select: ["id"]});
+        await arachne.tag_lnks.delete(cTagLnk[0].id);
+        const sectionLst = await arachne.tag_lnks.search([{c: "tag_id", o: "=", v: tag_id}, {c: "section_id", o: ">", v: 0}], {select: ["section_id"]});
+        await arachne.sections.save(sectionLst.map(s=>{return {id: s.section_id, article_id: null}}));
     };
     const onKeyDown=e=>{
         if(e.keyCode===9&&acLst.length===1){
@@ -377,7 +391,14 @@ function ArticleBoxSections(props){
     return <>
     <SectionDetailEdit project={props.project} handleClose={()=>{loadSections();setSectionDetailId(0)}} sectionDetailId={sectionDetailId} />
     <div className="ArticleBoxSections">
-        <div className="outlineSectionTagBox">{tagLst.map(t=><div key={t.id} className="outlineSectionTags" style={{backgroundColor: t.color}}>{t.name}</div>)}</div>
+        <div className="outlineSectionTagBox">{tagLst.map(t=><div key={t.id} className="outlineSectionTags" style={{backgroundColor: t.color, padding: "0 7px 2px 7px"}}>
+            <span style={{position: "relative", top: "-1px"}}>{t.name}</span>
+            <FontAwesomeIcon onClick={async e=>{
+                e.stopPropagation();
+                await removeTagFromArticle(props.articleId, t.id);
+                await loadSections();
+            }} className="removeTagButton" icon={faXmark} />
+            </div>)}</div>
         <div>{sections.map(s=><SectionBox key={s.id} s={s} setSectionDetailId={setSectionDetailId} loadSections={loadSections} articleTagLst={tagLst} />)}</div>
         <div style={{width:"100%", position: "relative", display: "inline-block"}}>
             <input className="tagBoxOutlineSection" value={inputValue} onChange={e=>{setInputValue(e.target.value)}} onFocus={()=>{setHasFocus(true)}} onBlur={()=>{setHasFocus(false);setInputValue("");setACLst([]);/*if(!props.inputMode){props.setInputMode()}*/}} type="text" onKeyDown={e=>{onKeyDown(e)}} />{loading?<Spinner style={{position: "absolute", top: "12px", right: "4px"}} variant="primary" animation="border" size="sm" />:null}

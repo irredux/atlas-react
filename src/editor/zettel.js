@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Button, ButtonGroup, Dropdown, Table, Badge, Card, Col, Form, Container, Row, Modal, Accordion, Stack, Offcanvas, Tabs, Tab } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGear, faPlusCircle, faMinusCircle, faTimesCircle, faPenToSquare, faTrashCan, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+import { faGear, faPlusCircle, faXmark, faTimesCircle, faPenToSquare, faTrashCan, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 
 import { arachne } from "./../arachne.js";
 import { AutoComplete, SearchInput, StatusButton, useIntersectionObserver, Message, sleep, parseHTML } from "./../elements.js"
@@ -452,7 +452,7 @@ function FilterTag(props){
         <FontAwesomeIcon onClick={async e=>{
             e.stopPropagation();
             props.removeTag(props.t);
-            }} style={{cursor: "pointer", margin: "4px 0 0 9px"}} icon={faMinusCircle} />
+            }} style={{cursor: "pointer", margin: "4px 0 0 9px"}} icon={faXmark} />
     </div>;
 }
 function TagBox(props){
@@ -572,7 +572,7 @@ function Tag(props){
             const cTagLnk = await arachne.tag_lnks.get({tag_id: props.t.id, section_id: props.sectionId}, {select: ["id"]});
             await arachne.tag_lnks.delete(cTagLnk[0].id);
             await props.loadTags();
-            }} style={{cursor: "pointer", margin: "4px 0 0 9px"}} icon={faMinusCircle} />
+            }} className="removeTagButton" icon={faXmark} />
     </div>;
 }
 function ImportZettel(props){
