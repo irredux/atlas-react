@@ -2,10 +2,11 @@ import { useState, useEffect } from "react";
 import { arachne } from "./../arachne";
 import { defaultArticleHeadFields } from "./outline.js";
 import { Button, ButtonGroup, Dropdown, Table, Badge, Card, Col, Form, Container, Navbar, Nav, Row, Modal, Accordion, Stack, Spinner, Offcanvas, Tabs, Tab } from "react-bootstrap";
-import { parseHTML } from "./../elements";
+import { parseHTML, downloadFile } from "./../elements";
 
 function ExportBox(props){
 	const [exportTxt, setExportTxt] = useState("");
+	const [exportFileName, setExportFileName] = useState("");
 	const [exportComment, setExportComment] = useState(true);
 	const [exportTags, setExportTags] = useState(true);
 	const [preview, setPreview] = useState(null);
@@ -15,6 +16,8 @@ function ExportBox(props){
 			let exportLst = [];
 			const articles = await arachne.article.get({project_id: props.project.id});
 			const sections = await arachne.sections.get({project_id: props.project.id});
+			const lemmaName = articles.find(a=>a.type===900);
+			setExportFileName(lemmaName!==undefined?lemmaName.name:"export")
 			let tags = [];
 			let tag_lnks = [];
 			if(exportTags){
@@ -58,31 +61,31 @@ function ExportBox(props){
 		fetchData();
 	}, [exportComment, exportTags]);
 	return <Container>
+		<Row className="mb-4">
+			<Col style={{padding: "0 10em 0 10em"}}>
+				<Form.Check
+                    type="switch"
+                    id="custom-switch"
+                    label="Kommentare in Export aufnehmen."
+                    checked={exportComment}
+                    value={exportComment}
+                    onChange={e=>{setExportComment(!exportComment)}}
+                />
+                <Form.Check
+                    type="switch"
+                    id="custom-switch"
+                    label="Tags in Export aufnehmen."
+                    checked={exportTags}
+                    value={exportTags}
+                    onChange={e=>{setExportTags(!exportTags)}}
+                />
+			</Col>
+			<Col>
+				<Button onClick={()=>{downloadFile(`${exportFileName}.mlw`, exportTxt)}}>.mlw-Datei herunterladen</Button>
+			</Col>
+		</Row>
 		<Tabs defaultActiveKey="text" className="mb-4">
 			<Tab eventKey="text" title="Exporttext">
-				<Row className="mb-4">
-					<Col style={{padding: "0 10em 0 10em"}}>
-						<Form.Check
-		                    type="switch"
-		                    id="custom-switch"
-		                    label="Kommentare in Export aufnehmen."
-		                    checked={exportComment}
-		                    value={exportComment}
-		                    onChange={e=>{setExportComment(!exportComment)}}
-		                />
-		                <Form.Check
-		                    type="switch"
-		                    id="custom-switch"
-		                    label="Tags in Export aufnehmen."
-		                    checked={exportTags}
-		                    value={exportTags}
-		                    onChange={e=>{setExportTags(!exportTags)}}
-		                />
-					</Col>
-					<Col>
-						<Button>.mlw-Datei herunterladen</Button>
-					</Col>
-				</Row>
 				<Row>
 					<Col></Col>
 					<Col xs={11}><textarea className="exportTextBox" value={exportTxt} onChange={()=>{}}></textarea></Col>

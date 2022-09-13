@@ -5,6 +5,16 @@ import { Navbar, Container, Table, Row, Col, Offcanvas, Alert, ButtonGroup, Butt
 import DOMPurify from "dompurify";
 import { arachne } from "./arachne.js";
 
+function downloadFile(filename, text) {
+    let element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('download', filename);
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+}
+
 function Link(props){
     return <span tabIndex="0" className={props.className?props.className:"text-primary"} style={{cursor: "pointer", textDecoration: "underline"}} onClick={props.onClick}>{props.children}</span>;
 }
@@ -918,4 +928,4 @@ function useShortcuts(callback, debug=false){
         return () => {window.removeEventListener("keyup", handleKeyUp)};
     }, [handleKeyUp]);
 }
-export { Link, CommentBox, Navigator, parseHTML, parseHTMLPreview, SearchBox, SearchInput, SelectMenu, Selector, ToolKit, AutoComplete, Aside, SearchHint, StatusButton, sleep, sqlDate, Message, useIntersectionObserver, useShortcuts, TableView };
+export { Link, CommentBox, Navigator, parseHTML, parseHTMLPreview, SearchBox, SearchInput, SelectMenu, Selector, ToolKit, AutoComplete, Aside, SearchHint, StatusButton, sleep, sqlDate, Message, useIntersectionObserver, useShortcuts, TableView, downloadFile };
