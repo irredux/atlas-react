@@ -371,7 +371,13 @@ mark{
     display: none;
     top: -3px;
 }
-
+.sectionBox:focus .EditSectionDropdown, .sectionBox:focus-within .EditSectionDropdown{
+    display: block;
+}
+.EditSectionDropdown{
+    display: none;
+    top: -27px;
+}
 .removeTagButton{
     cursor: pointer;
     margin: 6px 0px 0 6px;

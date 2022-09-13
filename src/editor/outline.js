@@ -145,7 +145,7 @@ function ArticleBox(props){
                 if(e.keyCode!==9){e.preventDefault()}
                 if(e.keyCode===8||e.keyCode===46){ // delete
                     props.deleteArticle(props.a.id);
-                }else if(e.keyCode===13){
+                }else if(e.keyCode===13){ // enter
                     dblClickCallback(e);
                 }else if(e.keyCode===37&&e.shiftKey){ // left+shift
                     if(props.a.parent_id>0){
@@ -214,9 +214,10 @@ function ArticleBox(props){
                 <FontAwesomeIcon icon={faGear} />
             </Dropdown.Toggle>
             <Dropdown.Menu>
-                <Dropdown.Item onClick={()=>{}}>bearbeiten</Dropdown.Item>
-                <Dropdown.Item onClick={()=>{}}>ausklappen</Dropdown.Item>
-                <Dropdown.Item onClick={()=>{}}>löschen</Dropdown.Item>
+                <Dropdown.Item onClick={e=>{setTimeout(()=>{dblClickCallback(e)}, 200)}}>bearbeiten</Dropdown.Item>
+                <Dropdown.Item onClick={()=>{setDisplaySections(!displaySections)}}>{displaySections?"einklappen":"ausklappen"}</Dropdown.Item>
+                <Dropdown.Divider />
+                <Dropdown.Item onClick={()=>{props.deleteArticle(props.a.id)}} className="text-danger">Bedeutung löschen</Dropdown.Item>
             </Dropdown.Menu>
         </Dropdown>
     </div>
@@ -429,18 +430,21 @@ function SectionBox(props){
         }
         fetchData();
     }, []);
+    const removeFromArticle=async()=>{
+        // check if section is connected by tag!
+        const tagNameLst = tagLst.map(t=>t.name);
+        if(props.articleTagLst.filter(a=>tagNameLst.includes(a.name)).length>0){
+            alert("Diese Stelle kann nicht einzeln entfernt werden. Entfernen Sie das Schlagwort, um die Stelle zu entfernen.")
+        } else if(window.confirm("Soll die Stelle von der Bedeutung entfernt werden?")){
+            await arachne.sections.save({id: props.s.id, article_id: null});
+            props.loadSections();
+        }
+    };
     return <div key={props.s.id} className="sectionBox" tabIndex="0" onClick={e=>{
             e.target.closest(".sectionBox").focus();
         }} onKeyDown={e=>{
             if(e.keyCode===8||e.keyCode===46){ // remove from article
-                // check if section is connected by tag!
-                const tagNameLst = tagLst.map(t=>t.name);
-                if(props.articleTagLst.filter(a=>tagNameLst.includes(a.name)).length>0){
-                    alert("Diese Stelle kann nicht einzeln entfernt werden. Entfernen Sie das Schlagwort, um die Stelle zu entfernen.")
-                } else if(window.confirm("Soll die Stelle von der Bedeutung entfernt werden?")){
-                    arachne.sections.save({id: props.s.id, article_id: null});
-                    props.loadSections();
-                }
+                removeFromArticle();
             }else if(e.keyCode===38){ // up
                 e.preventDefault();
                 if(e.target.previousSibling){e.target.previousSibling.focus()}
@@ -456,6 +460,16 @@ function SectionBox(props){
             }
         }}><span className="sectionBoxTitle">{props.s.ref}</span> {props.s.text}
         <div className="outlineSectionTagBox">{tagLst.map(t=><div key={t.id} className="outlineSectionTags" style={{backgroundColor: t.color}}>{t.name}</div>)}</div>
+        <Dropdown style={{float: "right"}} className="EditSectionDropdown">
+            <Dropdown.Toggle size="sm" tabIndex="-1" variant="outline-secondary">
+                <FontAwesomeIcon icon={faGear} />
+            </Dropdown.Toggle>
+            <Dropdown.Menu>
+                <Dropdown.Item onClick={e=>{props.setSectionDetailId(props.s.id)}}>bearbeiten</Dropdown.Item>
+                <Dropdown.Divider />
+                <Dropdown.Item onClick={()=>{removeFromArticle()}} className="text-danger">Stelle aus Gliederung entfernen</Dropdown.Item>
+            </Dropdown.Menu>
+        </Dropdown>
     </div>;
 }
 function SectionDetailEdit(props) {

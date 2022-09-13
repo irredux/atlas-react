@@ -170,10 +170,13 @@ function MenuLeft(props){
 function SectionCard(props){
     const [ressources, setRessources] = useState([]);
     const [showComment, setShowComment] = useState(false);
+    const [showDate, setShowDate] = useState(false);
+    const [dateIsValid, setDateIsValid] = useState(false);
     const [comment, setComment] = useState("");
     const [img, setImg] = useState(null);
     const [reference, setReference] = useState("");
     const [text, setText] = useState("");
+    const [date, setDate] = useState(9999);
     const [verso, setVerso] = useState(false);
     const [tags, setTags] = useState([]);
     const [unusedTags, setUnusedTags] = useState([]);
@@ -210,6 +213,8 @@ function SectionCard(props){
         setComment(newSection[0].comment);
         if(newSection[0].comment!=null&&newSection[0].comment!=""){setShowComment(true)}
         setSection(newSection[0]);
+        setDate(newSection[0].date_sort);
+        setDateIsValid(true);
         // load ressources
         setRessources(await arachne.edition.get({work_id: newSection[0].work_id}, {select: ["id", "label", "url"]}));
     };
@@ -252,6 +257,9 @@ function SectionCard(props){
                     <Form.Control placeholder="Text der Stelle..." onFocus={()=>{centerSection()}} as="textarea" rows={3} style={{minHeight: "120px",fontSize: "95%"}} value={text?text:""} onChange={e=>{setText(e.target.value)}} onBlur={async e=>{await arachne.sections.save({id: props.sId, text: e.target.value})}} />
                     </Col>
             </Row>
+            {showDate?<Row className="mb-3">
+                <Col><Form.Control value={date} onChange={e=>{if(e.target.value.search(/^\d+$/g)>-1){setDateIsValid(true)}else{setDateIsValid(false)};setDate(e.target.value)}} style={{textAlign: "right"}} isValid={dateIsValid} onBlur={async e=>{if(dateIsValid){await arachne.sections.save({id: props.sId, date_sort: e.target.value})}}} /></Col>
+            </Row>:null}
             {showComment?<Row className="mb-3">
                 <Col><Form.Control className="mt-2" placeholder="Schreiben Sie einen Kommentar..." onFocus={()=>{centerSection()}} as="textarea" rows={3} style={{fontSize: "95%"}} value={comment?comment:""} onChange={e=>{setComment(e.target.value)}} onBlur={async e=>{await arachne.sections.save({id: props.sId, comment: e.target.value})}} /></Col>
             </Row>:null}
@@ -274,6 +282,7 @@ function SectionCard(props){
                         const acWork = await arachne.work.get({id: section.work_id}, {select: ["ac_web"]})
                         props.setChangeZettelWork({value: acWork[0].ac_web, id:section.work_id, section_id: props.sId});
                     }}>verknpft. Werk ändern</Dropdown.Item>
+                    <Dropdown.Item onClick={()=>{setShowDate(!showDate)}}>{showDate?"Datierung ausblenden":"Datierung anzeigen"}</Dropdown.Item>
                     <Dropdown.Item onClick={()=>{setShowComment(true)}}>Kommentar hinzufügen</Dropdown.Item>
                     <Dropdown.Divider />
                     <Dropdown.Item onClick={async()=>{
