@@ -35,6 +35,7 @@ function OutlineBox(props){
         setArticleHeadFields(defaultArticleHeadFields.filter(d=>!articleTypes.includes(d[0])));
     }, [props.articles]);
     useEffect(()=>{if(articleHeadFields.length>0){setArticleHeadSelect(articleHeadFields[0][1]);setArticleHeadSelectId(articleHeadFields[0][0])}}, [articleHeadFields]);
+    const maxDepth = props.articlesLst.map(a=>parseInt(a.split("-")[0])).sort()[props.articlesLst.length-1];
     const displayArticles = (a, depth) => {
         return <div key={a.id} style={{marginLeft: `${25*depth}px`}}>
             <div
@@ -43,7 +44,7 @@ function OutlineBox(props){
                 onDragOver={e=>{e.preventDefault();e.target.style.borderColor="var(--bs-primary)"}}
                 onDragLeave={e=>{e.target.style.borderColor="transparent"}}
             ></div>
-            <ArticleBox deleteArticle={props.deleteArticle} changeArticle={props.changeArticle} project={props.project} articles={props.articles} a={a} dragObjectId={dragObjectId} setDragObjectId={id=>{setDragObjectId(id)}} dropArticle={(a,b,c)=>{props.dropArticle(a,b,c)}} collapsed={props.collapsedArticlesLst.includes(a.id)} toggleCollapse={a=>{props.toggleCollapse(a)}} />
+            <ArticleBox maxDepth={maxDepth} depth={depth} deleteArticle={props.deleteArticle} changeArticle={props.changeArticle} project={props.project} articles={props.articles} a={a} dragObjectId={dragObjectId} setDragObjectId={id=>{setDragObjectId(id)}} dropArticle={(a,b,c)=>{props.dropArticle(a,b,c)}} collapsed={props.collapsedArticlesLst.includes(a.id)} toggleCollapse={a=>{props.toggleCollapse(a)}} />
         </div>;
     };
     return <Container className="outlineBox" fluid>
@@ -103,7 +104,10 @@ function OutlineBox(props){
             {displayBody?<><Row>
                 <Col></Col>
                 <Col xs="8">
-                    {props.articlesLst.map(a=>displayArticles(props.articles.find(b=>b.id===parseInt(a.split("-")[1])), a.split("-")[0]))}
+                    {props.articlesLst.map(a=>{
+                        const aSplit = a.split("-");
+                        return displayArticles(props.articles.find(b=>b.id===parseInt(aSplit[1])), aSplit[0]);
+                    })}
                 </Col>
                 <Col></Col>
             </Row>
@@ -129,6 +133,9 @@ function ArticleBox(props){
         el.contentEditable = true;
         el.focus();
     };
+    const cDepth = props.maxDepth<3?parseInt(props.depth)+2:props.depth<5?props.depth:4
+    const ordNumber = ordNumbers[cDepth][props.a.sort_nr-1];
+
     return <><div
         className="articleBox"
         id={`articleBox_${props.a.id}`}
@@ -194,7 +201,7 @@ function ArticleBox(props){
                 }
             }
         }}
-    >{props.a.sort_nr}. <span
+    >{ordNumber}. <span
         className="articleBoxName"
         onBlur={async e=>{
             e.target.contentEditable=false;
@@ -537,4 +544,13 @@ function SectionDetailEdit(props) {
         {/*<Modal.Footer></Modal.Footer>*/}
     </Modal>;
 }
+
+const ordNumbers = [
+    ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV", "XV", "XVI", "XVII", "XVIII", "XIX", "XX", "XXI", "XXII", "XXIII", "XXIV", "XXV", "XXVI", "XXVII", "XXVIII", "XXIX", "XXX"],
+    ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"],
+    ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30"],
+    ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"],
+    ["α", "β", "γ", "δ", "ε", "ζ", "η", "θ", "ι", "κ", "λ", "μ", "ν", "ξ", "ο", "π", "ρ", "σ", "τ", "υ", "φ", "χ", "ψ", "ω"]
+];
+
 export { OutlineBox, defaultArticleHeadFields }
