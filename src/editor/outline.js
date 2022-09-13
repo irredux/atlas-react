@@ -199,13 +199,19 @@ function ArticleBox(props){
         onBlur={async e=>{
             e.target.contentEditable=false;
             e.target.parentElement.focus();
-            await arachne.article.save({id: props.a.id, name: e.target.innerText})
-            props.changeArticle({id: props.a.id, name: e.target.innerText});
+            let newText = e.target.innerText;
+            if(newText.search(/:$/)===-1){newText += ":"}
+            await arachne.article.save({id: props.a.id, name: newText})
+            props.changeArticle({id: props.a.id, name: newText});
         }}
         onKeyDown={e=>{
             if(e.keyCode===13){
                 e.preventDefault();
                 e.target.blur();
+            }else if(e.keyCode===39){
+                if(window.getSelection().focusOffset+1===e.target.textContent.length){
+                    e.preventDefault();
+                }
             }
         }}
     >{props.a.name}</span> {sectionCount>0?<small className="text-primary" style={{marginLeft: "20px"}}>{sectionCount}</small>:null}{props.collapsed?<span className="text-primary" style={{marginLeft: "15px"}}>...</span>:null}

@@ -103,7 +103,7 @@ function Editor(props){
         newArticle.type = newArticle.type?newArticle.type:0;
         newArticle.project_id = project.id;
         newArticle.parent_id = 0;
-        newArticle.name = newArticle.name?newArticle.name:"Neue Bedeutung";
+        newArticle.name = newArticle.name?newArticle.name:"Neue Bedeutung:";
         newArticle.sort_nr = newArticle.sort_nr?newArticle.sort_nr:articles.length>0?Math.max(...articles.filter(a=>a.parent_id===0).map(a=>a.sort_nr))+1:1;
         const newId=await arachne.article.save(newArticle);
         newArticle.id = newId;
