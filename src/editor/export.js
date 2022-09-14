@@ -10,6 +10,7 @@ function ExportBox(props){
 	const [exportComment, setExportComment] = useState(true);
 	const [exportTags, setExportTags] = useState(true);
 	const [preview, setPreview] = useState(null);
+	const [error, setError] = useState(null);
 	const [loadPreview, setLoadPreview] = useState(0); // 0 = not jet loaded; 1 = loading; 2 = loaded.
 	useEffect(()=>{
 		const fetchData=async()=>{
@@ -56,6 +57,8 @@ function ExportBox(props){
 			const previewResponse = await arachne.exec("mlw_preview", true, exportTxt);
 			//console.log(previewResponse.html)
 			setPreview(previewResponse.html);
+			console.log(previewResponse.error)
+			setError(previewResponse.error);
 			setLoadPreview(2);
 		};
 		fetchData();
