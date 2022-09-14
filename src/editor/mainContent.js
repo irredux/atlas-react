@@ -76,8 +76,7 @@ function MainNavBar(props){
             <Navbar.Toggle />
             <Navbar.Collapse className="justify-content-end">
                 <Nav>
-                    <NavDropdown title={editionTxt}>{editions}
-                    </NavDropdown>
+                    {editions.length>0&&<NavDropdown title={editionTxt}>{editions}</NavDropdown>}
                     <NavDropdown title="Einstellungen">
                     <NavDropdown.Item onClick={e=>{props.loadMain(e,"settings")}}>Konto</NavDropdown.Item>
                         <NavDropdown.Item onClick={e=>{props.loadMain(e,"changelog")}}>Änderungen</NavDropdown.Item>
