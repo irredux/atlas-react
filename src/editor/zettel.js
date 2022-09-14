@@ -260,18 +260,23 @@ function SectionCard(props){
                     </Col>
             </Row>
             {showDate?<Row className="mb-3">
-                <Col><Form.Control value={date} onChange={e=>{if(e.target.value.search(/^\d+$/g)>-1){setDateIsValid(true)}else{setDateIsValid(false)};setDate(e.target.value)}} style={{textAlign: "right"}} isValid={dateIsValid} onBlur={async e=>{if(dateIsValid&&dateInitial!==parseInt(e.target.value)){
-                    await arachne.sections.save({id: props.sId, date_sort: e.target.value});
-                    setDateInitial(parseInt(e.target.value));
-                    setDate(parseInt(e.target.value));
-                    if(window.confirm("Soll die Änderung in die Zettel-DB übernommen werden?")){
-                        const zettel = await arachne.sections.get({id: props.sId}, {select: ["zettel_id"]});
-                        if(zettel.length>0){
-                            console.log("zettel:", zettel)
-                            await arachne.zettel.save({id: zettel[0].zettel_id, date_sort: e.target.value});
+                <Col><Form.Control value={date} onChange={e=>{if(e.target.value.search(/^\d+$/g)>-1){setDateIsValid(true)}else{setDateIsValid(false)};setDate(e.target.value)}} style={{textAlign: "right"}} isValid={dateIsValid} isInvalid={!dateIsValid} onBlur={async e=>{
+                    if(dateIsValid&&dateInitial!==parseInt(e.target.value)){
+                        await arachne.sections.save({id: props.sId, date_sort: e.target.value});
+                        setDateInitial(parseInt(e.target.value));
+                        setDate(parseInt(e.target.value));
+                        if(window.confirm("Soll die Änderung in die Zettel-DB übernommen werden?")){
+                            const zettel = await arachne.sections.get({id: props.sId}, {select: ["zettel_id"]});
+                            if(zettel.length>0){
+                                console.log("zettel:", zettel)
+                                await arachne.zettel.save({id: zettel[0].zettel_id, date_sort: e.target.value});
+                            }
                         }
+                    }else{
+                        setDate(dateInitial);
+                        setDateIsValid(true);
                     }
-                }}} /></Col>
+            }} /></Col>
             </Row>:null}
             {showComment?<Row className="mb-3">
                 <Col><Form.Control className="mt-2" placeholder="Schreiben Sie einen Kommentar..." onFocus={()=>{centerSection()}} as="textarea" rows={3} style={{fontSize: "95%"}} value={comment?comment:""} onChange={e=>{setComment(e.target.value)}} onBlur={async e=>{await arachne.sections.save({id: props.sId, comment: e.target.value})}} /></Col>
