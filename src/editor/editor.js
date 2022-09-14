@@ -181,19 +181,23 @@ function Editor(props){
         modeBox = <div>Modus '{mode}' nicht gefunden.</div>;
     }
     return <>
-    <Message show={Object.keys(changeZettelWork).length>0?true:false} title="verknpft. Werk auswählen" msg="Mit welchem Werk soll die Stelle verknüpft werden?" AutoComplete={{value: changeZettelWork.value, id: changeZettelWork.id, tbl: "work", searchCol: "ac_web", returnCol: "ac_web"}} onReplay={async e=>{
+    <Message show={Object.keys(changeZettelWork).length>0?true:false} title="verknpft. Werk auswählen" msg="Mit welchem Werk soll die Stelle verknüpft werden? - Diese Änderung wird auch in die Zettel-DB synchronisiert." AutoComplete={{value: changeZettelWork.value, id: changeZettelWork.id, tbl: "work", searchCol: "ac_web", returnCol: "ac_web"}} onReplay={async e=>{
             if(e){
                 let nValues = {work_id: e.id}  
 
-                if(changeZettelWork.section_id>0){
+                if(changeZettelWork.section_id>0){ // update current section
+                    const zettelId = await arachne.sections.get({id: changeZettelWork.section_id}, {select: ["zettel_id"]});
+                    if(zettelId.length>0){
+                        await arachne.zettel.save({id: zettelId[0].zettel_id, work_id: e.id})
+                    }
                     nValues.id = changeZettelWork.section_id;
                     const cSection = await arachne.sections.get({id: changeZettelWork.section_id}, {select: ["ref"]});
                     if(cSection[0]["ref"]!=e.value&&window.confirm("Soll auch der Zitiertitel geändert werden?")){
-                        nValues.ref = e.value+";";
+                        nValues.ref = e.value+"; ";
                     }
-                }else{
+                }else{ // create new section
                     const cWork = await arachne.work.get({id: e.id}, {select: ["date_sort"]})
-                    nValues.ref = e.value+";";
+                    nValues.ref = e.value+"; ";
                     nValues.project_id = project.id;                  
                     nValues.user_id = project.user_id;
                     nValues.shared_id = project.shared_id;
