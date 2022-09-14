@@ -10,11 +10,11 @@ function ExportBox(props){
 	const [exportComment, setExportComment] = useState(true);
 	const [exportTags, setExportTags] = useState(true);
 	const [preview, setPreview] = useState(null);
-	const [error, setError] = useState(null);
 	const [loadPreview, setLoadPreview] = useState(0); // 0 = not jet loaded; 1 = loading; 2 = loaded.
 	useEffect(()=>{
 		const fetchData=async()=>{
 			let exportLst = [];
+			let exportRefLst = [];
 			const articles = await arachne.article.get({project_id: props.project.id});
 			const sections = await arachne.sections.get({project_id: props.project.id});
 			const lemmaName = articles.find(a=>a.type===900);
@@ -25,7 +25,8 @@ function ExportBox(props){
 				tags = await arachne.tags.get({project_id: props.project.id});
 				tag_lnks = await arachne.tag_lnks.get({project_id: props.project.id});
 			}
-			exportLst=exportLst.concat(articles.filter(a=>a.type>=900).map(a=>`${defaultArticleHeadFields.find(d=>d[0]===a.type)[1]} ${a.name}`))
+			exportLst=exportLst.concat(articles.filter(a=>a.type>=900).map(a=>`${defaultArticleHeadFields.find(d=>d[0]===a.type)[1]} ${a.name}`));
+			exportRefLst=exportRefLst.concat(articles.filter(a=>a.type>=900).map(a=>["a", a.id]));
 			const getArticle = (article, depth) => {
 				if(depth===0){
 					exportLst.push(`BEDEUTUNG ${article.name}`);
@@ -36,13 +37,19 @@ function ExportBox(props){
 				}else{
 					exportLst.push(`${"    ".repeat(depth)}${"U".repeat(depth)}_BEDEUTUNG ${article.name}`);
 				}
+				exportRefLst.push(["a", article.id]);
 				sections.filter(s=>s.article_id===article.id).forEach(s=>{
 					let tagLst = [];
 					if(exportTags){
 						tagLst = tag_lnks.filter(tl=>tl.section_id===s.id).map(tl=>tags.find(t=>t.id===tl.tag_id).name);
 					}
 					exportLst.push(`${"    ".repeat(depth+1)}* ${s.ref} "${s.text?s.text:""}"${tagLst.length>0?" // "+tagLst.join(", "):""}`);
+					exportRefLst.push(["s", s.id]);
 					if(exportComment&&s.comment){exportLst.push(`${"    ".repeat(depth+2)}/*\n${"    ".repeat(depth+3)}${s.comment.replace(new RegExp("\n", "g"), `\n${"    ".repeat(depth+3)}`)}\n${"    ".repeat(depth+2)}*/`)}
+					if(exportLst.length!==exportRefLst.length){
+						// add empty entries for multiline comments!
+						for(let x=0; x<exportLst.length-exportRefLst.length; x++){exportRefLst.push(null)}
+					}
 				});
 
 				articles.filter(a=>a.parent_id===article.id).forEach(a=>{getArticle(a,depth+1)});
@@ -55,10 +62,22 @@ function ExportBox(props){
 			setLoadPreview(1);
 			const exportTxt = exportLst.join("\n");
 			const previewResponse = await arachne.exec("mlw_preview", true, exportTxt);
-			//console.log(previewResponse.html)
 			setPreview(previewResponse.html);
-			console.log(previewResponse.error)
-			setError(previewResponse.error);
+			if(previewResponse.error){
+				let sectionErrors = [];
+				let articleErrors = [];
+				for(const errorLine of previewResponse.error.split(/\r?\n/)){
+					const errorParts = errorLine.split(":"); // row:character: Error (0000): MSG
+					if(exportRefLst[errorParts[0]-1][0]==="a"){
+						articleErrors.push([exportRefLst[errorParts[0]-1][1], errorParts[1], errorParts[2], errorParts[3]]);
+					}else if(exportRefLst[errorParts[0]-1][0]==="s"){
+						sectionErrors.push([exportRefLst[errorParts[0]-1][1], errorParts[1], errorParts[2], errorParts[3]]);
+
+					}
+					props.setArticleErrorLst(articleErrors)
+					props.setSectionErrorLst(sectionErrors);
+				}
+			}
 			setLoadPreview(2);
 		};
 		fetchData();

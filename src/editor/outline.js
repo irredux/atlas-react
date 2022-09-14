@@ -3,7 +3,7 @@ import { Alert, Spinner, Modal, Card, Col, Container, Form, Row, FormControl, In
 import { arachne } from "./../arachne";
 import { parseHTML } from "./../elements";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGear, faRotate, faAngleDown, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faGear, faRotate, faAngleDown, faXmark, faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 import { RessourcesButtons, TagBox } from "./zettel.js";
 
 const defaultArticleHeadFields = [
@@ -44,7 +44,7 @@ function OutlineBox(props){
                 onDragOver={e=>{e.preventDefault();e.target.style.borderColor="var(--bs-primary)"}}
                 onDragLeave={e=>{e.target.style.borderColor="transparent"}}
             ></div>
-            <ArticleBox maxDepth={maxDepth} depth={depth} deleteArticle={props.deleteArticle} changeArticle={props.changeArticle} project={props.project} articles={props.articles} a={a} dragObjectId={dragObjectId} setDragObjectId={id=>{setDragObjectId(id)}} dropArticle={(a,b,c)=>{props.dropArticle(a,b,c)}} collapsed={props.collapsedArticlesLst.includes(a.id)} toggleCollapse={a=>{props.toggleCollapse(a)}} />
+            <ArticleBox articleErrorLst={props.articleErrorLst} sectionErrorLst={props.sectionErrorLst} maxDepth={maxDepth} depth={depth} deleteArticle={props.deleteArticle} changeArticle={props.changeArticle} project={props.project} articles={props.articles} a={a} dragObjectId={dragObjectId} setDragObjectId={id=>{setDragObjectId(id)}} dropArticle={(a,b,c)=>{props.dropArticle(a,b,c)}} collapsed={props.collapsedArticlesLst.includes(a.id)} toggleCollapse={a=>{props.toggleCollapse(a)}} />
         </div>;
     };
     return <Container className="outlineBox" fluid>
@@ -120,12 +120,17 @@ function OutlineBox(props){
 function ArticleBox(props){
     const [displaySections, setDisplaySections] = useState(false);
     const [sectionCount, setSectionCount] = useState(0);
+    const [errorLst, setErrorLst] = useState(null);
     useEffect(()=>{
         const fetchData=async()=>{
             const sCount = await arachne.sections.get({article_id: props.a.id}, {count: true});
             setSectionCount(sCount[0].count)
         };
         fetchData();
+        const newErrorLst = props.articleErrorLst.filter(a=>a[0]===props.a.id);
+        if(newErrorLst.length>0){
+            setErrorLst(newErrorLst);
+        }else(setErrorLst(null))
     },[]);
     const dblClickCallback = e => {
         const target = e.target.closest(".articleBox");
@@ -233,6 +238,8 @@ function ArticleBox(props){
                 <Dropdown.Item onClick={()=>{props.deleteArticle(props.a.id)}} className="text-danger">Bedeutung löschen</Dropdown.Item>
             </Dropdown.Menu>
         </Dropdown>
+
+        {errorLst&&<FontAwesomeIcon icon={faExclamationTriangle} className="text-danger" title={errorLst.map(e=>`${e[3]} -${e[2]}`).join("; ")} />}
     </div>
     {displaySections?<ArticleBoxSections articles={props.articles} setSectionCount={setSectionCount} setSectionDetailId={id=>{props.setSectionDetailId(id)}} inputMode={1} project={props.project} articleId={props.a.id} />:null}
     </>;

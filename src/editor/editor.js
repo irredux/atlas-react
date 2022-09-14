@@ -9,6 +9,8 @@ import { OutlineBox } from "./outline.js";
 import { ExportBox } from "./export.js";
 
 function Editor(props){
+    const [articleErrorLst, setArticleErrorLst] = useState([]);
+    const [sectionErrorLst, setSectionErrorLst] = useState([]);
     const [mode, setMode] = useState("zettel")
     const [project, setProject] = useState(null);
     const [articles, setArticles] = useState([]);
@@ -172,10 +174,10 @@ function Editor(props){
             modeBox = <ZettelBox filterSearchIds={filterSearchIds} setFilterSearchIds={setFilterSearchIds} updateArticles={updateArticles} changeZettelWork={changeZettelWork} setChangeZettelWork={setChangeZettelWork} setLimitFilterResults={v=>{setLimitFilterResults(v)}} showImport={showImport} sectionsMenuActiveTabKey={sectionsMenuActiveTabKey} filterTags={filterTags} setFilterTags={newTags=>{setFilterTags(newTags)}} setSectionsMenuActiveTabKey={m=>{setSectionsMenuActiveTabKey(m)}} setShowImport={v=>{setShowImport(v)}} project={project} filterLst={filterLst} updateSections={(force=false)=>{if(force){setFilterLst([])};updateSections()}} />;
             break;
         case "outline":
-            modeBox = <OutlineBox deleteArticle={deleteArticle} createNewArticle={createNewArticle} changeArticle={changeArticle} project={project} dropArticle={(a,b,c)=>{dropArticle(a,b,c)}} articlesLst={articlesLst} articles={articles} collapsedArticlesLst={collapsedArticlesLst} toggleCollapse={a=>{toggleCollapse(a)}} />;
+            modeBox = <OutlineBox articleErrorLst={articleErrorLst} sectionErrorLst={sectionErrorLst} deleteArticle={deleteArticle} createNewArticle={createNewArticle} changeArticle={changeArticle} project={project} dropArticle={(a,b,c)=>{dropArticle(a,b,c)}} articlesLst={articlesLst} articles={articles} collapsedArticlesLst={collapsedArticlesLst} toggleCollapse={a=>{toggleCollapse(a)}} />;
             break;
         case "export":
-            modeBox = <ExportBox project={project} />;
+            modeBox = <ExportBox project={project} setArticleErrorLst={setArticleErrorLst} setSectionErrorLst={setSectionErrorLst} />;
             break;
         default:
         modeBox = <div>Modus '{mode}' nicht gefunden.</div>;
