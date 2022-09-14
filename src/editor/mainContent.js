@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
 import { Container, Navbar, Nav, NavDropdown } from "react-bootstrap";
@@ -53,12 +53,23 @@ function MainBody(props){
 function MainNavBar(props){
     const [editions, setEditions] = useState([]);
     const [editionTxt, setEditionTxt] = useState("zuletzt geöffnet");
-    /*useEffect(async ()=>{
-        const newEditions = getEditions();
-        setEditions(newEditions.map(e=>{return <NavDropdown.Item key={e.id} onClick={ev=>{storeEdition(e.id, e.label, e.opus);props.loadMain(ev,"edition", e.id)}}>{e.label}{e.opus?` (${e.opus.substring(0,20)+(e.opus.length>20?"...":"")})`:null}</NavDropdown.Item>;}));
-        if(props.res==="edition"){setEditionTxt(newEditions[0].label+(newEditions[0].opus?` (${newEditions[0].opus.substring(0,20)+(newEditions[0].opus.length>20?"...":"")})`:null))}
-        else{setEditionTxt("zuletzt geöffnet")}
-    }, [props.res, props.resId]);*/
+    useEffect(()=>{
+        const fetchData=async()=>{
+            let openRecentLst = localStorage.getItem("openRecentEditor")
+            if(openRecentLst){
+                openRecentLst = JSON.parse(openRecentLst).reverse();
+                const projectNames = await arachne.project.getAll({select:["id", "name"]});
+                // check if there are deleted projects! remove and save to localStorage
+                openRecentLst = openRecentLst.filter(o=>projectNames.find(p=>p.id===o)!==undefined);
+                localStorage.setItem("openRecentEditor", openRecentLst);
+                setEditions(openRecentLst.map(o=>{
+                   const p = projectNames.find(p=>p.id===o);
+                   return <NavDropdown.Item key={p.id} onClick={e=>{props.loadMain(e, "editor", p.id)}}>{p.name}</NavDropdown.Item>
+                }));
+            }
+        };
+        fetchData();
+    }, []);
     return <Navbar bg="dark" variant="dark" fixed="top">
         <Container fluid>
             <Navbar.Brand style={{cursor: "pointer"}} onClick={e=>{props.loadMain(e, null)}}>Editor</Navbar.Brand>

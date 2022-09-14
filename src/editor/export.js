@@ -94,7 +94,7 @@ function ExportBox(props){
 			</Tab>
 			{loadPreview>0&&<Tab eventKey="preview" title={<span>Vorschau{loadPreview===1?<Spinner style={{marginLeft: "10px"}} variant="primary" animation="border" size="sm" />:null}</span>}>
 				<Row><Col><div>
-					<iframe style={{width: "100%", height: "500px"}} srcdoc={preview}></iframe>
+					<iframe style={{width: "100%", height: "500px"}} srcDoc={preview}></iframe>
 				</div></Col></Row>
 			</Tab>}
 		</Tabs>
