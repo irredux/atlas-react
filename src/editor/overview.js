@@ -116,15 +116,6 @@ function Overview(props){
         }
         await refreshPage();
     };
-    const addToOpenRecent = p_id=>{
-        let openRecentLst = localStorage.getItem("openRecentEditor");
-        if(openRecentLst){
-            openRecentLst=JSON.parse(openRecentLst);
-            openRecentLst = openRecentLst.filter(o=>o!==p_id);
-            openRecentLst.push(p_id);
-        }else{openRecentLst=[p_id]}
-        localStorage.setItem("openRecentEditor", JSON.stringify(openRecentLst))
-    };
     return <>
         <Message show={renameId>0?true:false} title="Projekt-Name auswählen" msg="Geben Sie einen Namen für das Projekt ein:" input={renameName} onReplay={async e=>{if(e!=-1 && e!=""){
             await arachne.project.save({id: renameId, name: e})
@@ -172,7 +163,7 @@ function Overview(props){
                                 return <ProjectRow
                                 key={p.id}
                                 p={p}
-                                openProject={()=>{addToOpenRecent(p.id);props.loadMain(null, "editor", p.id)}}
+                                openProject={()=>{props.loadMain(null, "editor", p.id)}}
                                 editMenu={editMenu}
                                 deleteProject={async i=>{await deleteProject(i)}}
                             />;})}

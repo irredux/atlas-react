@@ -51,32 +51,12 @@ function MainBody(props){
     </>;
 }
 function MainNavBar(props){
-    const [editions, setEditions] = useState([]);
-    const [editionTxt, setEditionTxt] = useState("zuletzt geöffnet");
-    useEffect(()=>{
-        const fetchData=async()=>{
-            let openRecentLst = localStorage.getItem("openRecentEditor")
-            if(openRecentLst){
-                openRecentLst = JSON.parse(openRecentLst).reverse();
-                const projectNames = await arachne.project.getAll({select:["id", "name"]});
-                // check if there are deleted projects! remove and save to localStorage
-                openRecentLst = openRecentLst.filter(o=>projectNames.find(p=>p.id===o)!==undefined);
-                localStorage.setItem("openRecentEditor", openRecentLst);
-                setEditions(openRecentLst.map(o=>{
-                   const p = projectNames.find(p=>p.id===o);
-                   return <NavDropdown.Item key={p.id} onClick={e=>{props.loadMain(e, "editor", p.id)}}>{p.name}</NavDropdown.Item>
-                }));
-            }
-        };
-        fetchData();
-    }, []);
     return <Navbar bg="dark" variant="dark" fixed="top">
         <Container fluid>
             <Navbar.Brand style={{cursor: "pointer"}} onClick={e=>{props.loadMain(e, null)}}>Editor</Navbar.Brand>
             <Navbar.Toggle />
             <Navbar.Collapse className="justify-content-end">
                 <Nav>
-                    {editions.length>0&&<NavDropdown title={editionTxt}>{editions}</NavDropdown>}
                     <NavDropdown title="Einstellungen">
                     <NavDropdown.Item onClick={e=>{props.loadMain(e,"settings")}}>Konto</NavDropdown.Item>
                         <NavDropdown.Item onClick={e=>{props.loadMain(e,"changelog")}}>Änderungen</NavDropdown.Item>
