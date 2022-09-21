@@ -1,0 +1,534 @@
+/* Version 1.0 */
+
+@media (prefers-color-scheme: dark){
+    $white: #ffffff;
+        
+    /* zettel */
+    .selMarked{box-shadow: 0px 0px 18px #a3a3b5}
+        
+    /* opera */
+    .searchAllHits{background-color: var(--bs-gray-200);}
+    .searchHit{background-color: var(--bs-info);}
+}
+
+@media (prefers-color-scheme: light){
+    $white: #ffffff;
+
+    .mainColors{background-color: white;color: #353535;} // used in autocomplete!
+
+    /* zettel */
+    .selMarked{box-shadow: 0px 0px 18px #a3a3b5}
+        
+    /* opera */
+    .searchAllHits{background-color: var(--bs-gray-200);}
+    .searchHit{background-color: var(--bs-info);}
+}
+
+@media (prefers-color-scheme: dark){
+    $white: #ffffff;
+
+    .mainColors{background-color: white;color: #353535;} // used in autocomplete!
+
+    /* zettel */
+    .selMarked{box-shadow: 0px 0px 18px #a3a3b5}
+        
+    /* opera */
+    .searchAllHits{background-color: var(--bs-gray-200);}
+    .searchHit{background-color: var(--bs-info);}
+}
+
+
+/* https://huemint.com/bootstrap-plus/ */
+
+@import "~bootstrap/scss/bootstrap";
+
+
+
+
+/* *************************************** */
+
+
+
+aut{font-variant:small-caps}
+rot{color: red}
+gelb{color: yellow}
+gruen{color: green}
+blau{color: blue}
+
+a:hover {cursor: pointer;} // links without href!
+
+.a_style{
+    cursor: pointer;
+    text-decoration: underline;
+
+}
+
+.noneLst{ // used in opera-lists
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+.invalidInput{
+    border:  2px solid #dc3545;
+    background-color:  #ffeaec;
+}
+
+.mainBody{
+    /*box-shadow: 0 5px 10px lightgray;*/
+    border-radius: 2px;
+    padding: 5px 0;
+}
+
+
+textarea{
+    padding: 5px;
+    /*outline: none;*/
+    resize: none;
+    font-size: 90%;
+}
+
+.accessMarked{
+    color: var(--bs-primary);
+    font-weight: bold;
+} /* REPLACE THIS WITH A BUTTON OR REACT COMPONENT! - IN settings.js -> Account-Permission */
+
+
+/* *************************************** */
+/* *************************************** */
+/* *************************************** */
+
+
+
+
+.loginForm{
+    /*border: 1px solid map-get($theme-colors, "dark");*/
+    box-shadow: 0px 6px 20px 0.1px map-get($theme-colors, "dark");
+    border-radius: 2px;
+    padding: 15px 20px;
+    margin: 100px 0 0 0;
+    width: 500px;
+}
+
+.searchInput{
+    margin: 0 5px 5px 0;
+    padding: 5px 7px;
+    border: 1px solid map-get($theme-colors, "light");
+    border-radius: 5px;
+}
+.searchBox{
+    min-height: 43px;
+}
+
+
+/* ****************   OPERA   **************** */
+table.operaBox{
+    font-size: 13pt;
+    margin: 15px 0;
+    border-collapse: collapse;
+    width: 100%;
+    font-family: Georgia1, Georgia, serif;
+}
+
+table.operaBox > tbody > tr > td{
+    padding: 5px 10px;
+    vertical-align: top;
+    text-align: left;
+}
+.c1{
+    width: 11%;
+}
+.c2{
+    border-left: 1px solid;
+    width: 11%;
+}
+.c3{
+    border-left: 1px solid;
+    width: 26%;
+}
+.c4{
+    border-left: 1px solid;
+    width: 26%;
+    font-style: italic;
+}
+.c5{
+    border-left: double;
+    width: 26%;
+    font-size: 80%;
+}
+
+.c1_min{
+    width: 15%;
+}
+.c2_min{
+    border-left: 1px solid;
+    width: 55%;
+}
+.c5_min{
+    border-left: double;
+    width: 30%;
+    font-size: 80%;
+}
+
+.c0_tll{
+    width: 10px;
+    border: none;
+    font-size: 75%;
+    color: gray;
+}
+.c1_tll{
+    width: 11%;
+    border-right: double;
+    font-size: 85%;
+}
+.c2_tll{
+    border-right: double;
+    width: 11%;
+    font-size: 95%;
+}
+.c3_tll{
+    border-right: 1px solid;
+    width: 10%;
+    font-size: 95%;
+}
+.c4_tll{
+    border-right: 1px solid;
+    width: 34%;
+    font-size: 95%;
+}
+.c5_tll{
+    width: 29%;
+    font-size: 95%;
+}
+.operaBox_tll_index > div > table > tbody > tr:hover{
+    background-color: lightgray;
+}
+
+
+.c4_tll>.ebene2klein{
+    font-size: 85%;
+}
+
+/* is this class used?? */
+.tll_notUsed{
+    text-decoration: line-through;
+    color: red;
+}
+
+.c2_tll u, .c3_tll u, .c4_tll u{
+    text-decoration: none;
+    font-variant:small-caps;
+}
+
+
+/* ****************   ZETTEL   **************** */
+.searchFields>select{box-shadow: none;}
+
+.zettel_box {
+    display: grid;
+    justify-content: space-around;
+    width: 100%;
+}
+
+.zettel {
+    padding: 0;
+    margin: 0;
+    position: relative;
+    background: none;
+    transition: box-shadow 0.5s ease-out;
+    border-radius: 7px;
+}
+.zettel_img{width: 100%}
+div.zettel > img{border-radius: 7px}
+.zettel_menu{
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    font-size: 18px;
+    padding: 15px 12px;
+    text-align: center;
+    background: rgba(300,300,300,0.5);
+    border-radius: 0 0 7px 7px;
+}
+.zettel_msg{
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    padding: 10px 10px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: normal;
+}
+
+.no_use {background-color: var(--mainBG)}
+img.no_use {filter: grayscale(100%)}
+
+/* digital zettel */
+.digitalZettel{
+    display: grid;
+    grid-template-columns: 25% auto 25%;
+    grid-template-rows: 50px 30px auto;
+    grid-gap: 10px;
+    padding: 20px 30px;
+    background: linear-gradient(12deg, #f0e3d3,#ffeeca,#f7ecd8, #ffeeca,#f7ecd8);
+    filter: grayscale(0%);
+    background-size: contain;
+    border-radius: 7px;
+    height: 350px;
+}
+.digitalZettel > div{
+    -webkit-user-select:auto;
+    -webkit-touch-callout:auto;
+    -moz-user-select:auto;
+    -ms-user-select:auto;
+    user-select:auto;
+}
+.digitalZettelLemma{
+    text-align: left;
+    overflow: hidden;
+    grid-area: 1/1/1/3;
+}
+.digitalZettelDate{
+    grid-area: 1/3/1/4;
+    text-align: right;
+}
+.digitalZettelWork{
+    grid-area: 2/2/2/3;
+    text-align: center;
+}
+.digitalZettelText{
+    grid-area: 3/1/3/4;
+    padding: 0 20px;
+    text-align: justify;
+}
+
+mark{
+    padding: 1px;
+    margin: 0;
+    background-color: var(--bs-info);
+    border-radius: 2px;
+}
+
+#currentPageField{
+    color: inherit;
+    outline: none;
+    background-color: transparent;
+    border: none;
+    width: 50px;
+}
+.autocomplete-items {
+  position: absolute;
+  border: 1px solid  var(--bs-gray-400);
+  border-bottom: none;
+  /*border-top: none;*/
+  z-index: 99;
+  /*position the autocomplete items to be the same width as the container:*/
+  top: 100%;
+  left: 0;
+  right: 0;
+  font-size: 90%;
+  max-height: 200px;
+  overflow: scroll;
+}
+.autocomplete-items div {
+  padding: 3px;
+  cursor: pointer;
+  background-color: #fff;
+  border-bottom: 1px solid  var(--bs-gray-400);
+}
+.autocomplete-items div:hover {
+  /*when hovering an item:*/
+  background-color: #e9e9e9;
+}
+.autocomplete-active {
+  /*when navigating through the items using the arrow keys:*/
+  background-color: var(--bs-primary) !important;
+  color: #ffffff;
+}
+
+
+//////////////////////// Geschichtsquellen
+.geschichtsquellenRows{
+    borderBottom: "1px solid lightgray"; 
+}
+.geschichtsquellenRows:last-child{
+    border: none;
+}
+
+//////////////////////// Argos
+
+.pageTextEdit:focus{
+    box-shadow: none;
+}
+
+
+//////////////////////// Editor
+.articleBox:focus .EditArticleDropdown, .articleBox:focus-within .EditArticleDropdown{
+    display: block;
+}
+.EditArticleDropdown{
+    display: none;
+    top: -3px;
+}
+.sectionBox:focus .EditSectionDropdown, .sectionBox:focus-within .EditSectionDropdown{
+    display: block;
+}
+.EditSectionDropdown{
+    display: none;
+    top: -27px;
+}
+.removeTagButton{
+    cursor: pointer;
+    margin: 6px 0px 0 6px;
+}
+.removeTagButton:hover{
+    color: rgb(150,100,100);
+}
+.editor_zettel_CardBox{
+    position: relative;
+}
+.outlineBox{
+    position: fixed;
+    top: 70px;
+    left: 0;
+    right: 0;
+    overflow: scroll;
+    bottom: 0;
+    padding-bottom: 300px;
+}
+.exportTextBox{
+    outline: none;
+    border: none;
+    width: 100%;
+    height: 800px;
+    background-color: lightgray;
+    font-family: 'Courier New', monospace;
+    font-size: 14px; 
+}
+.sectionBox{
+    //background-color: red;
+    margin: 5px 0px;
+    border-radius: 7px;
+    padding: 8px 5px;
+}
+.sectionBox:focus{
+    border: none;
+    outline: none;
+    box-shadow: none;
+    background-color: var(--bs-gray-400);
+}
+.sectionBoxTitle{
+    font-weight: bold;
+    color: var(--bs-primary);
+}
+.sectionBoxDeactivated{
+    color: var(--bs-gray-600);
+}
+
+.largeScreen.card {
+  flex-direction: row;
+}
+.largeScreen.card img {
+  width: 66%;
+}
+.largeScreen{
+    max-width: 1100px;
+}
+
+.articleBox{
+    cursor: pointer;
+    border-radius: 7px;
+    background-color: var(--bs-white); //var(--bs-light);
+    border: 3px dotted transparent;
+    padding: 5px 10px;
+    margin: 10px 20px
+}
+.articleBox:focus{
+    outline:none;
+    background-color: var(--bs-gray-400);
+    //box-shadow: 0px 2px 4px var(--bs-gray-500);
+    //box-shadow: 0px 1px 2px var(--bs-primary);
+    //border: 2px solid var(--bs-primary);
+}
+/*.ArticleBoxSections:before{
+    position: absolute;
+    left: -5%;
+    top: 40%;
+    content: "\274C";
+}*/
+.ArticleBoxSections{
+    position: relative;
+    //border-radius: 7px;
+    border-left: 1px solid black;
+    margin: 0px 40px 10px 40px;
+    padding: 0px 0 10px 20px;
+}
+.ArticleBoxSections:focus-within{
+    border-left: 1px solid var(--bs-primary);
+}
+.tagBoxOutlineSection:focus{
+    border-bottom: 1px solid var(--bs-primary);
+}
+.tagBoxOutlineSection{
+    background: none;
+    outline: none;
+    border: none;
+    border-bottom: 1px solid black;
+    width: 100%;
+    margin: 1px 2px;
+    padding: 4px 10px;
+}
+
+.indexBoxLst{
+    position:  absolute;
+    padding:  0 0 0 10px;
+    top:  60px;
+    left:  0;
+    width:  300px;
+    bottom:  0;
+}
+.indexBoxLstResultBox{
+    position:  absolute;
+    top:  80px;
+    bottom:  10px;
+    width: 290px;
+    overflow:  scroll;
+}
+.indexBoxDetail{
+    position: absolute;
+    top:  60px;
+    left:  330px;
+    right:  0;
+    bottom:  0;
+    overflow:  scroll;
+}
+.indexBox_result_hit{
+    background-color:  #e7f1ff;
+    color:  #0c63e4;
+}
+.indexBox_result_hit:hover,.indexBox_result_hit:focus{
+    background-color:  #cee2ff;
+    color:  #0b58cc;
+}
+.indexBox_result{
+    background-color:  #e7f1ff;
+}
+.indexBox_result:hover,.indexBox_result:focus{
+    background-color:  #cee2ff;
+}
+.sectionBox:focus>.outlineSectionTagBox{
+    display:  flex;
+}
+.outlineSectionTagBox{
+    display:  flex;
+    flex-wrap: wrap;
+}
+.outlineSectionTags{
+    font-size:  12px;
+    color:  rgba(255,255,255,0.8);
+    margin:  0 3px 0 0;
+    padding:  0px 6px 1px 6px;
+    border-radius:  2rem;
+
+}
